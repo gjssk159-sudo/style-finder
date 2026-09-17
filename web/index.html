@@ -1,0 +1,135 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>style-finder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; }
+  :root { --ink: #111; --sub: #767676; --line: #e8e8e8; --bg: #fff; --faint: #f5f5f5; }
+  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  header { position: sticky; top: 0; background: #ffffffee; backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 22px 28px 18px; z-index: 10; }
+  h1 { margin: 0 0 16px; font-size: 21px; font-weight: 700; letter-spacing: -0.04em; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 .tagline { font-weight: 400; font-size: 12.5px; letter-spacing: 0; color: var(--sub); }
+  h1 button.link { background: none; border: 0; color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 0; }
+  h1 button.link:hover { color: var(--sub); }
+  .gender-tabs { display: flex; gap: 18px; margin-bottom: 14px; }
+  .gtab { background: none; border: 0; padding: 0 0 6px; font-size: 13.5px; font-weight: 500; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; }
+  .gtab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .gtab:hover { color: var(--ink); }
+  .spacer { flex: 1; }
+  #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 8px; }
+  #authArea input { padding: 7px 11px; border: 1px solid var(--line); border-radius: 7px; font-size: 12.5px; width: 170px; font-family: inherit; }
+  #authArea input:focus { outline: none; border-color: var(--ink); }
+  #authArea button { padding: 7px 13px; font-size: 12.5px; border-radius: 7px; }
+  .row { display: flex; gap: 8px; max-width: 1040px; flex-wrap: wrap; align-items: center; }
+  .search-wrap { position: relative; flex: 1; min-width: 240px; }
+  .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .45; }
+  input[type=text]#q { width: 100%; padding: 12px 14px 12px 38px; border: 1px solid var(--line); border-radius: 9px; font-size: 14.5px; font-family: inherit; background: var(--faint); transition: background .15s, border-color .15s; }
+  input[type=text]#q:focus { outline: none; background: #fff; border-color: var(--ink); }
+  input[type=number] { width: 96px; padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; background: var(--faint); }
+  select { padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; background: var(--faint); color: var(--ink); max-width: 150px; }
+  input[type=number]:focus, select:focus { outline: none; border-color: var(--ink); }
+  button { padding: 11px 20px; border: 0; border-radius: 9px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s; }
+  button:hover { opacity: .78; }
+  label.chk { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; max-width: 1040px; }
+  .chip { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 12.5px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s; }
+  .chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  main { padding: 28px; }
+  .meta { max-width: 1280px; margin: 0 auto 18px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; }
+  .grid { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px 18px; }
+  .card { position: relative; display: flex; flex-direction: column; }
+  .card .imgwrap { position: relative; overflow: hidden; border-radius: 4px; background: var(--faint); }
+  .card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: transform .35s ease; }
+  .card:hover img { transform: scale(1.035); }
+  .badge { position: absolute; top: 9px; left: 9px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em; padding: 3px 8px; border-radius: 4px; }
+  .card .body { padding: 11px 1px 0; display: flex; flex-direction: column; gap: 2px; }
+  .brand { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: .03em; }
+  .title { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .price { font-size: 13.5px; font-weight: 600; margin-top: 3px; letter-spacing: -0.01em; }
+  .tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 10.5px; color: var(--sub); background: var(--faint); border-radius: 4px; padding: 2px 7px; }
+  .sold img { opacity: .45; }
+  .multi { color: var(--sub); font-size: 11px; margin-top: 3px; }
+  a.card { text-decoration: none; color: inherit; }
+  .empty { max-width: 1280px; margin: 80px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13.5px; }
+  dialog { border: 0; border-radius: 14px; padding: 0; width: min(480px, 92vw); max-height: 80vh; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+  dialog::backdrop { background: rgba(0,0,0,.4); }
+  .dlg-body { padding: 22px; display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto; font-family: inherit; }
+  .dlg-body h2 { margin: 0 0 4px; font-size: 16px; letter-spacing: -0.02em; }
+  .dlg-body input { padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; font-family: inherit; background: var(--faint); }
+  .dlg-body input:focus { outline: none; border-color: var(--ink); background: #fff; }
+  .dlg-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+  .dlg-row button.secondary { background: var(--faint); color: var(--ink); }
+  .dlg-row button.secondary:hover { opacity: 1; background: var(--line); }
+  #addResult, #folderMsg { font-size: 12.5px; padding: 9px 11px; border-radius: 8px; display: none; }
+  #addResult.ok, #folderMsg.ok { display: block; background: #eef7ee; color: #2a6b2a; }
+  #addResult.warn { display: block; background: #fdf3e7; color: #92400e; }
+  .folderList { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
+  .folderRow { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 7px; font-size: 13px; }
+  .folderRow:hover { background: var(--faint); }
+  .folderRow .fname { flex: 1; }
+  .folderRow .fbrand { color: #a1a1aa; font-size: 11px; }
+</style></head><body>
+<header>
+  <h1>style-finder <span class="tagline">내 폴더 브랜드에서 검색</span>
+    <button class="link" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
+    <button class="link" onclick="addDialog.showModal()">+ 브랜드 등록</button>
+    <span class="spacer"></span>
+    <span id="authArea"></span>
+  </h1>
+  <div class="gender-tabs" id="genderTabs">
+    <button class="gtab active" data-gender="" onclick="setGender('')">전체</button>
+    <button class="gtab" data-gender="women" onclick="setGender('women')">여성</button>
+    <button class="gtab" data-gender="men" onclick="setGender('men')">남성</button>
+    <button class="gtab" data-gender="unisex" onclick="setGender('unisex')">공용</button>
+  </div>
+  <div class="row">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="q" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
+    </div>
+    <select id="color"><option value="">색상 전체</option></select>
+    <select id="size"><option value="">사이즈 전체</option></select>
+    <select id="brand"><option value="">브랜드 전체</option></select>
+    <input type="number" id="priceMin" placeholder="최소가">
+    <input type="number" id="priceMax" placeholder="최대가">
+    <label class="chk"><input type="checkbox" id="inStock">품절 제외</label>
+    <button onclick="go()">검색</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+<main><div class="meta" id="meta"></div><div class="grid" id="grid"></div></main>
+
+<dialog id="addDialog">
+  <div class="dlg-body">
+    <h2>브랜드 등록</h2>
+    <p style="font-size:13px;color:#71717a;margin:0">이미 등록된 브랜드면 바로 내 폴더에 추가되고, 새 브랜드면 자동으로 판별해서 등록 + 추가돼요.</p>
+    <input type="text" id="addUrl" placeholder="쇼핑몰 URL (예: brand.com)">
+    <input type="text" id="addName" placeholder="표시 이름 (선택)">
+    <input type="text" id="addInstagram" placeholder="인스타 핸들 (선택)">
+    <div id="addResult"></div>
+    <div class="dlg-row">
+      <button class="secondary" onclick="addDialog.close()">닫기</button>
+      <button onclick="submitAdd()">등록 + 내 폴더에 추가</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="folderDialog">
+  <div class="dlg-body">
+    <h2>내 폴더</h2>
+    <p style="font-size:13px;color:#71717a;margin:0">체크한 브랜드만 검색에 포함돼요.</p>
+    <input type="text" id="folderSearch" placeholder="브랜드 검색…" oninput="renderFolderList()">
+    <div id="folderMsg"></div>
+    <div class="folderList" id="folderList"></div>
+    <div class="dlg-row">
+      <button class="secondary" onclick="folderDialog.close(); go()">닫기</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="./taxonomy-client.js"></script>
+<script src="./config.js"></script>
+<script src="./app.js"></script>
+</body></html>

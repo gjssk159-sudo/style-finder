@@ -1,0 +1,14 @@
+{
+  "name": "style-finder",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "collect": "node src/run.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "cheerio": "^1.0.0",
+    "playwright": "^1.63.0"
+  }
+}

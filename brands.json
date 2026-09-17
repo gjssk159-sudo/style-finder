@@ -1,0 +1,1477 @@
+{
+  "version": 1,
+  "updated": "2026-09-14",
+  "note": "브랜드/편집샵 레지스트리. 관심 브랜드가 생기면 이 배열에 항목 하나만 추가하면 됨. platform이 cafe24/shopify면 코드 수정 없이 바로 수집됨.",
+  "sources": [
+    {
+      "id": "sansangear",
+      "name": "산산기어",
+      "nameEn": "San San Gear",
+      "type": "brand",
+      "instagram": "sansan_gear",
+      "shopUrl": "https://sansangear.com",
+      "platform": "shopify",
+      "discovery": {
+        "method": "shopify_products_json",
+        "path": "/products.json?limit=250"
+      },
+      "status": "ready",
+      "notes": "products.json 확인 (상품 약 31개). vendor/tags/variants 전부 정형 데이터."
+    },
+    {
+      "id": "coyseio",
+      "name": "코이세이오",
+      "nameEn": "COYSEIO",
+      "type": "brand",
+      "instagram": "hi_coyseio",
+      "shopUrl": "https://coyseio.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "Cafe24 (구 smarturbanuseful). 여성 스트리트웨어."
+    },
+    {
+      "id": "999humanity",
+      "name": "999휴머니티",
+      "nameEn": "999HUMANITY",
+      "type": "brand",
+      "instagram": "999humanity",
+      "shopUrl": "https://999humanity.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "sitemap.xml에 상품 URL 약 570개. /product/{slug}/{id}/ 패턴."
+    },
+    {
+      "id": "safarispot",
+      "name": "사파리스팟",
+      "nameEn": "Safarispot",
+      "type": "brand",
+      "instagram": "safarispot",
+      "shopUrl": "https://sssafariii.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "altSources": [
+        "https://global.sixty-percent.com/shops/safarispot"
+      ],
+      "status": "ready",
+      "notes": "자사몰 sssafariii.kr (Cafe24). 60%(sixtypercent)에도 입점."
+    },
+    {
+      "id": "xlim",
+      "name": "엑슬림",
+      "nameEn": "XLIM",
+      "type": "brand",
+      "instagram": null,
+      "shopUrl": "https://xlim.link",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "Cafe24 (echosting). sitemap 없어서 카테고리 크롤링. EP.N(에피소드) 단위 출시. 인스타 핸들 확인 필요."
+    },
+    {
+      "id": "thexshop",
+      "name": "더엑스샵",
+      "nameEn": "THEXSHOP",
+      "type": "select_shop",
+      "instagram": "thexshop_official",
+      "shopUrl": "https://thexshop.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml에 상품URL 없음(auto-detect로 확인) → 카테고리 크롤링 폴백"
+      },
+      "status": "ready",
+      "notes": "Cafe24 (lmsgod11). 편집샵 → .brand DOM에서 실제 브랜드명 추출(예: SANSAN GEAR)."
+    },
+    {
+      "id": "worksout",
+      "name": "웍스아웃",
+      "nameEn": "WORKSOUT",
+      "type": "select_shop",
+      "instagram": "worksout_official",
+      "shopUrl": "https://www.worksout.co.kr",
+      "platform": "custom",
+      "discovery": {
+        "method": "custom_api",
+        "path": "/products?mainCategoryId=..."
+      },
+      "status": "needs_work",
+      "notes": "자체 제작 Next.js (AWS 호스팅). /products?mainCategoryId=1 접근 시 화면에서 자체적으로 '서버 오류' 발생(카테고리ID 추정이 틀렸거나 다른 보호장치) — 브라우저 네트워크 탭에서도 상품 API 호출이 안 잡힘. 시간 대비 우선순위 낮음, 뒤로 미룸."
+    },
+    {
+      "id": "cos",
+      "name": "COS",
+      "nameEn": "COS",
+      "type": "brand",
+      "instagram": "cosstores",
+      "shopUrl": "https://www.cos.com/ko-kr",
+      "platform": "custom_enterprise",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "deferred",
+      "notes": "H&M 계열. 봇 차단 강함. 파일럿 후순위 — 필요 시 상품 피드 or 구조화 데이터로 접근."
+    },
+    {
+      "id": "serus",
+      "name": "세루스",
+      "nameEn": "세루스",
+      "type": "brand",
+      "instagram": null,
+      "shopUrl": "https://serus.co.kr",
+      "platform": "sixshop",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Sixshop 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "ryoo",
+      "name": "RYOO",
+      "nameEn": "RYOO",
+      "type": "brand",
+      "instagram": "ryoo__official",
+      "shopUrl": "https://ryoo.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "matissethecurator",
+      "name": "MATISSE THE CURATOR",
+      "nameEn": "MATISSE THE CURATOR",
+      "type": "brand",
+      "instagram": "matissethecurator",
+      "shopUrl": "https://matissethecurator.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "nocontent",
+      "name": "NOCONTENT",
+      "nameEn": "NOCONTENT",
+      "type": "brand",
+      "instagram": "nocontent.apparel",
+      "shopUrl": "https://nocontent.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "heritagefloss",
+      "name": "HERITAGE FLOSS",
+      "nameEn": "HERITAGE FLOSS",
+      "type": "brand",
+      "instagram": "heritagefloss_hf",
+      "shopUrl": "https://heritagefloss.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "timbershop",
+      "name": "TIMBER SKATESHOP",
+      "nameEn": "TIMBER SKATESHOP",
+      "type": "select_shop",
+      "instagram": "timbershop",
+      "shopUrl": "https://timbershop.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "eburneanstairs",
+      "name": "EBURNEAN STAIRS",
+      "nameEn": "EBURNEAN STAIRS",
+      "type": "select_shop",
+      "instagram": "eburnean.stairs",
+      "shopUrl": "https://eburneanstairs.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "excluded",
+      "notes": "카테고리 274개, 후보 URL 12849개(디스커버리만 몇 분 소요) — 사용자 요청으로 수집 대상에서 제외."
+    },
+    {
+      "id": "oshigh",
+      "name": "OSHIGH",
+      "nameEn": "OSHIGH",
+      "type": "brand",
+      "instagram": "oshighnet",
+      "shopUrl": "https://oshigh.net",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "labrosseoul",
+      "name": "LABROS",
+      "nameEn": "LABROS",
+      "type": "brand",
+      "instagram": "labrosseoul",
+      "shopUrl": "https://labrosseoul.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "hatchingroom",
+      "name": "HATCHINGROOM",
+      "nameEn": "HATCHINGROOM",
+      "type": "brand",
+      "instagram": "hatching.room",
+      "shopUrl": "https://hatchingroom.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "curatedparade",
+      "name": "CURATED PARADE",
+      "nameEn": "CURATED PARADE",
+      "type": "brand",
+      "instagram": "curatedparade",
+      "shopUrl": "https://curatedparade.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "llud",
+      "name": "LLUD",
+      "nameEn": "LLUD",
+      "type": "select_shop",
+      "instagram": "llud_official",
+      "shopUrl": "https://llud.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "eburneanstairs와 동일하게 후보 URL 12849개(같은 매장/카탈로그로 추정) — 제외."
+      },
+      "status": "excluded",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "surfaceedition",
+      "name": "SURFACE EDITION",
+      "nameEn": "SURFACE EDITION",
+      "type": "brand",
+      "instagram": "surfaceedition",
+      "shopUrl": "https://surfaceedition.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "ee-etiquettevide",
+      "name": "ÉÉ by NOUVMARÉE",
+      "nameEn": "ÉÉ by NOUVMARÉE",
+      "type": "brand",
+      "instagram": "ee_etiquettevide",
+      "shopUrl": "https://www.ee-etiquettevide.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "store-hyeinseo",
+      "name": "HYEIN SEO (구 URL, 중복)",
+      "nameEn": "HYEIN SEO (duplicate, use hyeinseo)",
+      "type": "brand",
+      "instagram": "hyeinantwerp",
+      "shopUrl": "https://store.hyeinseo.com",
+      "platform": "unknown",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "excluded",
+      "notes": "잘못된 URL이었음 — 실제 주소는 hyeinseo.com (id: hyeinseo, Shopify). 이 항목은 중복이라 제외 유지."
+    },
+    {
+      "id": "karactor",
+      "name": "KARACTOR",
+      "nameEn": "KARACTOR",
+      "type": "brand",
+      "instagram": "karactor.official",
+      "shopUrl": "https://karactor.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "mono-prive",
+      "name": "MONO PRIVE",
+      "nameEn": "MONO PRIVE",
+      "type": "brand",
+      "instagram": "mono_prive_",
+      "shopUrl": "https://mono-prive.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "jichoi",
+      "name": "JICHOI",
+      "nameEn": "JICHOI",
+      "type": "brand",
+      "instagram": "jichoinet",
+      "shopUrl": "https://jichoi.net",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "ojos",
+      "name": "OJOS",
+      "nameEn": "OJOS",
+      "type": "brand",
+      "instagram": "ojos.official",
+      "shopUrl": "https://ojos.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "awesomeneeds",
+      "name": "AWESOME NEEDS",
+      "nameEn": "AWESOME NEEDS",
+      "type": "brand",
+      "instagram": "awesomeneeds",
+      "shopUrl": "https://awesomeneeds.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "8division",
+      "name": "8DIVISION",
+      "nameEn": "8DIVISION",
+      "type": "select_shop",
+      "instagram": "8division",
+      "shopUrl": "https://8division.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "shopamomento",
+      "name": "SHOP AMOMENTO",
+      "nameEn": "SHOP AMOMENTO",
+      "type": "select_shop",
+      "instagram": "shop_amomento",
+      "shopUrl": "https://shopamomento.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "obscura-store",
+      "name": "OBSCURA STORE",
+      "nameEn": "OBSCURA STORE",
+      "type": "select_shop",
+      "instagram": "obscura_store.kr",
+      "shopUrl": "https://obscura-store.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "amomento-co",
+      "name": "AMOMENTO",
+      "nameEn": "AMOMENTO",
+      "type": "brand",
+      "instagram": "amomento.co",
+      "shopUrl": "https://amomento.co",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "parrtofficial",
+      "name": "PARRT",
+      "nameEn": "PARRT",
+      "type": "brand",
+      "instagram": "parrt_official",
+      "shopUrl": "https://parrtofficial.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "te-ket",
+      "name": "TEKET",
+      "nameEn": "TEKET",
+      "type": "brand",
+      "instagram": "teket_com",
+      "shopUrl": "https://te-ket.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "onska",
+      "name": "ONSKA",
+      "nameEn": "ONSKA",
+      "type": "brand",
+      "instagram": "onska.on",
+      "shopUrl": "https://onska.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "unaffected",
+      "name": "UNAFFECTED",
+      "nameEn": "UNAFFECTED",
+      "type": "brand",
+      "instagram": "unaffected.official",
+      "shopUrl": "https://unaffected.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "the-museum-visitor",
+      "name": "THE MUSEUM VISITOR",
+      "nameEn": "THE MUSEUM VISITOR",
+      "type": "brand",
+      "instagram": "themuseumvisitor",
+      "shopUrl": "https://the--museum--visitor.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "formlich",
+      "name": "FÖRMLICH",
+      "nameEn": "FÖRMLICH",
+      "type": "brand",
+      "instagram": "formlich.office",
+      "shopUrl": "https://formlich.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "label-archive",
+      "name": "LABEL ARCHIVE",
+      "nameEn": "LABEL ARCHIVE",
+      "type": "brand",
+      "instagram": "label_archive",
+      "shopUrl": "https://label-archive.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "aieul-co",
+      "name": "AIEUL",
+      "nameEn": "AIEUL",
+      "type": "brand",
+      "instagram": "aieul.co",
+      "shopUrl": "https://aieul.co",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "plasticproduct",
+      "name": "PLASTIC PRODUCT",
+      "nameEn": "PLASTIC PRODUCT",
+      "type": "brand",
+      "instagram": "plastic_product",
+      "shopUrl": "https://plasticproduct.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "costperkilo",
+      "name": "COST PER KILO",
+      "nameEn": "COST PER KILO",
+      "type": "brand",
+      "instagram": "costperkilo",
+      "shopUrl": "https://costperkilo.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "aaoa",
+      "name": "AAOA",
+      "nameEn": "AAOA",
+      "type": "brand",
+      "instagram": "aaoa_world",
+      "shopUrl": "https://aaoa.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "goyowear",
+      "name": "GOYOWEAR",
+      "nameEn": "GOYOWEAR",
+      "type": "brand",
+      "instagram": "goyowear.official",
+      "shopUrl": "https://goyowear.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "heights-store",
+      "name": "HEIGHTS STORE",
+      "nameEn": "HEIGHTS STORE",
+      "type": "select_shop",
+      "instagram": "heightsseoul",
+      "shopUrl": "https://heights-store.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "youth-lab",
+      "name": "YOUTH.",
+      "nameEn": "YOUTH.",
+      "type": "brand",
+      "instagram": "youthlabkr",
+      "shopUrl": "https://youth-lab.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "17end",
+      "name": "17END",
+      "nameEn": "17END",
+      "type": "brand",
+      "instagram": "17end.kr",
+      "shopUrl": "https://17end.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "tefstores",
+      "name": "TEF STORES",
+      "nameEn": "TEF STORES",
+      "type": "select_shop",
+      "instagram": "tefstores",
+      "shopUrl": "https://tefstores.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "epicenter-tourist",
+      "name": "EPICENTER.TOURIST",
+      "nameEn": "EPICENTER.TOURIST",
+      "type": "brand",
+      "instagram": "epicenter.tourist",
+      "shopUrl": "https://epicenter-tourist.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "open-yy",
+      "name": "OPEN YY",
+      "nameEn": "OPEN YY",
+      "type": "brand",
+      "instagram": "openyy_official",
+      "shopUrl": "https://open-yy.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "tuomio",
+      "name": "TUOMIO",
+      "nameEn": "TUOMIO",
+      "type": "brand",
+      "instagram": "_tuomio",
+      "shopUrl": "https://www.tuomio.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "stussy",
+      "name": "STUSSY",
+      "nameEn": "STUSSY",
+      "type": "brand",
+      "instagram": "stussy",
+      "shopUrl": "https://www.stussy.com",
+      "platform": "shopify",
+      "discovery": {
+        "method": "shopify_products_json",
+        "path": "/products.json?limit=250"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (shopify_products_json)."
+    },
+    {
+      "id": "symmetricalsociety",
+      "name": "SYMMETRICAL SOCIETY",
+      "nameEn": "SYMMETRICAL SOCIETY",
+      "type": "brand",
+      "instagram": "symmetricalsociety",
+      "shopUrl": "https://symmetricalsociety.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "vacantarchive",
+      "name": "VACANT ARCHIVE",
+      "nameEn": "VACANT ARCHIVE",
+      "type": "brand",
+      "instagram": "vacant_archive",
+      "shopUrl": "https://vacantarchive.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "asien",
+      "name": "ASIEN",
+      "nameEn": "ASIEN",
+      "type": "brand",
+      "instagram": "asien_official",
+      "shopUrl": "https://asien.co.kr",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "mascompany",
+      "name": "MASCOMPANY",
+      "nameEn": "MASCOMPANY",
+      "type": "brand",
+      "instagram": "mascompany.kr",
+      "shopUrl": "https://www.mascompany.kr",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "yinandyang",
+      "name": "YINANDYANG",
+      "nameEn": "YINANDYANG",
+      "type": "brand",
+      "instagram": "yinandyang.co.kr",
+      "shopUrl": "https://yinandyang.co.kr",
+      "platform": "sixshop",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "needs_review",
+      "notes": "Sixshop이지만 카테고리가 버튼(SHOP/ARCHIVES) 뒤에 중첩 드롭다운으로 숨어있어서 추가 조사 필요."
+    },
+    {
+      "id": "polyteru-store",
+      "name": "POLYTERU",
+      "nameEn": "POLYTERU",
+      "type": "brand",
+      "instagram": "polyteru_",
+      "shopUrl": "https://www.polyteru-store.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "Cafe24 최신(PLUS) 테마 — 카테고리 메뉴가 JS로 렌더링돼서 정적 HTML 파싱으로 못 찾음. 헤드리스 브라우저 필요(아임웹/식스샵과 동일 부류)."
+      },
+      "status": "needs_review",
+      "notes": "chemehc 방식(GNB만 브라우저)으로 재확인했으나 이쪽은 nav 자체가 완전 커스텀 슬러그(/per, /mer, /mudule0 등)라 cate_no/category 패턴이 아예 없음 — 공용 규칙으로 안 풀리고 사이트별 수작업 매핑 필요. 우선순위 낮음."
+    },
+    {
+      "id": "halominium",
+      "name": "HALOMINIUM",
+      "nameEn": "HALOMINIUM",
+      "type": "brand",
+      "instagram": "halominium",
+      "shopUrl": "https://halominium.com",
+      "platform": "shopify",
+      "discovery": {
+        "method": "shopify_products_json",
+        "path": "/products.json?limit=250"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (shopify_products_json)."
+    },
+    {
+      "id": "chemehc",
+      "name": "CHEMEHC",
+      "nameEn": "CHEMEHC",
+      "type": "brand",
+      "instagram": "chemehc.official",
+      "shopUrl": "https://chemehc.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "GNB(최상위 카테고리)만 JS 렌더 — 브라우저로 최상위 카테고리 찾은 뒤, 그 안의 실제 하위 탭(ALL/OUTER/TOP..)과 상품 목록/상세는 표준 Cafe24라 plain fetch로 처리."
+      },
+      "status": "ready",
+      "notes": "해결됨. 상품 카드 자체는 표준 xans-record 마크업이라 기존 파서 그대로 사용."
+    },
+    {
+      "id": "jcho",
+      "name": "JCHO",
+      "nameEn": "JCHO",
+      "type": "brand",
+      "instagram": "jcho_official",
+      "shopUrl": "https://jcho.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "etcseoul",
+      "name": "ETC SEOUL",
+      "nameEn": "ETC SEOUL",
+      "type": "select_shop",
+      "instagram": "etcseoul",
+      "shopUrl": "https://etcseoul.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "yiyae",
+      "name": "YIYAE",
+      "nameEn": "YIYAE",
+      "type": "brand",
+      "instagram": "yiyae_official",
+      "shopUrl": "https://yiyae.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml의 상품 URL들이 오래돼서 로그인 요구함 — 카테고리(/category/all/247/ 등) 경유는 로그인 없이 정상 접근됨(사용자 확인)."
+      },
+      "status": "ready",
+      "notes": "카테고리 경유로 재확인 완료."
+    },
+    {
+      "id": "byeunoia",
+      "name": "EUNOIA",
+      "nameEn": "EUNOIA",
+      "type": "brand",
+      "instagram": "byeunoia_official",
+      "shopUrl": "https://byeunoia.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "finalform-info",
+      "name": "FINAL FORM",
+      "nameEn": "FINAL FORM",
+      "type": "brand",
+      "instagram": "finalform__official",
+      "shopUrl": "https://finalform.info",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "savour",
+      "name": "SAVOUR SKATE SHOP",
+      "nameEn": "SAVOUR SKATE SHOP",
+      "type": "select_shop",
+      "instagram": "savour_the_skateshop",
+      "shopUrl": "https://www.savour.co.kr",
+      "platform": "custom",
+      "discovery": {
+        "method": "custom_api"
+      },
+      "status": "needs_work",
+      "notes": "worksout과 동일 회사(주식회사 웍스아웃, 사업자번호 동일) — 같은 자체 Next.js 플랫폼이라 동일한 이유로 보류."
+    },
+    {
+      "id": "saengin",
+      "name": "SAENGIN STUDIOS",
+      "nameEn": "SAENGIN STUDIOS",
+      "type": "brand",
+      "instagram": "saenginstudios",
+      "shopUrl": "https://saengin.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "bordr",
+      "name": "BORDR",
+      "nameEn": "BORDR",
+      "type": "brand",
+      "instagram": "bordr.hub",
+      "shopUrl": "https://www.bordr.co.kr",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "nofaithstudios",
+      "name": "NO/FAITH STUDIOS",
+      "nameEn": "NO/FAITH STUDIOS",
+      "type": "brand",
+      "instagram": "nofaithstudios",
+      "shopUrl": "https://nofaithstudios.com",
+      "platform": "shopify",
+      "discovery": {
+        "method": "shopify_products_json",
+        "path": "/products.json?limit=250"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (shopify_products_json)."
+    },
+    {
+      "id": "honeyscoop-house",
+      "name": "HONEY SCOOP HOUSE",
+      "nameEn": "HONEY SCOOP HOUSE",
+      "type": "brand",
+      "instagram": "honeyscoophouse",
+      "shopUrl": "https://honeyscoop.house",
+      "platform": "shopify",
+      "discovery": {
+        "method": "shopify_products_json",
+        "path": "/products.json?limit=250"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (shopify_products_json)."
+    },
+    {
+      "id": "earthjigu",
+      "name": "EARTHJIGU",
+      "nameEn": "EARTHJIGU",
+      "type": "brand",
+      "instagram": "earthjigu.official",
+      "shopUrl": "https://earthjigu.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "fouronesixzero",
+      "name": "FOURONESIXZERO",
+      "nameEn": "FOURONESIXZERO",
+      "type": "brand",
+      "instagram": "fouronesixzero_official",
+      "shopUrl": "https://fouronesixzero.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "les-official",
+      "name": "LES",
+      "nameEn": "LES",
+      "type": "brand",
+      "instagram": "les.is_",
+      "shopUrl": "https://les-official.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "sononomory",
+      "name": "SONONOMORY",
+      "nameEn": "SONONOMORY",
+      "type": "brand",
+      "instagram": "sononomory",
+      "shopUrl": "https://sononomory.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "harpsichordstore",
+      "name": "HARPSICHORD",
+      "nameEn": "HARPSICHORD",
+      "type": "brand",
+      "instagram": "harpsichord.official",
+      "shopUrl": "https://harpsichordstore.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "103monsieur",
+      "name": "103MONSIEUR",
+      "nameEn": "103MONSIEUR",
+      "type": "select_shop",
+      "instagram": "103monsieur",
+      "shopUrl": "https://103monsieur.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "blanksoup",
+      "name": "BLANKSOUP",
+      "nameEn": "BLANKSOUP",
+      "type": "brand",
+      "instagram": "blanksoup_official",
+      "shopUrl": "https://blanksoup.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "noclaim",
+      "name": "NOCLAIM",
+      "nameEn": "NOCLAIM",
+      "type": "select_shop",
+      "instagram": "noclaim",
+      "shopUrl": "https://noclaim.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "nightwaks",
+      "name": "NIGHTWAKS",
+      "nameEn": "NIGHTWAKS",
+      "type": "select_shop",
+      "instagram": "nightwaks",
+      "shopUrl": "https://nightwaks.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "machinesynthesiscollective",
+      "name": "MACHINE SYNTHESIS COLLECTIVE",
+      "nameEn": "MACHINE SYNTHESIS COLLECTIVE",
+      "type": "brand",
+      "instagram": "machinesynthesiscollective",
+      "shopUrl": "https://machinesynthesiscollective.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "saros",
+      "name": "SAROS",
+      "nameEn": "SAROS",
+      "type": "brand",
+      "instagram": "sarosperiod",
+      "shopUrl": "https://saros.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "breche-online",
+      "name": "BRECHE",
+      "nameEn": "BRECHE",
+      "type": "select_shop",
+      "instagram": "breche_room",
+      "shopUrl": "https://breche-online.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "buttony",
+      "name": "BUTTONY",
+      "nameEn": "BUTTONY",
+      "type": "brand",
+      "instagram": "buttonynet",
+      "shopUrl": "https://buttony.net",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "rakelack",
+      "name": "RAKE LACK",
+      "nameEn": "RAKE LACK",
+      "type": "brand",
+      "instagram": "rake.lack",
+      "shopUrl": "https://rakelack.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "personalobject",
+      "name": "PERSONAL OBJECT",
+      "nameEn": "PERSONAL OBJECT",
+      "type": "brand",
+      "instagram": "personal.object",
+      "shopUrl": "https://personalobject.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "thecolorcolour",
+      "name": "colorcolour",
+      "nameEn": "colorcolour",
+      "type": "brand",
+      "instagram": "thecolorcolour",
+      "shopUrl": "https://thecolorcolour.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "rhykershop",
+      "name": "RHYKER SHOP",
+      "nameEn": "RHYKER SHOP",
+      "type": "select_shop",
+      "instagram": "rhykershop_official",
+      "shopUrl": "https://rhykershop.co.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "palpalskates",
+      "name": "PALPAL SKATES",
+      "nameEn": "PALPAL SKATES",
+      "type": "select_shop",
+      "instagram": "palpalskates",
+      "shopUrl": "https://palpalskates.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "kasina",
+      "name": "KASINA",
+      "nameEn": "KASINA",
+      "type": "select_shop",
+      "instagram": "kasina_official",
+      "shopUrl": "https://www.kasina.co.kr",
+      "platform": "custom",
+      "discovery": {
+        "method": "custom_api"
+      },
+      "status": "needs_work",
+      "notes": "자체 제작 커머스(구조화된 브랜드명/상품명/가격 표시, Next.js로 추정). API 엔드포인트 특정 안 됨 — worksout과 같은 부류."
+    },
+    {
+      "id": "solarljos-service",
+      "name": "sólarljós",
+      "nameEn": "sólarljós",
+      "type": "brand",
+      "instagram": "solarljos.service",
+      "shopUrl": "https://solarljos-service.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "mudule",
+      "name": "müdule",
+      "nameEn": "müdule",
+      "type": "brand",
+      "instagram": "mudule.official",
+      "shopUrl": "https://www.mudule.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "Cafe24 최신(PLUS) 테마 — 상품/카테고리 정보가 JS로 렌더링돼서 정적 HTML 파싱으로 못 찾음(0건 수집됨). 헤드리스 브라우저 필요."
+      },
+      "status": "needs_review",
+      "notes": "chemehc 방식(GNB만 브라우저)으로 재확인했으나 이쪽은 nav 자체가 완전 커스텀 슬러그(/per, /mer, /mudule0 등)라 cate_no/category 패턴이 아예 없음 — 공용 규칙으로 안 풀리고 사이트별 수작업 매핑 필요. 우선순위 낮음."
+    },
+    {
+      "id": "jabberwocky",
+      "name": "jabbérwocky",
+      "nameEn": "jabbérwocky",
+      "type": "brand",
+      "instagram": "jabberwockyconversation",
+      "shopUrl": "https://www.jabberwocky.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "Cafe24 최신(PLUS) 테마로 추정 — 0건 수집됨. 헤드리스 브라우저 필요."
+      },
+      "status": "needs_review",
+      "notes": "chemehc 방식(GNB만 브라우저)으로 재확인했으나 이쪽은 nav 자체가 완전 커스텀 슬러그(/per, /mer, /mudule0 등)라 cate_no/category 패턴이 아예 없음 — 공용 규칙으로 안 풀리고 사이트별 수작업 매핑 필요. 우선순위 낮음."
+    },
+    {
+      "id": "i-am-the-audience",
+      "name": "(I)AMTHEAUDIENCE",
+      "nameEn": "(I)AMTHEAUDIENCE",
+      "type": "brand",
+      "instagram": "a.ta_official",
+      "shopUrl": "https://i-am-the-audience.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "studiosalloy",
+      "name": "ALLOY",
+      "nameEn": "ALLOY",
+      "type": "brand",
+      "instagram": "new.alloy",
+      "shopUrl": "https://studiosalloy.com",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "0tape",
+      "name": "0TaPe",
+      "nameEn": "0TaPe",
+      "type": "brand",
+      "instagram": "0tape",
+      "shopUrl": "https://www.0tape.kr",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_categories",
+        "note": "sitemap.xml 없음 → 카테고리 목록 크롤링 폴백 사용"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_categories)."
+    },
+    {
+      "id": "bluesf",
+      "name": "Bluē sunflower",
+      "nameEn": "Bluē sunflower",
+      "type": "brand",
+      "instagram": "bluesfofficial",
+      "shopUrl": "https://bluesf.kr",
+      "platform": "imweb",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "ready",
+      "notes": "Imweb 헤드리스 브라우저 어댑터로 수집 가능해짐."
+    },
+    {
+      "id": "wepfile",
+      "name": "WEP",
+      "nameEn": "WEP",
+      "type": "brand",
+      "instagram": "wep.refined",
+      "shopUrl": "https://www.wepfile.com",
+      "platform": "cafe24",
+      "discovery": {
+        "method": "cafe24_sitemap",
+        "path": "/sitemap.xml"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
+      "id": "smartstore-naver",
+      "name": "ABANDONED MARTINI",
+      "nameEn": "ABANDONED MARTINI",
+      "type": "brand",
+      "instagram": "abandoned_martini",
+      "shopUrl": "https://smartstore.naver.com",
+      "platform": "naver_smartstore",
+      "discovery": {
+        "method": "tbd"
+      },
+      "status": "excluded",
+      "notes": "네이버 스마트스토어: 직접 요청은 HTTP 429(차단), 브라우저 도구도 안전 정책상 이 도메인 접근 불가 — 수집 불가능."
+    },
+    {
+      "id": "hyeinseo",
+      "name": "HYEIN SEO",
+      "nameEn": "HYEIN SEO",
+      "type": "brand",
+      "instagram": "hyeinantwerp",
+      "shopUrl": "https://hyeinseo.com",
+      "platform": "shopify",
+      "discovery": {
+        "method": "shopify_products_json",
+        "path": "/products.json?limit=250"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (shopify_products_json)."
+    }
+  ]
+}
