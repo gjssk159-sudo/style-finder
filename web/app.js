@@ -64,10 +64,12 @@ async function loadMyFolder() {
 }
 
 async function loadAllBrands() {
+  // 'excluded'만 빼고 다 가져옴 — pending/needs_review도 내 폴더 목록엔 보여야
+  // 방금 등록한 브랜드가 "등록은 됐는데 목록엔 안 보임" 처럼 느껴지지 않음.
   const { data, error } = await sb
     .from('brands')
     .select('id,name,type,status')
-    .in('status', ['ready'])
+    .neq('status', 'excluded')
     .order('name');
   if (error) { console.error(error); return; }
   allBrands = data;
@@ -78,7 +80,8 @@ function renderBrandFilter() {
   const sel = document.getElementById('brand');
   const current = sel.value;
   sel.innerHTML = '<option value="">브랜드 전체</option>';
-  const mine = allBrands.filter((b) => myFolderIds.includes(b.id)).sort((a, b) => a.name.localeCompare(b.name));
+  // 검색 필터용 드롭다운은 실제 상품이 있는 ready 브랜드만
+  const mine = allBrands.filter((b) => b.status === 'ready' && myFolderIds.includes(b.id)).sort((a, b) => a.name.localeCompare(b.name));
   for (const b of mine) sel.insertAdjacentHTML('beforeend', `<option value="${b.name}">${b.name}</option>`);
   sel.value = current;
 }
@@ -95,9 +98,12 @@ function renderFolderList() {
     .map((b) => {
       const checked = myFolderIds.includes(b.id) ? 'checked' : '';
       const typeLabel = b.type === 'select_shop' ? '<span class="fbrand">편집샵</span>' : '';
+      const statusLabel = b.status !== 'ready'
+        ? `<span class="fbrand">${b.status === 'pending' ? '처리 중' : '수집 준비 중'}</span>`
+        : '';
       return `<label class="folderRow">
         <input type="checkbox" data-brand="${b.id}" ${checked} onchange="toggleFolder('${b.id}', this.checked)">
-        <span class="fname">${b.name}</span> ${typeLabel}
+        <span class="fname">${b.name}</span> ${typeLabel} ${statusLabel}
       </label>`;
     })
     .join('') || '<div style="padding:12px;color:#a1a1aa">결과 없음</div>';

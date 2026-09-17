@@ -12,6 +12,7 @@
   h1 .tagline { font-weight: 400; font-size: 12.5px; letter-spacing: 0; color: var(--sub); }
   h1 button.link { background: none; border: 0; color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 0; }
   h1 button.link:hover { color: var(--sub); }
+  h1 .hsep { color: var(--sub); font-size: 12.5px; font-weight: 400; }
   .gender-tabs { display: flex; gap: 18px; margin-bottom: 14px; }
   .gtab { background: none; border: 0; padding: 0 0 6px; font-size: 13.5px; font-weight: 500; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; }
   .gtab.active { color: var(--ink); border-bottom-color: var(--ink); }
@@ -27,6 +28,7 @@
   input[type=text]#q { width: 100%; padding: 12px 14px 12px 38px; border: 1px solid var(--line); border-radius: 9px; font-size: 14.5px; font-family: inherit; background: var(--faint); transition: background .15s, border-color .15s; }
   input[type=text]#q:focus { outline: none; background: #fff; border-color: var(--ink); }
   input[type=number] { width: 96px; padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; background: var(--faint); }
+  .price-range { display: flex; align-items: center; gap: 6px; flex: none; }
   select { padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; background: var(--faint); color: var(--ink); max-width: 150px; }
   input[type=number]:focus, select:focus { outline: none; border-color: var(--ink); }
   button { padding: 11px 20px; border: 0; border-radius: 9px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s; }
@@ -74,7 +76,8 @@
 <header>
   <h1>style-finder <span class="tagline">내 폴더 브랜드에서 검색</span>
     <button class="link" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
-    <button class="link" onclick="addDialog.showModal()">+ 브랜드 등록</button>
+    <span class="hsep">+</span>
+    <button class="link" onclick="addDialog.showModal()">브랜드 등록</button>
     <span class="spacer"></span>
     <span id="authArea"></span>
   </h1>
@@ -92,8 +95,11 @@
     <select id="color"><option value="">색상 전체</option></select>
     <select id="size"><option value="">사이즈 전체</option></select>
     <select id="brand"><option value="">브랜드 전체</option></select>
-    <input type="number" id="priceMin" placeholder="최소가">
-    <input type="number" id="priceMax" placeholder="최대가">
+    <div class="price-range">
+      <input type="number" id="priceMin" placeholder="최소가">
+      <span class="hsep">~</span>
+      <input type="number" id="priceMax" placeholder="최대가">
+    </div>
     <label class="chk"><input type="checkbox" id="inStock">품절 제외</label>
     <button onclick="go()">검색</button>
   </div>
