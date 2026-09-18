@@ -45,6 +45,20 @@ function mergeByBrandTitle(groups) {
   return [...map.values()].map((g) => ({ ...g, categories: [...g.categories], colors: [...g.colors], sizes: [...g.sizes] }));
 }
 
+// count/upsert가 아닌 일반 select는 기본 1000행 제한이 있어서, 브랜드/소스 하나가 그 이상이면
+// 페이지네이션 없이는 뒤가 잘려서 "오래된 데이터"로 오판(=삭제)될 수 있음 -> 끝까지 다 받아옴.
+async function selectAll(sb, table, column, value, fields) {
+  const rows = [];
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await sb.from(table).select(fields).eq(column, value).range(from, from + PAGE - 1);
+    if (error) throw new Error(`${table} 조회 실패: ${error.message}`);
+    rows.push(...data);
+    if (data.length < PAGE) break;
+  }
+  return rows;
+}
+
 async function upsertBatched(sb, table, rows, opts, select) {
   let done = 0;
   const returned = [];
@@ -157,6 +171,36 @@ async function main() {
   }
   console.log(`\noffer 업로드 (${offerRows.length}개):`);
   await upsertBatched(sb, 'offer', offerRows, { onConflict: 'source_id,external_id' });
+
+  // 오래된 데이터 정리: 이번에 다시 안 나온(품절 삭제, URL 변경, 예전 버그로 잘못 올라간 유령 상품 등) 건 삭제.
+  // upsert는 추가/갱신만 하고 삭제는 안 하므로, 이 단계가 없으면 옛날 데이터가 영영 안 지워짐.
+  console.log('\n오래된 데이터 정리:');
+  const freshGroupKeys = new Set(withBrandId.map((g) => `${g.brand_id}||${g.title_norm}`));
+  const affectedBrandIds = [...new Set(withBrandId.map((g) => g.brand_id))];
+  let staleGroups = 0;
+  for (const brandId of affectedBrandIds) {
+    const existing = await selectAll(sb, 'product_group', 'brand_id', brandId, 'id,title_norm');
+    const staleIds = existing.filter((r) => !freshGroupKeys.has(`${brandId}||${r.title_norm}`)).map((r) => r.id);
+    for (let i = 0; i < staleIds.length; i += BATCH) {
+      const { error } = await sb.from('product_group').delete().in('id', staleIds.slice(i, i + BATCH));
+      if (error) throw new Error('오래된 product_group 삭제 실패: ' + error.message);
+    }
+    staleGroups += staleIds.length;
+  }
+
+  const freshOfferKeys = new Set(offerRows.map((o) => `${o.source_id}||${o.external_id}`));
+  const affectedSourceIds = [...new Set(offerRows.map((o) => o.source_id))];
+  let staleOffers = 0;
+  for (const sourceId of affectedSourceIds) {
+    const existing = await selectAll(sb, 'offer', 'source_id', sourceId, 'id,external_id');
+    const staleIds = existing.filter((r) => !freshOfferKeys.has(`${sourceId}||${r.external_id}`)).map((r) => r.id);
+    for (let i = 0; i < staleIds.length; i += BATCH) {
+      const { error } = await sb.from('offer').delete().in('id', staleIds.slice(i, i + BATCH));
+      if (error) throw new Error('오래된 offer 삭제 실패: ' + error.message);
+    }
+    staleOffers += staleIds.length;
+  }
+  console.log(`  product_group ${staleGroups}개, offer ${staleOffers}개 삭제됨`);
 
   console.log('\n완료.');
 }
