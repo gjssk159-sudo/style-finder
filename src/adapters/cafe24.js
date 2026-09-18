@@ -229,7 +229,13 @@ function parseProductPage(html, url, source) {
   const $ = cheerio.load(html);
 
   // --- 1. JSON-LD Product ---
+  // 일부 카페24 사이트는 사이즈별 변형을 표현하려고 최신 구글 스키마인 ProductGroup(+hasVariant)을
+  // 씀. 이 경우 최상위엔 Product 노드가 없어서 기존 방식대론 ld가 항상 null이 되고, 이미지/가격이
+  // 예전 og:image 같은 낡은 폴백 값으로 새서 사고가 남(heritagefloss에서 실측: 대표 이미지가
+  // 몇 달 전 깨진 사진으로 고정돼 있었음). hasVariant[0]을 사실상 Product처럼 취급하되,
+  // 이름은 사이즈가 안 붙은 그룹 이름을 우선한다.
   let ld = null;
+  let ldFromVariant = false;
   $('script[type="application/ld+json"]').each((_, el) => {
     if (ld) return;
     try {
@@ -239,6 +245,11 @@ function parseProductPage(html, url, source) {
         const t = node['@type'];
         if (t === 'Product' || (Array.isArray(t) && t.includes('Product'))) {
           ld = node;
+          break;
+        }
+        if (t === 'ProductGroup' && Array.isArray(node.hasVariant) && node.hasVariant.length) {
+          ld = { ...node.hasVariant[0], name: node.name || node.hasVariant[0].name };
+          ldFromVariant = true;
           break;
         }
       }
@@ -269,9 +280,10 @@ function parseProductPage(html, url, source) {
   let images = [...new Set(imgList.map(fixUrl).filter(Boolean))]
     .filter((u) => !/\/images\/[a-z0-9_-]+\.(png|jpg|svg)$/i.test(u)) // 로고 등 스킨 이미지 제외
     .slice(0, 8);
-  // heritagefloss: 대표(메인) 이미지 슬롯이 사이트 쪽에서 깨져서 50~200px짜리 "이미지 없음"
-  // 자리표시자만 내려줌(실측 확인됨). 실제 사진은 두 번째부터(extra 갤러리)만 정상이라 첫 장을 버림.
-  if (source.id === 'heritagefloss' && images.length > 1) images = images.slice(1);
+  // heritagefloss: 원사이즈 상품(구식 Product 스키마)은 대표(첫) 이미지 슬롯이 사이트 쪽에서 깨져서
+  // 50~200px짜리 "이미지 없음" 자리표시자만 내려줌(실측 확인됨) — 실제 사진은 두 번째(extra
+  // 갤러리)부터. ProductGroup 변형에서 온 경우는 이미 fresh한 단일 이미지라 그대로 둔다.
+  if (source.id === 'heritagefloss' && !ldFromVariant && images.length > 1) images = images.slice(1);
 
   // --- price ---
   const offers = Array.isArray(ld?.offers) ? ld.offers[0] : ld?.offers;
