@@ -6,22 +6,18 @@ on:
   workflow_dispatch: {}      # 필요하면 Actions 탭에서 수동 실행도 가능
 
 jobs:
-  collect:
+  # 1) pending 브랜드 판별 + brands.json 최신화 + 샤드(묶음) 나누기
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    outputs:
+      shards: ${{ steps.shard.outputs.shards }}
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-
       - name: 의존성 설치
         run: npm ci
-
-      - name: Playwright 크로미움 설치
-        run: npx playwright install --with-deps chromium
-
       - name: Supabase에서 브랜드 목록 동기화
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -31,16 +27,79 @@ jobs:
           echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> .env
           node src/process-pending.js
           node src/sync-brands-from-supabase.js
+      - name: 샤드 나누기
+        id: shard
+        env:
+          SHARD_SIZE: 12   # 브랜드 늘어나면 이 숫자를 올려서 샤드 개수 조절 (matrix 최대 256개)
+        run: echo "shards=$(node src/shard-brands.js)" >> "$GITHUB_OUTPUT"
+      - name: brands.json 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: brands-json
+          path: brands.json
 
-      - name: 전체 수집
-        run: node src/run.js
-
-      - name: 분류 재계산
-        run: node src/reclassify.js
-
-      - name: Supabase에 적재
-        run: node src/load-supabase.js
-
+  # 2) 샤드별로 병렬 수집
+  collect:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.prepare.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 의존성 설치
+        run: npm ci
+      - name: Playwright 크로미움 설치
+        run: npx playwright install --with-deps chromium
+      - name: brands.json 받기
+        uses: actions/download-artifact@v4
+        with:
+          name: brands-json
+      - name: 수집 (이 샤드만)
+        run: node src/run.js --source=${{ matrix.shard }}
       - name: 정리
         if: always()
         run: pkill -f chrome || true
+      - name: 결과 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-shard-${{ strategy.job-index }}
+          path: data/out
+
+  # 3) 모든 샤드 결과 합쳐서 분류/적재
+  finalize:
+    needs: collect
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 의존성 설치
+        run: npm ci
+      - name: brands.json 받기
+        uses: actions/download-artifact@v4
+        with:
+          name: brands-json
+      - name: 샤드 결과 합치기
+        uses: actions/download-artifact@v4
+        with:
+          pattern: data-shard-*
+          path: data/out
+          merge-multiple: true
+      - name: 분류 재계산
+        run: node src/reclassify.js
+      - name: Supabase에 적재
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "SUPABASE_URL=$SUPABASE_URL" >> .env
+          echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> .env
+          node src/load-supabase.js
