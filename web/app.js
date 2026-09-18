@@ -222,6 +222,17 @@ function buildQuery(offset) {
   return { query, categories, colors, keywords };
 }
 
+// 어떤 이미지는 로딩이 성공도 실패도 아닌 채로 계속 멈춰있는 경우가 있어서(브라우저/네트워크 이슈),
+// 일정 시간 안에 안 끝나면 그냥 빈 박스로 넘어가게 강제 타임아웃을 건다.
+function armImageTimeouts(container) {
+  for (const img of container.querySelectorAll('img:not([data-armed])')) {
+    img.dataset.armed = '1';
+    const t = setTimeout(() => { if (!img.complete) img.remove(); }, 4000);
+    img.addEventListener('load', () => clearTimeout(t), { once: true });
+    img.addEventListener('error', () => clearTimeout(t), { once: true });
+  }
+}
+
 function cardsHtml(data) {
   return data
     .map((g) => {
@@ -288,6 +299,7 @@ async function go() {
 
   if (!data.length) { grid.innerHTML = '<div class="empty">결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
   grid.innerHTML = cardsHtml(data);
+  armImageTimeouts(grid);
   updateMoreButton(data.length);
 }
 
@@ -296,7 +308,9 @@ async function loadMore() {
   const { query } = buildQuery(pageOffset);
   const { data, error } = await query;
   if (error) return;
-  document.getElementById('grid').insertAdjacentHTML('beforeend', cardsHtml(data));
+  const grid = document.getElementById('grid');
+  grid.insertAdjacentHTML('beforeend', cardsHtml(data));
+  armImageTimeouts(grid);
   updateMoreButton(pageOffset + data.length);
 }
 
