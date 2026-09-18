@@ -227,7 +227,7 @@ function buildQuery(offset) {
 function armImageTimeouts(container) {
   for (const img of container.querySelectorAll('img:not([data-armed])')) {
     img.dataset.armed = '1';
-    const t = setTimeout(() => { if (!img.complete) img.remove(); }, 4000);
+    const t = setTimeout(() => { if (!img.complete) img.remove(); }, 8000);
     img.addEventListener('load', () => clearTimeout(t), { once: true });
     img.addEventListener('error', () => clearTimeout(t), { once: true });
   }
@@ -241,7 +241,7 @@ function cardsHtml(data) {
       const tags = (g.categories || []).map((c) => `<span class="tag">${c}</span>`).join('');
       return `<a class="card" href="${url}" target="_blank" rel="noopener">
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
-          ${g.image ? `<img loading="lazy" src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
+          ${g.image ? `<img src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
         </div>
         <div class="body">
