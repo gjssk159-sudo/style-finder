@@ -7,6 +7,9 @@ let currentUser = null;
 let myFolderIds = []; // 내 폴더에 있는 brand_id 목록
 let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
 let currentGender = ''; // '' | 'women' | 'men' | 'unisex' — 원본에 성별 표기가 있는 상품만 걸러짐(대부분은 미상)
+const PAGE_SIZE = 60;
+let pageOffset = 0;
+let lastTotal = 0;
 
 function setGender(g) {
   currentGender = g;
@@ -183,23 +186,7 @@ function qs() {
   return p;
 }
 
-async function go() {
-  const grid = document.getElementById('grid');
-  const meta = document.getElementById('meta');
-  const p = qs();
-  history.replaceState(0, '', p.toString() ? '?' + p.toString() : location.pathname);
-
-  if (!currentUser) {
-    meta.textContent = '';
-    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
-    return;
-  }
-  if (myFolderIds.length === 0) {
-    meta.textContent = '';
-    grid.innerHTML = '<div class="empty">내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
-    return;
-  }
-
+function buildQuery(offset) {
   const raw = document.getElementById('q').value;
   const { categories, colors: colorsFromQuery, keywords } = window.StyleFinderTaxonomy.parseQuery(raw);
   const color = document.getElementById('color').value;
@@ -219,7 +206,7 @@ async function go() {
     .order('offer_count', { ascending: false })
     .order('brand')
     .order('title')
-    .limit(300);
+    .range(offset, offset + PAGE_SIZE - 1);
 
   if (categories.length) query = query.overlaps('categories', categories);
   if (colors.length) query = query.overlaps('colors', colors);
@@ -232,26 +219,18 @@ async function go() {
   for (const kw of keywords) {
     query = query.or(`brand.ilike.%${kw}%,title.ilike.%${kw}%,title_norm.ilike.%${kw}%`);
   }
+  return { query, categories, colors, keywords };
+}
 
-  const { data, error, count } = await query;
-  if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
-
-  const countLabel = count != null && count > data.length ? `${count}개 중 ${data.length}개 표시` : `${data.length}개`;
-  const parts = [countLabel];
-  if (categories.length) parts.push('카테고리: ' + categories.join(', '));
-  if (colors.length) parts.push('색상: ' + colors.join(', '));
-  if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
-  meta.textContent = parts.join('  ·  ');
-
-  if (!data.length) { grid.innerHTML = '<div class="empty">결과 없음</div>'; return; }
-  grid.innerHTML = data
+function cardsHtml(data) {
+  return data
     .map((g) => {
       const price = g.min_price === g.max_price ? won(g.min_price) : won(g.min_price) + ' ~ ' + won(g.max_price);
       const url = (g.offer && g.offer[0] && g.offer[0].url) || '#';
       const tags = (g.categories || []).map((c) => `<span class="tag">${c}</span>`).join('');
       return `<a class="card" href="${url}" target="_blank" rel="noopener">
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
-          <img loading="lazy" src="${g.image || ''}" alt="">
+          ${g.image ? `<img loading="lazy" src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<100)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
         </div>
         <div class="body">
@@ -263,6 +242,62 @@ async function go() {
         </div></a>`;
     })
     .join('');
+}
+
+function updateMoreButton(shownCount) {
+  const wrap = document.getElementById('moreWrap');
+  const btn = document.getElementById('moreBtn');
+  if (lastTotal > shownCount) {
+    wrap.style.display = 'block';
+    btn.textContent = `더 보기 (${shownCount}/${lastTotal})`;
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+async function go() {
+  const grid = document.getElementById('grid');
+  const meta = document.getElementById('meta');
+  const p = qs();
+  history.replaceState(0, '', p.toString() ? '?' + p.toString() : location.pathname);
+  pageOffset = 0;
+
+  if (!currentUser) {
+    meta.textContent = '';
+    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
+    document.getElementById('moreWrap').style.display = 'none';
+    return;
+  }
+  if (myFolderIds.length === 0) {
+    meta.textContent = '';
+    grid.innerHTML = '<div class="empty">내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
+    document.getElementById('moreWrap').style.display = 'none';
+    return;
+  }
+
+  const { query, categories, colors, keywords } = buildQuery(pageOffset);
+  const { data, error, count } = await query;
+  if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
+
+  lastTotal = count || 0;
+  const parts = [`${lastTotal}개`];
+  if (categories.length) parts.push('카테고리: ' + categories.join(', '));
+  if (colors.length) parts.push('색상: ' + colors.join(', '));
+  if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
+  meta.textContent = parts.join('  ·  ');
+
+  if (!data.length) { grid.innerHTML = '<div class="empty">결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
+  grid.innerHTML = cardsHtml(data);
+  updateMoreButton(data.length);
+}
+
+async function loadMore() {
+  pageOffset += PAGE_SIZE;
+  const { query } = buildQuery(pageOffset);
+  const { data, error } = await query;
+  if (error) return;
+  document.getElementById('grid').insertAdjacentHTML('beforeend', cardsHtml(data));
+  updateMoreButton(pageOffset + data.length);
 }
 
 function renderChips() {
