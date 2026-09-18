@@ -11,7 +11,8 @@ createServer(async (req, res) => {
   if (path === '/') path = '/index.html';
   try {
     const body = await readFile(join(root, path));
-    res.writeHead(200, { 'Content-Type': TYPES[extname(path)] || 'application/octet-stream' });
+    // 개발 중 계속 바뀌는 파일이라 브라우저가 예전 버전을 캐시해서 헷갈리는 일 없게 캐시 금지.
+    res.writeHead(200, { 'Content-Type': TYPES[extname(path)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
     res.end(body);
   } catch {
     res.writeHead(404);

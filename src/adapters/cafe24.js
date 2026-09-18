@@ -266,9 +266,12 @@ function parseProductPage(html, url, source) {
   // --- images ---
   let imgList = ld?.image ?? meta('og:image') ?? [];
   if (!Array.isArray(imgList)) imgList = [imgList];
-  const images = [...new Set(imgList.map(fixUrl).filter(Boolean))]
+  let images = [...new Set(imgList.map(fixUrl).filter(Boolean))]
     .filter((u) => !/\/images\/[a-z0-9_-]+\.(png|jpg|svg)$/i.test(u)) // 로고 등 스킨 이미지 제외
     .slice(0, 8);
+  // heritagefloss: 대표(메인) 이미지 슬롯이 사이트 쪽에서 깨져서 50~200px짜리 "이미지 없음"
+  // 자리표시자만 내려줌(실측 확인됨). 실제 사진은 두 번째부터(extra 갤러리)만 정상이라 첫 장을 버림.
+  if (source.id === 'heritagefloss' && images.length > 1) images = images.slice(1);
 
   // --- price ---
   const offers = Array.isArray(ld?.offers) ? ld.offers[0] : ld?.offers;

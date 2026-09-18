@@ -230,7 +230,7 @@ function cardsHtml(data) {
       const tags = (g.categories || []).map((c) => `<span class="tag">${c}</span>`).join('');
       return `<a class="card" href="${url}" target="_blank" rel="noopener">
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
-          ${g.image ? `<img loading="lazy" src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<100)this.remove()">` : ''}
+          ${g.image ? `<img loading="lazy" src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
         </div>
         <div class="body">
