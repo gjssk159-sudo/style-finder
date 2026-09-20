@@ -218,7 +218,14 @@ function buildQuery(offset) {
   if (priceMax) query = query.lte('min_price', Number(priceMax));
   if (inStock) query = query.eq('in_stock', true);
   for (const kw of keywords) {
-    query = query.or(`brand.ilike.%${kw}%,title.ilike.%${kw}%,title_norm.ilike.%${kw}%`);
+    // "mudule"로 쳐도 발음기호 붙은 "müdule"이 나오게 — DB의 ilike는 발음기호를 못 무시하므로
+    // 내 폴더 브랜드 목록에서 발음기호 무시하고 먼저 매칭한 다음 정확한 이름으로 in 필터 추가.
+    const foldedKw = foldAccents(kw);
+    const accentMatches = allBrands.filter((b) => foldAccents(b.name).includes(foldedKw)).map((b) => b.name);
+    const brandInClause = accentMatches.length
+      ? `,brand.in.(${accentMatches.map((n) => `"${n.replace(/"/g, '\\"')}"`).join(',')})`
+      : '';
+    query = query.or(`brand.ilike.%${kw}%,title.ilike.%${kw}%,title_norm.ilike.%${kw}%${brandInClause}`);
   }
   return { query, categories, colors, keywords };
 }
