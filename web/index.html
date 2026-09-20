@@ -1,83 +1,89 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>style-finder</title>
+<title>마이셀렉트샵</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; }
-  :root { --ink: #111; --sub: #767676; --line: #e8e8e8; --bg: #fff; --faint: #f5f5f5; }
+  :root {
+    --ink: #161616; --sub: #8a8a8a; --line: #eaeaea; --bg: #fafaf9; --faint: #f3f2f0;
+    --card-shadow: 0 1px 2px rgba(20,20,20,.04);
+    --hover-shadow: 0 12px 28px rgba(20,20,20,.10);
+  }
   body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
-  header { position: sticky; top: 0; background: #ffffffee; backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 22px 28px 18px; z-index: 10; }
-  h1 { margin: 0 0 16px; font-size: 21px; font-weight: 700; letter-spacing: -0.04em; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
-  h1 .tagline { font-weight: 400; font-size: 12.5px; letter-spacing: 0; color: var(--sub); }
-  h1 button.link { background: none; border: 0; color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 0; }
-  h1 button.link:hover { color: var(--sub); }
-  h1 .hsep { color: var(--sub); font-size: 12.5px; font-weight: 400; }
-  .gender-tabs { display: flex; gap: 18px; margin-bottom: 14px; }
-  .gtab { background: none; border: 0; padding: 0 0 6px; font-size: 13.5px; font-weight: 500; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; }
-  .gtab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  header { position: sticky; top: 0; background: rgba(250,250,249,.82); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: 24px 32px 20px; z-index: 10; }
+  h1 { margin: 0 0 18px; font-size: 22px; font-weight: 800; letter-spacing: -0.045em; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  h1 .tagline { font-weight: 400; font-size: 12px; letter-spacing: -0.01em; color: var(--sub); }
+  h1 button.link { background: none; border: 0; color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 0; opacity: .7; transition: opacity .15s; }
+  h1 button.link:hover { opacity: 1; }
+  h1 .hsep { color: var(--line); font-size: 12.5px; font-weight: 400; }
+  .gender-tabs { display: flex; gap: 22px; margin-bottom: 16px; }
+  .gtab { background: none; border: 0; padding: 0 0 7px; font-size: 13.5px; font-weight: 500; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+  .gtab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
   .gtab:hover { color: var(--ink); }
   .spacer { flex: 1; }
-  #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 8px; }
-  #authArea input { padding: 7px 11px; border: 1px solid var(--line); border-radius: 7px; font-size: 12.5px; width: 170px; font-family: inherit; }
+  #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 9px; }
+  #authArea input { padding: 8px 12px; border: 1px solid var(--line); border-radius: 20px; font-size: 12.5px; width: 170px; font-family: inherit; background: #fff; }
   #authArea input:focus { outline: none; border-color: var(--ink); }
-  #authArea button { padding: 7px 13px; font-size: 12.5px; border-radius: 7px; }
-  .row { display: flex; gap: 8px; max-width: 1040px; flex-wrap: wrap; align-items: center; }
+  #authArea button { padding: 8px 15px; font-size: 12.5px; border-radius: 20px; }
+  .row { display: flex; gap: 9px; max-width: 1080px; flex-wrap: wrap; align-items: center; }
   .search-wrap { position: relative; flex: 1; min-width: 240px; }
-  .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .45; }
-  input[type=text]#q { width: 100%; padding: 12px 14px 12px 38px; border: 1px solid var(--line); border-radius: 9px; font-size: 14.5px; font-family: inherit; background: var(--faint); transition: background .15s, border-color .15s; }
-  input[type=text]#q:focus { outline: none; background: #fff; border-color: var(--ink); }
-  input[type=number] { width: 96px; padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; background: var(--faint); }
+  .search-wrap svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .4; }
+  input[type=text]#q { width: 100%; padding: 13px 16px 13px 40px; border: 1px solid var(--line); border-radius: 11px; font-size: 14.5px; font-family: inherit; background: #fff; box-shadow: var(--card-shadow); transition: box-shadow .15s, border-color .15s; }
+  input[type=text]#q:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(22,22,22,.06); }
+  input[type=number] { width: 98px; padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; }
   .price-range { display: flex; align-items: center; gap: 6px; flex: none; }
-  select { padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; font-family: inherit; background: var(--faint); color: var(--ink); max-width: 150px; }
+  select { padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; color: var(--ink); max-width: 150px; }
   input[type=number]:focus, select:focus { outline: none; border-color: var(--ink); }
-  button { padding: 11px 20px; border: 0; border-radius: 9px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s; }
-  button:hover { opacity: .78; }
+  button { padding: 12px 22px; border: 0; border-radius: 11px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s, transform .1s; }
+  button:hover { opacity: .82; }
+  button:active { transform: scale(.98); }
   label.chk { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; max-width: 1040px; }
-  .chip { padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 12.5px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s; }
-  .chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-  main { padding: 28px; }
-  .meta { max-width: 1280px; margin: 0 auto 18px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; }
-  .grid { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; max-width: 1080px; }
+  .chip { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 12.5px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s, box-shadow .12s; }
+  .chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: var(--hover-shadow); }
+  main { padding: 32px; }
+  .meta { max-width: 1320px; margin: 0 auto 20px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; }
+  .grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(204px, 1fr)); gap: 34px 20px; }
   .card { position: relative; display: flex; flex-direction: column; }
-  .card .imgwrap { position: relative; overflow: hidden; border-radius: 4px; background: var(--faint); aspect-ratio: 3/4; }
-  .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: transform .35s ease; }
-  .card:hover img { transform: scale(1.035); }
-  .badge { position: absolute; top: 9px; left: 9px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em; padding: 3px 8px; border-radius: 4px; }
-  .card .body { padding: 11px 1px 0; display: flex; flex-direction: column; gap: 2px; }
-  .brand { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: .03em; }
+  .card .imgwrap { position: relative; overflow: hidden; border-radius: 10px; background: var(--faint); aspect-ratio: 3/4; box-shadow: var(--card-shadow); transition: box-shadow .25s ease; }
+  .card:hover .imgwrap { box-shadow: var(--hover-shadow); }
+  .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+  .card:hover img { transform: scale(1.045); }
+  .badge { position: absolute; top: 10px; left: 10px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em; padding: 4px 9px; border-radius: 6px; box-shadow: var(--card-shadow); }
+  .card .body { padding: 13px 2px 0; display: flex; flex-direction: column; gap: 3px; }
+  .brand { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
   .title { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .price { font-size: 13.5px; font-weight: 600; margin-top: 3px; letter-spacing: -0.01em; }
-  .tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .tag { font-size: 10.5px; color: var(--sub); background: var(--faint); border-radius: 4px; padding: 2px 7px; }
-  .sold img { opacity: .45; }
-  .multi { color: var(--sub); font-size: 11px; margin-top: 3px; }
+  .price { font-size: 13.5px; font-weight: 700; margin-top: 4px; letter-spacing: -0.01em; }
+  .tags { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 10.5px; color: var(--sub); background: var(--faint); border-radius: 5px; padding: 2px 8px; }
+  .sold img { opacity: .4; }
+  .multi { color: var(--sub); font-size: 11px; margin-top: 4px; }
   a.card { text-decoration: none; color: inherit; }
-  .empty { max-width: 1280px; margin: 80px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13.5px; }
-  dialog { border: 0; border-radius: 14px; padding: 0; width: min(480px, 92vw); max-height: 80vh; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
-  dialog::backdrop { background: rgba(0,0,0,.4); }
-  .dlg-body { padding: 22px; display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto; font-family: inherit; }
-  .dlg-body h2 { margin: 0 0 4px; font-size: 16px; letter-spacing: -0.02em; }
-  .dlg-body input { padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; font-family: inherit; background: var(--faint); }
+  .empty { max-width: 1320px; margin: 90px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13.5px; }
+  dialog { border: 0; border-radius: 18px; padding: 0; width: min(480px, 92vw); max-height: 80vh; box-shadow: 0 24px 70px rgba(20,20,20,.16); }
+  dialog::backdrop { background: rgba(15,15,15,.45); backdrop-filter: blur(2px); }
+  .dlg-body { padding: 24px; display: flex; flex-direction: column; gap: 11px; max-height: 80vh; overflow-y: auto; font-family: inherit; }
+  .dlg-body h2 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.02em; font-weight: 700; }
+  .dlg-body input { padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; font-size: 14px; font-family: inherit; background: var(--faint); }
   .dlg-body input:focus { outline: none; border-color: var(--ink); background: #fff; }
-  .dlg-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+  .dlg-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
   .dlg-row button.secondary { background: var(--faint); color: var(--ink); }
   .dlg-row button.secondary:hover { opacity: 1; background: var(--line); }
-  .more-wrap { max-width: 1280px; margin: 30px auto 0; text-align: center; }
-  .more-wrap button.secondary { background: var(--faint); color: var(--ink); padding: 12px 28px; }
-  .more-wrap button.secondary:hover { opacity: 1; background: var(--line); }
-  #addResult, #folderMsg { font-size: 12.5px; padding: 9px 11px; border-radius: 8px; display: none; }
+  .more-wrap { max-width: 1320px; margin: 36px auto 0; text-align: center; }
+  .more-wrap button.secondary { background: #fff; color: var(--ink); padding: 13px 30px; border: 1px solid var(--line); box-shadow: var(--card-shadow); }
+  .more-wrap button.secondary:hover { opacity: 1; background: var(--faint); }
+  #addResult, #folderMsg { font-size: 12.5px; padding: 10px 12px; border-radius: 9px; display: none; }
   #addResult.ok, #folderMsg.ok { display: block; background: #eef7ee; color: #2a6b2a; }
   #addResult.warn { display: block; background: #fdf3e7; color: #92400e; }
-  .folderList { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; padding: 6px; }
-  .folderRow { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 7px; font-size: 13px; }
+  .folderList { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 11px; padding: 6px; }
+  .folderRow { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 13px; }
   .folderRow:hover { background: var(--faint); }
   .folderRow .fname { flex: 1; }
   .folderRow .fbrand { color: #a1a1aa; font-size: 11px; }
 </style></head><body>
 <header>
-  <h1>style-finder <span class="tagline">내 폴더 브랜드에서 검색</span>
+  <h1>마이셀렉트샵 <span class="tagline">내 폴더 브랜드에서 검색</span>
     <button class="link" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
     <span class="hsep">+</span>
     <button class="link" onclick="addDialog.showModal()">브랜드 등록</button>
