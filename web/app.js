@@ -202,8 +202,6 @@ function buildQuery(offset) {
     // offer!inner: 판매 링크(offer)가 하나도 없는 유령 상품은 아예 결과에서 제외 (클릭해도 갈 곳 없는 카드 방지)
     .select('id,brand,title,title_norm,categories,colors,sizes,min_price,max_price,image,in_stock,offer_count,offer!inner(source_id,url,price,in_stock)', { count: 'exact' })
     .in('brand_id', myFolderIds)
-    .order('in_stock', { ascending: false })
-    .order('offer_count', { ascending: false })
     .order('brand')
     .order('title')
     .range(offset, offset + PAGE_SIZE - 1);
