@@ -78,10 +78,16 @@ async function extractCards(page) {
       .map((div) => {
         const a = div.querySelector('a[href*="/products/"], a[href*="/product/"]');
         if (!a) return null;
+        // 일부 테마는 <img>가 아니라 background-image div(imgsrc 속성 또는 style)로 썸네일을 넣음
+        const thumb = div.querySelector('.thumb.img, [imgsrc]');
+        const bgImg = thumb
+          ? thumb.getAttribute('imgsrc') ||
+            thumb.style.backgroundImage?.match(/url\(["']?(.*?)["']?\)/)?.[1]
+          : null;
         return {
           href: a.getAttribute('href'),
           text: div.innerText || '',
-          img: div.querySelector('img')?.getAttribute('src') || null,
+          img: div.querySelector('img')?.getAttribute('src') || bgImg || null,
         };
       })
       .filter(Boolean)

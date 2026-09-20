@@ -485,13 +485,15 @@
       "type": "brand",
       "instagram": "jabberwockyconversation",
       "shopUrl": "https://www.jabberwocky.kr",
-      "platform": "cafe24",
+      "platform": "sixshop",
       "discovery": {
-        "note": "Cafe24 최신(PLUS) 테마로 추정 — 0건 수집됨. 헤드리스 브라우저 필요.",
-        "method": "cafe24_categories"
+        "method": "sixshop_categories",
+        "categoryPaths": [
+          "/shop"
+        ]
       },
-      "status": "needs_review",
-      "notes": "chemehc 방식(GNB만 브라우저)으로 재확인했으나 이쪽은 nav 자체가 완전 커스텀 슬러그(/per, /mer, /mudule0 등)라 cate_no/category 패턴이 아예 없음 — 공용 규칙으로 안 풀리고 사이트별 수작업 매핑 필요. 우선순위 낮음."
+      "status": "ready",
+      "notes": "sixshop 플랫폼(자바워키). /shop 1페이지(12개) 확인 — 2/3페이지는 버튼 클릭식 페이지네이션이라 아직 못 가져옴(추가 작업 필요)."
     },
     {
       "id": "jcho",
@@ -799,13 +801,15 @@
       "type": "brand",
       "instagram": "polyteru_",
       "shopUrl": "https://www.polyteru-store.com",
-      "platform": "cafe24",
+      "platform": "sixshop",
       "discovery": {
-        "note": "Cafe24 최신(PLUS) 테마 — 카테고리 메뉴가 JS로 렌더링돼서 정적 HTML 파싱으로 못 찾음. 헤드리스 브라우저 필요(아임웹/식스샵과 동일 부류).",
-        "method": "cafe24_categories"
+        "method": "sixshop_categories",
+        "categoryPaths": [
+          "/items-all"
+        ]
       },
-      "status": "needs_review",
-      "notes": "chemehc 방식(GNB만 브라우저)으로 재확인했으나 이쪽은 nav 자체가 완전 커스텀 슬러그(/per, /mer, /mudule0 등)라 cate_no/category 패턴이 아예 없음 — 공용 규칙으로 안 풀리고 사이트별 수작업 매핑 필요. 우선순위 낮음."
+      "status": "ready",
+      "notes": "sixshop 플랫폼(폴리테루). /items-all 한 페이지에서 전체 상품(48개+, 페이지네이션 있음) 확인."
     },
     {
       "id": "rakelack",
