@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-09-18",
+  "updated": "2026-09-20",
   "note": "Supabase brands 테이블에서 동기화됨 (src/sync-brands-from-supabase.js). 직접 수정하지 말 것 — Supabase가 원본.",
   "sources": [
     {
@@ -646,13 +646,17 @@
       "type": "brand",
       "instagram": "mudule.official",
       "shopUrl": "https://www.mudule.com",
-      "platform": "cafe24",
+      "platform": "sixshop",
       "discovery": {
-        "note": "Cafe24 최신(PLUS) 테마 — 상품/카테고리 정보가 JS로 렌더링돼서 정적 HTML 파싱으로 못 찾음(0건 수집됨). 헤드리스 브라우저 필요.",
-        "method": "cafe24_categories"
+        "method": "sixshop_categories",
+        "categoryPaths": [
+          "/per",
+          "/mer",
+          "/mudule0"
+        ]
       },
-      "status": "needs_review",
-      "notes": "chemehc 방식(GNB만 브라우저)으로 재확인했으나 이쪽은 nav 자체가 완전 커스텀 슬러그(/per, /mer, /mudule0 등)라 cate_no/category 패턴이 아예 없음 — 공용 규칙으로 안 풀리고 사이트별 수작업 매핑 필요. 우선순위 낮음."
+      "status": "ready",
+      "notes": "sixshop 플랫폼(mudule.com은 커스텀 테마 + 커스텀 슬러그 카테고리). per/mer/mudule0 3개 카테고리에서 총 23개 상품 확인."
     },
     {
       "id": "nocontent",

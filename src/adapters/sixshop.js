@@ -6,15 +6,22 @@
 //  - 상품 카드: div.product-item 안에 a.product-link(href="/products/{id}") + <img> + 텍스트
 //    텍스트 예: "SOLD OUT\n\n[9/21] Big Pocket Bag, Charcoal\n\nKRW 73,000"
 //              "Creased Scarf, Sand\n\n10%\nKRW 35,000\nKRW 31,500" (할인가는 마지막 숫자)
+//
+// mudule.com처럼 테마를 커스터마이징한 sixshop 스토어는 카테고리 경로가 CUID가 아니라 커스텀
+// 슬러그(/per, /mer)이고 상품 링크도 /products/가 아니라 /product/(단수)라서 위 패턴만으론 못 찾음
+// -> brands.json의 discovery.categoryPaths로 카테고리 목록을 직접 지정할 수 있게 함.
 
 import { renderPage } from '../lib/browser.js';
 
 const CATEGORY_RE = /^\/c[a-z0-9]{20,}$/i;
+const PRODUCT_LINK_RE = /\/products?\/([a-z0-9_-]+)/i;
 
 export async function collectSixshop(source, { limit = Infinity } = {}) {
   const base = source.shopUrl.replace(/\/$/, '');
 
-  const categoryPaths = await discoverCategories(base);
+  const categoryPaths = source.discovery?.categoryPaths?.length
+    ? source.discovery.categoryPaths
+    : await discoverCategories(base);
   if (categoryPaths.length === 0) return [];
 
   const items = new Map(); // product id -> item
@@ -28,7 +35,7 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
       const url = `${base}${catPath}?page=${page}`;
       let cards = [];
       try {
-        const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .empty' });
+        const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .shopProductWrapper, .empty' });
         cards = await extractCards(pw);
         await context.close();
       } catch (err) {
@@ -38,7 +45,7 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
 
       let found = 0;
       for (const c of cards) {
-        const id = c.href.match(/\/products\/([a-z0-9]+)/i)?.[1];
+        const id = c.href.match(PRODUCT_LINK_RE)?.[1];
         if (!id || items.has(id)) continue;
         found++;
         items.set(id, toItem(c, id, base, source));
@@ -66,10 +73,10 @@ async function discoverCategories(base) {
 }
 
 async function extractCards(page) {
-  return page.$$eval('.product-item', (divs) =>
+  return page.$$eval('.product-item, .shopProductWrapper', (divs) =>
     divs
       .map((div) => {
-        const a = div.querySelector('a[href*="/products/"]');
+        const a = div.querySelector('a[href*="/products/"], a[href*="/product/"]');
         if (!a) return null;
         return {
           href: a.getAttribute('href'),
