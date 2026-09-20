@@ -1,7 +1,10 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>마이셀렉트샵</title>
+<title>MY SELECT SHOP</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; }
@@ -11,21 +14,26 @@
     --hover-shadow: 0 12px 28px rgba(20,20,20,.10);
   }
   body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
-  header { position: sticky; top: 0; background: rgba(250,250,249,.82); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: 24px 32px 20px; z-index: 10; }
-  h1 { margin: 0 0 18px; font-size: 22px; font-weight: 800; letter-spacing: -0.045em; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  h1 .tagline { font-weight: 400; font-size: 12px; letter-spacing: -0.01em; color: var(--sub); }
-  h1 button.link { background: none; border: 0; color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 0; opacity: .7; transition: opacity .15s; }
-  h1 button.link:hover { opacity: 1; }
-  h1 .hsep { color: var(--line); font-size: 12.5px; font-weight: 400; }
+  header { position: sticky; top: 0; background: rgba(250,250,249,.82); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: 22px 32px 20px; z-index: 10; }
+  .topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .logo { margin: 0; font-family: 'Fraunces', serif; font-size: 25px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+  .spacer { flex: 1; }
+  .nav-links { display: flex; gap: 8px; margin-bottom: 18px; }
+  .nav-links button { background: #fff; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 8px 15px; border-radius: 20px; transition: border-color .15s, background .15s; }
+  .nav-links button:hover { border-color: var(--ink); background: var(--faint); }
+  .nav-links button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .nav-links button.primary:hover { opacity: .85; background: var(--ink); }
   .gender-tabs { display: flex; gap: 22px; margin-bottom: 16px; }
   .gtab { background: none; border: 0; padding: 0 0 7px; font-size: 13.5px; font-weight: 500; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
   .gtab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
   .gtab:hover { color: var(--ink); }
-  .spacer { flex: 1; }
-  #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 9px; }
+  #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 10px; }
   #authArea input { padding: 8px 12px; border: 1px solid var(--line); border-radius: 20px; font-size: 12.5px; width: 170px; font-family: inherit; background: #fff; }
   #authArea input:focus { outline: none; border-color: var(--ink); }
   #authArea button { padding: 8px 15px; font-size: 12.5px; border-radius: 20px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; cursor: default; }
+  button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  button.linklike:hover { color: var(--ink); }
   .row { display: flex; gap: 9px; max-width: 1080px; flex-wrap: wrap; align-items: center; }
   .search-wrap { position: relative; flex: 1; min-width: 240px; }
   .search-wrap svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .4; }
@@ -33,6 +41,7 @@
   input[type=text]#q:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(22,22,22,.06); }
   input[type=number] { width: 98px; padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; }
   .price-range { display: flex; align-items: center; gap: 6px; flex: none; }
+  .hsep { color: var(--sub); font-size: 12.5px; }
   select { padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; color: var(--ink); max-width: 150px; }
   input[type=number]:focus, select:focus { outline: none; border-color: var(--ink); }
   button { padding: 12px 22px; border: 0; border-radius: 11px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s, transform .1s; }
@@ -83,13 +92,15 @@
   .folderRow .fbrand { color: #a1a1aa; font-size: 11px; }
 </style></head><body>
 <header>
-  <h1>마이셀렉트샵 <span class="tagline">내 폴더 브랜드에서 검색</span>
-    <button class="link" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
-    <span class="hsep">+</span>
-    <button class="link" onclick="addDialog.showModal()">브랜드 등록</button>
+  <div class="topbar">
+    <p class="logo">MY SELECT SHOP</p>
     <span class="spacer"></span>
     <span id="authArea"></span>
-  </h1>
+  </div>
+  <div class="nav-links">
+    <button onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
+    <button class="primary" onclick="addDialog.showModal()">+ 브랜드 등록</button>
+  </div>
   <div class="gender-tabs" id="genderTabs">
     <button class="gtab active" data-gender="" onclick="setGender('')">전체</button>
     <button class="gtab" data-gender="women" onclick="setGender('women')">여성</button>

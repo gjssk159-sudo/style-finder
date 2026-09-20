@@ -28,7 +28,10 @@ const won = (n) => (n == null ? '' : '₩' + n.toLocaleString('ko-KR'));
 function renderAuthArea() {
   const el = document.getElementById('authArea');
   if (currentUser) {
-    el.innerHTML = `${currentUser.email} · <button class="secondary" onclick="signOut()">로그아웃</button>`;
+    const initial = (currentUser.email || '?')[0].toUpperCase();
+    el.innerHTML = `
+      <span class="avatar" title="${currentUser.email}">${initial}</span>
+      <button class="linklike" onclick="signOut()">로그아웃</button>`;
   } else {
     el.innerHTML = `
       <input type="email" id="loginEmail" placeholder="이메일로 로그인">
