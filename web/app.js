@@ -11,6 +11,9 @@ const PAGE_SIZE = 60;
 let pageOffset = 0;
 let lastTotal = 0;
 
+// "müdule"/"jabbérwocky"처럼 발음기호 들어간 브랜드명을 "mudule"/"jabberwocky"로 쳐도 찾게.
+const foldAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
 function setGender(g) {
   currentGender = g;
   for (const btn of document.querySelectorAll('#genderTabs .gtab')) {
@@ -90,13 +93,13 @@ function renderBrandFilter() {
 }
 
 function renderFolderList() {
-  const q = (document.getElementById('folderSearch').value || '').toLowerCase();
+  const q = foldAccents(document.getElementById('folderSearch').value || '');
   const list = document.getElementById('folderList');
   if (!currentUser) {
     list.innerHTML = '<div style="padding:12px;color:#a1a1aa">로그인하면 폴더를 만들 수 있어요.</div>';
     return;
   }
-  const filtered = allBrands.filter((b) => b.name.toLowerCase().includes(q));
+  const filtered = allBrands.filter((b) => foldAccents(b.name).includes(q));
   list.innerHTML = filtered
     .map((b) => {
       const checked = myFolderIds.includes(b.id) ? 'checked' : '';
