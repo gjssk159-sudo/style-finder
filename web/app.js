@@ -17,6 +17,14 @@ let lastTotal = 0;
 // "müdule"/"jabbérwocky"처럼 발음기호 들어간 브랜드명을 "mudule"/"jabberwocky"로 쳐도 찾게.
 const foldAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
+// 브랜드명 abc 순 정렬, 숫자로 시작하는 브랜드는 맨 아래로.
+function compareBrandNames(a, b) {
+  const ad = /^[0-9]/.test(a);
+  const bd = /^[0-9]/.test(b);
+  if (ad !== bd) return ad ? 1 : -1;
+  return a.localeCompare(b, 'en', { sensitivity: 'base' });
+}
+
 // 카테고리 태그마다 같은 이름은 항상 같은 색이 나오도록(리로드해도 안 바뀌게) 해시로 고정 배정.
 const TAG_PALETTE = [
   { bg: '#fdece3', fg: '#a8532f' },
@@ -405,10 +413,9 @@ async function loadAllBrands() {
   const { data, error } = await sb
     .from('brands')
     .select('id,name,type,status,added_by')
-    .neq('status', 'excluded')
-    .order('name');
+    .neq('status', 'excluded');
   if (error) { console.error(error); return; }
-  allBrands = data;
+  allBrands = data.sort((a, b) => compareBrandNames(a.name, b.name));
   renderBrandFilter();
 }
 
@@ -426,7 +433,7 @@ function renderBrandFilter() {
   const current = sel.value;
   sel.innerHTML = '<option value="">브랜드 전체</option>';
   // 검색 필터용 드롭다운은 실제 상품이 있는 ready 브랜드만
-  const mine = allBrands.filter((b) => b.status === 'ready' && myFolderIds.includes(b.id)).sort((a, b) => a.name.localeCompare(b.name));
+  const mine = allBrands.filter((b) => b.status === 'ready' && myFolderIds.includes(b.id)).sort((a, b) => compareBrandNames(a.name, b.name));
   for (const b of mine) sel.insertAdjacentHTML('beforeend', `<option value="${b.name}">${b.name}</option>`);
   sel.value = current;
 }
