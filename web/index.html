@@ -14,7 +14,7 @@
     --card-shadow: 0 1px 2px rgba(20,20,20,.04);
     --hover-shadow: 0 12px 28px rgba(20,20,20,.10);
   }
-  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: linear-gradient(180deg, #fdfbfa 0%, var(--bg) 420px); -webkit-font-smoothing: antialiased; }
+  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: linear-gradient(180deg, #fdfbfa 0%, var(--bg) 420px); -webkit-font-smoothing: antialiased; word-break: keep-all; }
   header { position: sticky; top: 0; background: rgba(250,250,249,.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: 18px 32px 16px; z-index: 10; }
   header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--accent), transparent 55%); opacity: .4; }
   .header-inner { max-width: 1320px; margin: 0 auto; }
@@ -196,7 +196,7 @@
       <p style="margin:14px 0 3px;font-weight:700">1. 로그인 / 회원가입</p>
       <p style="margin:0;color:#52525b">이메일 + 비밀번호로 가입하면 바로 사용할 수 있어요. 이메일 확인 절차 없이 바로 로그인돼요.</p>
       <p style="margin:14px 0 3px;font-weight:700">2. 브랜드 등록</p>
-      <p style="margin:0;color:#52525b">"+ 브랜드 등록"에서 쇼핑몰 URL만 넣으면 자동으로 판별해서 등록돼요. 이미 등록된 브랜드면 바로 내 폴더에 추가돼요.</p>
+      <p style="margin:0;color:#52525b">"+ 브랜드 등록"에서 쇼핑몰 URL만 넣으면 자동으로 판별해서 등록돼요.</p>
       <p style="margin:14px 0 3px;font-weight:700">3. 내 폴더 꾸리기</p>
       <p style="margin:0;color:#52525b">"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있고, "전체 선택"으로 검색된 브랜드를 한 번에 담을 수도 있어요.</p>
       <p style="margin:14px 0 3px;font-weight:700">4. 검색하기</p>
@@ -215,7 +215,7 @@
 <dialog id="addDialog">
   <div class="dlg-body">
     <h2>브랜드 등록</h2>
-    <p style="font-size:13px;color:#71717a;margin:0">이미 등록된 브랜드면 바로 내 폴더에 추가되고, 새 브랜드면 자동으로 판별해서 등록 + 추가돼요.</p>
+    <p style="font-size:13px;color:#71717a;margin:0">자동으로 판별해서 등록 + 내 폴더에 추가돼요.</p>
     <input type="text" id="addUrl" placeholder="쇼핑몰 URL (예: brand.com)">
     <input type="text" id="addName" placeholder="표시 이름 (선택)">
     <input type="text" id="addInstagram" placeholder="인스타 핸들 (선택)">
