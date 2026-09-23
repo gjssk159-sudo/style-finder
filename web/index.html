@@ -118,6 +118,7 @@
       <span id="authArea"></span>
     </div>
     <div class="nav-links">
+      <button onclick="aboutDialog.showModal()">이용 안내</button>
       <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
       <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">+ 브랜드 등록</button>
     </div>
@@ -125,7 +126,6 @@
       <button class="gtab active" data-gender="" onclick="setGender('')">전체</button>
       <button class="gtab" data-gender="women" onclick="setGender('women')">여성</button>
       <button class="gtab" data-gender="men" onclick="setGender('men')">남성</button>
-      <button class="gtab" data-gender="unisex" onclick="setGender('unisex')">공용</button>
     </div>
     <div class="row">
       <div class="search-wrap">
@@ -185,6 +185,30 @@
       <button id="authSubmitBtn" onclick="submitAuth()">로그인</button>
     </div>
     <p id="authToggleText" style="font-size:12.5px;color:var(--sub);text-align:center;margin:2px 0 0">계정이 없으신가요? <button class="linklike" onclick="toggleAuthMode()">회원가입</button></p>
+  </div>
+</dialog>
+
+<dialog id="aboutDialog">
+  <div class="dlg-body">
+    <h2>MY SELECT SHOP 이용 안내</h2>
+    <p style="font-size:13px;color:#71717a;margin:0">광고 없이, 내가 좋아하는 인디 브랜드들만 모아서 한 번에 검색하는 사이트예요.</p>
+    <div style="font-size:13.5px;line-height:1.75;color:var(--ink)">
+      <p style="margin:14px 0 3px;font-weight:700">1. 로그인 / 회원가입</p>
+      <p style="margin:0;color:#52525b">이메일 + 비밀번호로 가입하면 바로 사용할 수 있어요. 이메일 확인 절차 없이 바로 로그인돼요.</p>
+      <p style="margin:14px 0 3px;font-weight:700">2. 브랜드 등록</p>
+      <p style="margin:0;color:#52525b">"+ 브랜드 등록"에서 쇼핑몰 URL만 넣으면 자동으로 판별해서 등록돼요. 이미 등록된 브랜드면 바로 내 폴더에 추가돼요.</p>
+      <p style="margin:14px 0 3px;font-weight:700">3. 내 폴더 꾸리기</p>
+      <p style="margin:0;color:#52525b">"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있고, "전체 선택"으로 검색된 브랜드를 한 번에 담을 수도 있어요.</p>
+      <p style="margin:14px 0 3px;font-weight:700">4. 검색하기</p>
+      <p style="margin:0;color:#52525b">내 폴더에 담은 브랜드 안에서만 검색돼요. "블랙 후드티"처럼 자연스럽게 검색하면 색상·카테고리를 알아서 인식해요.</p>
+      <p style="margin:14px 0 3px;font-weight:700">5. 폴더 공유하기</p>
+      <p style="margin:0;color:#52525b">폴더의 "공유 링크 복사"로 링크를 만들면, 로그인하지 않은 사람도 그 폴더를 볼 수 있어요.</p>
+      <p style="margin:14px 0 3px;font-weight:700">6. 자동 업데이트</p>
+      <p style="margin:0;color:#52525b">등록된 브랜드의 상품은 매일 새벽 자동으로 다시 수집돼서 품절·신상품이 반영돼요.</p>
+    </div>
+    <div class="dlg-row">
+      <button class="secondary" onclick="aboutDialog.close()">닫기</button>
+    </div>
   </div>
 </dialog>
 
