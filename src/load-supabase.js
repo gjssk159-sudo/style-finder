@@ -147,12 +147,19 @@ async function main() {
   const idMap = new Map(); // "brand_id||title_norm" -> group id
   for (const row of upserted) idMap.set(`${row.brand_id}||${row.title_norm}`, row.id);
 
+  // 같은 (source_id, external_id)가 두 번 이상 나오면(같은 상품이 카테고리 페이지 여러 곳에 걸쳐
+  // 중복 수집된 경우 등) 한 배치 안에서 "ON CONFLICT DO UPDATE cannot affect row a second time" 에러가 남 —
+  // product_group의 mergeByBrandTitle과 같은 이유로, 업로드 전에 먼저 하나로 합침.
   const offerRows = [];
+  const offerKeys = new Set();
   for (const g of groups) {
     if (!g.brand_id) continue;
     const groupId = idMap.get(`${g.brand_id}||${g.title_norm}`);
     if (!groupId) continue;
     for (const o of g.offers) {
+      const key = `${o.source_id}||${o.external_id}`;
+      if (offerKeys.has(key)) continue;
+      offerKeys.add(key);
       offerRows.push({
         group_id: groupId,
         source_id: o.source_id,
