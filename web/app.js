@@ -4,15 +4,107 @@
 
 const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 let currentUser = null;
-let myFolderIds = []; // 내 폴더에 있는 brand_id 목록
+let myFolderIds = []; // 현재 보고 있는 폴더(내 폴더 또는 공유받은 폴더)에 있는 brand_id 목록
 let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
 let currentGender = ''; // '' | 'women' | 'men' | 'unisex' — 원본에 성별 표기가 있는 상품만 걸러짐(대부분은 미상)
+let myFolders = [];        // 로그인한 사람의 폴더 목록 [{id,name,share_id}] (최대 3개)
+let currentFolderId = null; // 지금 검색에 쓰이는 폴더 id
+let sharedView = null;      // 공유 링크로 남의 폴더를 보는 중이면 {id,name,share_id,user_id}
 const PAGE_SIZE = 60;
 let pageOffset = 0;
 let lastTotal = 0;
 
 // "müdule"/"jabbérwocky"처럼 발음기호 들어간 브랜드명을 "mudule"/"jabberwocky"로 쳐도 찾게.
 const foldAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+// 카테고리 태그마다 같은 이름은 항상 같은 색이 나오도록(리로드해도 안 바뀌게) 해시로 고정 배정.
+const TAG_PALETTE = [
+  { bg: '#fdece3', fg: '#a8532f' },
+  { bg: '#eaf0fb', fg: '#3b5998' },
+  { bg: '#eef7ee', fg: '#3a7d3a' },
+  { bg: '#f7eefb', fg: '#7c4a9e' },
+  { bg: '#fdf6e0', fg: '#93720f' },
+  { bg: '#fdeef1', fg: '#a83a5c' },
+];
+function tagColor(label) {
+  let h = 0;
+  for (let i = 0; i < label.length; i++) h = (h * 31 + label.charCodeAt(i)) >>> 0;
+  return TAG_PALETTE[h % TAG_PALETTE.length];
+}
+
+// window.prompt()/confirm()은 카카오톡·네이버 인앱 브라우저 등 일부 환경에서 아예 안 뜨는 경우가 있어서,
+// 폴더 생성/이름변경/삭제처럼 실제 입력이 필요한 곳은 직접 만든 dialog 기반 헬퍼로 대체.
+function askText(title, defaultValue) {
+  return new Promise((resolve) => {
+    const dlg = document.getElementById('promptDialog');
+    document.getElementById('promptTitle').textContent = title;
+    const input = document.getElementById('promptInput');
+    input.value = defaultValue || '';
+    const okBtn = document.getElementById('promptOkBtn');
+    const cancelBtn = document.getElementById('promptCancelBtn');
+    const finish = (value) => {
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      input.removeEventListener('keydown', onKeydown);
+      dlg.removeEventListener('cancel', onCancel);
+      dlg.close();
+      resolve(value);
+    };
+    const onOk = () => finish(input.value.trim());
+    const onCancel = () => finish(null);
+    const onKeydown = (e) => { if (e.key === 'Enter') onOk(); };
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    input.addEventListener('keydown', onKeydown);
+    dlg.addEventListener('cancel', onCancel);
+    dlg.showModal();
+    input.focus();
+    input.select();
+  });
+}
+
+function askConfirm(message) {
+  return new Promise((resolve) => {
+    const dlg = document.getElementById('confirmDialog');
+    document.getElementById('confirmMessage').textContent = message;
+    const okBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    const finish = (value) => {
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      dlg.removeEventListener('cancel', onCancel);
+      dlg.close();
+      resolve(value);
+    };
+    const onOk = () => finish(true);
+    const onCancel = () => finish(false);
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    dlg.addEventListener('cancel', onCancel);
+    dlg.showModal();
+  });
+}
+
+function askAlert(message) {
+  return new Promise((resolve) => {
+    const dlg = document.getElementById('confirmDialog');
+    document.getElementById('confirmMessage').textContent = message;
+    const okBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    cancelBtn.style.display = 'none';
+    const finish = () => {
+      okBtn.removeEventListener('click', onOk);
+      dlg.removeEventListener('cancel', onOk);
+      cancelBtn.style.display = '';
+      dlg.close();
+      resolve();
+    };
+    const onOk = () => finish();
+    okBtn.addEventListener('click', onOk);
+    dlg.addEventListener('cancel', onOk);
+    dlg.showModal();
+  });
+}
 
 function setGender(g) {
   currentGender = g;
@@ -24,7 +116,7 @@ function setGender(g) {
 
 const won = (n) => (n == null ? '' : '₩' + n.toLocaleString('ko-KR'));
 
-// ---------------- 인증 (매직링크: 비밀번호 없이 이메일로 로그인) ----------------
+// ---------------- 인증 (이메일 + 비밀번호) ----------------
 function renderAuthArea() {
   const el = document.getElementById('authArea');
   if (currentUser) {
@@ -33,43 +125,278 @@ function renderAuthArea() {
       <span class="avatar" title="${currentUser.email}">${initial}</span>
       <button class="linklike" onclick="signOut()">로그아웃</button>`;
   } else {
-    el.innerHTML = `
-      <input type="email" id="loginEmail" placeholder="이메일로 로그인">
-      <button onclick="sendMagicLink()">링크 받기</button>
-      <span id="loginMsg" style="margin-left:6px"></span>`;
+    el.innerHTML = '<button onclick="openAuthDialog()">로그인</button>';
   }
 }
 
-async function sendMagicLink() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const msg = document.getElementById('loginMsg');
-  if (!email) return;
+let authMode = 'signin'; // 'signin' | 'signup'
+
+function resetAuthMsg() {
+  const msg = document.getElementById('authMsg');
+  msg.className = '';
+  msg.style.display = 'none';
+  msg.textContent = '';
+}
+
+function openAuthDialog() {
+  authMode = 'signin';
+  updateAuthDialogMode();
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+  resetAuthMsg();
+  authDialog.showModal();
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  resetAuthMsg();
+  updateAuthDialogMode();
+}
+
+function updateAuthDialogMode() {
+  document.getElementById('authDialogTitle').textContent = authMode === 'signin' ? '로그인' : '회원가입';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'signin' ? '로그인' : '회원가입';
+  document.getElementById('authForgotLink').style.display = authMode === 'signin' ? '' : 'none';
+  document.getElementById('authToggleText').innerHTML = authMode === 'signin'
+    ? '계정이 없으신가요? <button class="linklike" onclick="toggleAuthMode()">회원가입</button>'
+    : '이미 계정이 있으신가요? <button class="linklike" onclick="toggleAuthMode()">로그인</button>';
+}
+
+async function requestPasswordReset() {
+  const email = document.getElementById('authEmail').value.trim();
+  const msg = document.getElementById('authMsg');
+  if (!email) { msg.className = 'warn'; msg.style.display = 'block'; msg.textContent = '이메일을 먼저 입력해주세요.'; return; }
+  msg.className = '';
+  msg.style.display = 'block';
   msg.textContent = '전송 중…';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
-  msg.textContent = error ? '오류: ' + error.message : '메일함에서 로그인 링크를 확인하세요.';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) { msg.className = 'warn'; msg.textContent = error.message; return; }
+  msg.className = 'ok';
+  msg.textContent = '비밀번호 재설정 메일을 보냈어요. 메일함을 확인해주세요.';
+}
+
+function authErrorMessage(error, mode) {
+  const m = error.message || '';
+  if (/invalid login credentials/i.test(m)) return '이메일 또는 비밀번호가 올바르지 않아요.';
+  if (/email not confirmed/i.test(m)) return '이메일 인증이 필요해요. 메일함을 확인해주세요.';
+  if (mode === 'signup' && /already registered|already been registered|user already exists/i.test(m)) return '이미 가입된 이메일이에요. 로그인해주세요.';
+  if (/password should be at least/i.test(m)) return '비밀번호는 6자 이상이어야 해요.';
+  return m;
+}
+
+async function submitAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const msg = document.getElementById('authMsg');
+  if (!email || !password) { msg.className = 'warn'; msg.textContent = '이메일과 비밀번호를 입력해주세요.'; return; }
+
+  msg.className = '';
+  msg.style.display = 'block';
+  msg.textContent = '처리 중…';
+  if (authMode === 'signin') {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { msg.className = 'warn'; msg.textContent = authErrorMessage(error, 'signin'); return; }
+    authDialog.close();
+  } else {
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) { msg.className = 'warn'; msg.textContent = authErrorMessage(error, 'signup'); return; }
+    if (data.session) {
+      authDialog.close();
+    } else {
+      msg.className = 'ok';
+      msg.textContent = '가입 확인 메일을 보냈어요. 메일함에서 확인 후 로그인해주세요.';
+    }
+  }
 }
 
 async function signOut() {
   await sb.auth.signOut();
 }
 
-sb.auth.onAuthStateChange(async (_event, session) => {
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    const newPassword = prompt('새 비밀번호를 입력해주세요 (6자 이상)');
+    if (newPassword) {
+      const { error } = await sb.auth.updateUser({ password: newPassword });
+      alert(error ? '오류: ' + error.message : '비밀번호가 변경됐어요.');
+    }
+  }
   currentUser = session?.user || null;
   renderAuthArea();
-  if (currentUser) {
-    await loadMyFolder();
-    await loadAllBrands();
-  } else {
-    myFolderIds = [];
+  if (!sharedView) {
+    if (currentUser) {
+      await loadMyFolders();
+      await loadAllBrands();
+    } else {
+      myFolders = [];
+      currentFolderId = null;
+      myFolderIds = [];
+    }
+    renderFolderTabs();
+    updateFolderNavLabel();
+    go();
   }
-  go();
 });
 
-// ---------------- 내 폴더 ----------------
-async function loadMyFolder() {
-  const { data, error } = await sb.from('user_brands').select('brand_id');
+// ---------------- 폴더 (사람마다 최대 3개, 공유 가능) ----------------
+async function loadMyFolders() {
+  const { data, error } = await sb.from('folders').select('id,name,share_id').eq('user_id', currentUser.id).order('created_at');
+  if (error) { console.error(error); return; }
+  myFolders = data;
+  if (myFolders.length === 0) { await createFolder(true); return; }
+  if (!currentFolderId || !myFolders.some((f) => f.id === currentFolderId)) currentFolderId = myFolders[0].id;
+  await loadFolderBrandIds();
+}
+
+async function loadFolderBrandIds() {
+  const { data, error } = await sb.from('user_brands').select('brand_id').eq('folder_id', currentFolderId);
   if (error) { console.error(error); return; }
   myFolderIds = data.map((r) => r.brand_id);
+}
+
+async function createFolder(silent) {
+  if (myFolders.length >= 3) { await askAlert('폴더는 최대 3개까지 만들 수 있어요.'); return; }
+  let name = '내 폴더';
+  if (!silent) {
+    name = await askText('새 폴더 이름', `폴더 ${myFolders.length + 1}`);
+    if (!name) return;
+  }
+  const { data, error } = await sb.from('folders').insert({ user_id: currentUser.id, name }).select('id,name,share_id').single();
+  if (error) { await askAlert(error.message); return; }
+  myFolders.push(data);
+  currentFolderId = data.id;
+  await loadFolderBrandIds();
+  renderFolderTabs();
+  renderFolderList();
+  updateFolderNavLabel();
+  renderBrandFilter();
+  go();
+}
+
+async function renameFolder() {
+  const f = myFolders.find((x) => x.id === currentFolderId);
+  if (!f) return;
+  const name = await askText('폴더 이름 변경', f.name);
+  if (!name || name === f.name) return;
+  const { error } = await sb.from('folders').update({ name }).eq('id', currentFolderId);
+  if (error) { await askAlert(error.message); return; }
+  f.name = name;
+  renderFolderTabs();
+  updateFolderNavLabel();
+}
+
+async function deleteFolder() {
+  if (myFolders.length <= 1) { await askAlert('마지막 폴더는 삭제할 수 없어요.'); return; }
+  const f = myFolders.find((x) => x.id === currentFolderId);
+  if (!f || !(await askConfirm(`"${f.name}" 폴더를 삭제할까요? 안에 담긴 브랜드 목록도 함께 사라져요.`))) return;
+  const { error } = await sb.from('folders').delete().eq('id', currentFolderId);
+  if (error) { await askAlert(error.message); return; }
+  myFolders = myFolders.filter((x) => x.id !== currentFolderId);
+  currentFolderId = myFolders[0].id;
+  await loadFolderBrandIds();
+  renderFolderTabs();
+  renderFolderList();
+  updateFolderNavLabel();
+  renderBrandFilter();
+  go();
+}
+
+async function switchFolder(id) {
+  if (sharedView || id === currentFolderId) return;
+  currentFolderId = id;
+  await loadFolderBrandIds();
+  renderFolderTabs();
+  renderFolderList();
+  updateFolderNavLabel();
+  renderBrandFilter();
+  go();
+}
+
+async function copyShareLink() {
+  const f = myFolders.find((x) => x.id === currentFolderId);
+  if (!f) return;
+  const url = `${location.origin}${location.pathname}?share=${f.share_id}`;
+  const msg = document.getElementById('folderMsg');
+  try {
+    await navigator.clipboard.writeText(url);
+    msg.className = 'ok';
+    msg.textContent = '공유 링크가 복사됐어요!';
+  } catch {
+    prompt('링크를 복사해서 공유하세요', url);
+  }
+}
+
+async function loadSharedFolder(shareId) {
+  const { data: folder, error } = await sb.from('folders').select('id,name,share_id,user_id').eq('share_id', shareId).single();
+  if (error || !folder) { alert('존재하지 않거나 삭제된 공유 링크예요.'); return; }
+  sharedView = folder;
+  currentFolderId = folder.id;
+  await loadFolderBrandIds();
+  renderSharedBanner();
+}
+
+async function exitSharedView() {
+  sharedView = null;
+  const url = new URL(location.href);
+  url.searchParams.delete('share');
+  history.replaceState(0, '', url.pathname + (url.search || ''));
+  if (currentUser) {
+    await loadMyFolders();
+  } else {
+    myFolders = [];
+    currentFolderId = null;
+    myFolderIds = [];
+  }
+  renderFolderTabs();
+  updateFolderNavLabel();
+  renderSharedBanner();
+  go();
+}
+
+function renderSharedBanner() {
+  const el = document.getElementById('sharedBanner');
+  const addBtn = document.getElementById('addBrandBtn');
+  if (!el) return;
+  if (sharedView) {
+    el.style.display = 'flex';
+    el.innerHTML = `<span>📁 <b>${sharedView.name}</b> 폴더를 보는 중이에요 (다른 사람과 공유됨)</span>
+      <button class="linklike" onclick="exitSharedView()">내 폴더로 돌아가기</button>`;
+    if (addBtn) addBtn.style.display = 'none';
+  } else {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    if (addBtn) addBtn.style.display = '';
+  }
+}
+
+function updateFolderNavLabel() {
+  const btn = document.getElementById('folderNavBtn');
+  if (!btn) return;
+  if (sharedView) { btn.textContent = `📁 ${sharedView.name}`; return; }
+  const f = myFolders.find((x) => x.id === currentFolderId);
+  btn.textContent = f ? `📁 ${f.name}` : '내 폴더';
+}
+
+function renderFolderTabs() {
+  const wrap = document.getElementById('folderTabs');
+  const manage = document.getElementById('folderManageRow');
+  if (!wrap) return;
+  if (sharedView) {
+    wrap.innerHTML = '<div class="shared-note">다른 사람의 폴더예요 — 보기만 가능해요.</div>';
+    if (manage) manage.style.display = 'none';
+    return;
+  }
+  if (!currentUser) {
+    wrap.innerHTML = '';
+    if (manage) manage.style.display = 'none';
+    return;
+  }
+  wrap.innerHTML = myFolders
+    .map((f) => `<button class="ftab ${f.id === currentFolderId ? 'active' : ''}" onclick="switchFolder(${f.id})">${f.name}</button>`)
+    .join('') + (myFolders.length < 3 ? '<button class="ftab ftab-add" onclick="createFolder()">+ 새 폴더</button>' : '');
+  if (manage) manage.style.display = 'flex';
+  const delBtn = document.getElementById('deleteFolderBtn');
+  if (delBtn) delBtn.style.display = myFolders.length <= 1 ? 'none' : '';
 }
 
 async function loadAllBrands() {
@@ -77,12 +404,21 @@ async function loadAllBrands() {
   // 방금 등록한 브랜드가 "등록은 됐는데 목록엔 안 보임" 처럼 느껴지지 않음.
   const { data, error } = await sb
     .from('brands')
-    .select('id,name,type,status')
+    .select('id,name,type,status,added_by')
     .neq('status', 'excluded')
     .order('name');
   if (error) { console.error(error); return; }
   allBrands = data;
   renderBrandFilter();
+}
+
+let folderListFilter = 'all'; // 'all' | 'mine' — 폴더 다이얼로그 브랜드 목록 필터
+function setFolderListFilter(f) {
+  folderListFilter = f;
+  for (const btn of document.querySelectorAll('#folderFilterRow .fchip')) {
+    btn.classList.toggle('active', btn.dataset.filter === f);
+  }
+  renderFolderList();
 }
 
 function renderBrandFilter() {
@@ -95,14 +431,47 @@ function renderBrandFilter() {
   sel.value = current;
 }
 
+function currentFilteredBrands() {
+  const q = foldAccents(document.getElementById('folderSearch').value || '');
+  const base = folderListFilter === 'mine' ? allBrands.filter((b) => b.added_by === currentUser.id) : allBrands;
+  return base.filter((b) => foldAccents(b.name).includes(q));
+}
+
 function renderFolderList() {
   const q = foldAccents(document.getElementById('folderSearch').value || '');
   const list = document.getElementById('folderList');
+  const filterRow = document.getElementById('folderFilterRow');
+  const selectAllRow = document.getElementById('folderSelectAllRow');
+  if (sharedView) {
+    if (filterRow) filterRow.style.display = 'none';
+    if (selectAllRow) selectAllRow.style.display = 'none';
+    const brands = allBrands.filter((b) => myFolderIds.includes(b.id) && foldAccents(b.name).includes(q));
+    list.innerHTML = brands.length
+      ? brands.map((b) => `<div class="folderRow"><span class="fname">${b.name}</span></div>`).join('')
+      : '<div style="padding:12px;color:#a1a1aa">브랜드 없음</div>';
+    return;
+  }
   if (!currentUser) {
+    if (filterRow) filterRow.style.display = 'none';
+    if (selectAllRow) selectAllRow.style.display = 'none';
     list.innerHTML = '<div style="padding:12px;color:#a1a1aa">로그인하면 폴더를 만들 수 있어요.</div>';
     return;
   }
-  const filtered = allBrands.filter((b) => foldAccents(b.name).includes(q));
+  if (filterRow) filterRow.style.display = 'flex';
+  const filtered = currentFilteredBrands();
+  if (selectAllRow) {
+    if (filtered.length) {
+      selectAllRow.style.display = 'flex';
+      const selectedCount = filtered.filter((b) => myFolderIds.includes(b.id)).length;
+      const cb = document.getElementById('folderSelectAllCheckbox');
+      cb.checked = selectedCount === filtered.length;
+      cb.indeterminate = selectedCount > 0 && selectedCount < filtered.length;
+      document.getElementById('folderSelectAllLabel').textContent =
+        selectedCount === filtered.length ? `전체 해제 (${filtered.length})` : `전체 선택 (${filtered.length})`;
+    } else {
+      selectAllRow.style.display = 'none';
+    }
+  }
   list.innerHTML = filtered
     .map((b) => {
       const checked = myFolderIds.includes(b.id) ? 'checked' : '';
@@ -115,23 +484,60 @@ function renderFolderList() {
         <span class="fname">${b.name}</span> ${typeLabel} ${statusLabel}
       </label>`;
     })
-    .join('') || '<div style="padding:12px;color:#a1a1aa">결과 없음</div>';
+    .join('') || (folderListFilter === 'mine'
+      ? '<div style="padding:12px;color:#a1a1aa">아직 등록한 브랜드가 없어요.</div>'
+      : '<div style="padding:12px;color:#a1a1aa">결과 없음</div>');
+}
+
+async function toggleAllVisible() {
+  if (!currentUser || sharedView) return;
+  const visible = currentFilteredBrands();
+  if (!visible.length) return;
+  const msg = document.getElementById('folderMsg');
+  const selectedCount = visible.filter((b) => myFolderIds.includes(b.id)).length;
+  const shouldSelectAll = selectedCount < visible.length;
+
+  if (shouldSelectAll) {
+    const toAdd = visible.filter((b) => !myFolderIds.includes(b.id));
+    if (toAdd.length) {
+      const { error } = await sb
+        .from('user_brands')
+        .insert(toAdd.map((b) => ({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: b.id })));
+      if (error) { msg.className = 'warn'; msg.style.display = 'block'; msg.textContent = error.message; return; }
+      myFolderIds.push(...toAdd.map((b) => b.id));
+    }
+  } else {
+    const ids = visible.map((b) => b.id);
+    const { error } = await sb.from('user_brands').delete().eq('folder_id', currentFolderId).in('brand_id', ids);
+    if (error) { msg.className = 'warn'; msg.style.display = 'block'; msg.textContent = error.message; return; }
+    myFolderIds = myFolderIds.filter((id) => !ids.includes(id));
+  }
+
+  const folderName = (myFolders.find((f) => f.id === currentFolderId) || {}).name || '내 폴더';
+  msg.className = 'ok';
+  msg.style.display = 'block';
+  msg.textContent = `${folderName}: ${myFolderIds.length}개 브랜드`;
+  renderFolderList();
+  renderBrandFilter();
+  updateFolderNavLabel();
 }
 
 async function toggleFolder(brandId, add) {
   const msg = document.getElementById('folderMsg');
   if (add) {
-    const { error } = await sb.from('user_brands').insert({ user_id: currentUser.id, brand_id: brandId });
+    const { error } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: brandId });
     if (error) { msg.className = 'warn'; msg.textContent = error.message; return; }
     myFolderIds.push(brandId);
   } else {
-    const { error } = await sb.from('user_brands').delete().eq('brand_id', brandId);
+    const { error } = await sb.from('user_brands').delete().eq('folder_id', currentFolderId).eq('brand_id', brandId);
     if (error) { msg.className = 'warn'; msg.textContent = error.message; return; }
     myFolderIds = myFolderIds.filter((id) => id !== brandId);
   }
+  const folderName = (myFolders.find((f) => f.id === currentFolderId) || {}).name || '내 폴더';
   msg.className = 'ok';
-  msg.textContent = `내 폴더: ${myFolderIds.length}개 브랜드`;
+  msg.textContent = `${folderName}: ${myFolderIds.length}개 브랜드`;
   renderBrandFilter();
+  updateFolderNavLabel();
 }
 
 // ---------------- 브랜드 등록 (실시간 판별 없이 "등록 요청"만 접수 — 처리는 백엔드에서) ----------------
@@ -142,6 +548,7 @@ function slugify(hostname) {
 async function submitAdd() {
   const out = document.getElementById('addResult');
   if (!currentUser) { out.className = 'warn'; out.textContent = '로그인 먼저 해주세요.'; out.style.display = 'block'; return; }
+  if (sharedView) { out.className = 'warn'; out.textContent = '공유된 폴더에는 추가할 수 없어요. 내 폴더로 돌아가서 추가해주세요.'; out.style.display = 'block'; return; }
   const urlInput = document.getElementById('addUrl').value.trim();
   const name = document.getElementById('addName').value.trim();
   const instagram = document.getElementById('addInstagram').value.trim();
@@ -161,8 +568,11 @@ async function submitAdd() {
     { onConflict: 'id', ignoreDuplicates: true }
   );
   if (e1) { out.className = 'warn'; out.textContent = e1.message; return; }
+  // ignoreDuplicates라서 이미 있던 브랜드면 위 upsert가 added_by를 못 채움 —
+  // 아직 등록자가 없는 브랜드면 이번 등록으로 내가 등록자로 기록되게 별도로 시도.
+  await sb.rpc('claim_brand', { target_id: id });
 
-  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, brand_id: id });
+  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: id });
   if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
 
   myFolderIds.push(id);
@@ -189,6 +599,7 @@ function qs() {
   if (priceMax) p.set('priceMax', priceMax);
   if (inStock) p.set('inStock', '1');
   if (currentGender) p.set('gender', currentGender);
+  if (sharedView) p.set('share', sharedView.share_id);
   return p;
 }
 
@@ -249,7 +660,12 @@ function cardsHtml(data) {
     .map((g) => {
       const price = g.min_price === g.max_price ? won(g.min_price) : won(g.min_price) + ' ~ ' + won(g.max_price);
       const url = (g.offer && g.offer[0] && g.offer[0].url) || '#';
-      const tags = (g.categories || []).map((c) => `<span class="tag">${c}</span>`).join('');
+      const tags = (g.categories || [])
+        .map((c) => {
+          const { bg, fg } = tagColor(c);
+          return `<span class="tag" style="background:${bg};color:${fg}">${c}</span>`;
+        })
+        .join('');
       return `<a class="card" href="${url}" target="_blank" rel="noopener">
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
           ${g.image ? `<img src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
@@ -284,15 +700,17 @@ async function go() {
   history.replaceState(0, '', p.toString() ? '?' + p.toString() : location.pathname);
   pageOffset = 0;
 
-  if (!currentUser) {
+  if (!currentUser && !sharedView) {
     meta.textContent = '';
-    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
+    grid.innerHTML = '<div class="empty"><span class="empty-icon">✨</span>로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     return;
   }
   if (myFolderIds.length === 0) {
     meta.textContent = '';
-    grid.innerHTML = '<div class="empty">내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
+    grid.innerHTML = sharedView
+      ? '<div class="empty"><span class="empty-icon">📭</span>이 폴더는 비어있어요.</div>'
+      : '<div class="empty"><span class="empty-icon">📂</span>내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     return;
   }
@@ -308,7 +726,7 @@ async function go() {
   if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
   meta.textContent = parts.join('  ·  ');
 
-  if (!data.length) { grid.innerHTML = '<div class="empty">결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
+  if (!data.length) { grid.innerHTML = '<div class="empty"><span class="empty-icon">🔎</span>결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
   grid.innerHTML = cardsHtml(data);
   armImageTimeouts(grid);
   updateMoreButton(data.length);
@@ -342,6 +760,7 @@ async function loadFacetSelectors() {
 
 // ---------------- 초기화 ----------------
 document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth(); });
 for (const id of ['color', 'size', 'brand', 'inStock']) document.getElementById(id).addEventListener('change', go);
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
@@ -349,6 +768,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   await window.StyleFinderTaxonomy.loadTaxonomy();
   renderChips();
   await loadFacetSelectors();
+  await loadAllBrands(); // brands는 누구나 읽기 가능 — 로그인 전에도 공유 폴더 열람/검색 매칭에 필요
 
   const initial = new URLSearchParams(location.search);
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
@@ -367,10 +787,16 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   const { data: { session } } = await sb.auth.getSession();
   currentUser = session?.user || null;
   renderAuthArea();
-  if (currentUser) {
-    await loadMyFolder();
-    await loadAllBrands();
+
+  const shareParam = initial.get('share');
+  if (shareParam) {
+    await loadSharedFolder(shareParam);
+  } else if (currentUser) {
+    await loadMyFolders();
     if (initial.get('brand')) document.getElementById('brand').value = initial.get('brand');
   }
+  renderFolderTabs();
+  updateFolderNavLabel();
+  renderSharedBanner();
   go();
 })();

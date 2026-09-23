@@ -10,13 +10,16 @@
   * { box-sizing: border-box; }
   :root {
     --ink: #161616; --sub: #8a8a8a; --line: #eaeaea; --bg: #fafaf9; --faint: #f3f2f0;
+    --accent: #2fbf8f; --accent-soft: #e2f7ef;
     --card-shadow: 0 1px 2px rgba(20,20,20,.04);
     --hover-shadow: 0 12px 28px rgba(20,20,20,.10);
   }
-  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: linear-gradient(180deg, #fdfbfa 0%, var(--bg) 420px); -webkit-font-smoothing: antialiased; }
   header { position: sticky; top: 0; background: rgba(250,250,249,.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: 18px 32px 16px; z-index: 10; }
+  header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--accent), transparent 55%); opacity: .4; }
   .topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-  .logo { margin: 0; font-family: 'Space Grotesk', 'Pretendard Variable', sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); }
+  .logo { margin: 0; display: flex; align-items: center; gap: 8px; font-family: 'Space Grotesk', 'Pretendard Variable', sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); }
+  .logo-mark { width: 9px; height: 9px; min-width: 9px; border-radius: 3px; background: var(--accent); }
   .spacer { flex: 1; }
   .nav-links { display: flex; gap: 8px; margin-bottom: 14px; }
   .nav-links button { background: #fff; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 8px 15px; border-radius: 20px; transition: border-color .15s, background .15s; }
@@ -28,8 +31,6 @@
   .gtab.active { color: #fff; background: var(--ink); font-weight: 600; }
   .gtab:hover:not(.active) { color: var(--ink); border-color: var(--line); }
   #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 10px; }
-  #authArea input { padding: 8px 12px; border: 1px solid var(--line); border-radius: 20px; font-size: 12.5px; width: 170px; font-family: inherit; background: #fff; }
-  #authArea input:focus { outline: none; border-color: var(--ink); }
   #authArea button { padding: 8px 15px; font-size: 12.5px; border-radius: 20px; }
   .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; cursor: default; }
   button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
@@ -48,14 +49,16 @@
   button:hover { opacity: .82; }
   button:active { transform: scale(.98); }
   label.chk { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; max-width: 1080px; }
-  .chip { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 12.5px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s, box-shadow .12s; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; max-width: 1320px; }
+  .chip { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 12px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s, box-shadow .12s; }
   .chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: var(--hover-shadow); }
   main { padding: 26px 32px 60px; }
-  .meta { max-width: 1320px; margin: 0 auto 20px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; }
+  .meta-row { max-width: 1320px; margin: 0 auto 20px; }
+  .meta { display: inline-flex; align-items: center; gap: 6px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; background: #fff; border: 1px solid var(--line); padding: 7px 15px; border-radius: 999px; box-shadow: var(--card-shadow); }
+  .meta:empty { display: none; }
   .grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 24px 16px; }
   .card { position: relative; display: flex; flex-direction: column; }
-  .card .imgwrap { position: relative; overflow: hidden; border-radius: 10px; background: var(--faint); aspect-ratio: 3/4; box-shadow: var(--card-shadow); transition: box-shadow .25s ease; }
+  .card .imgwrap { position: relative; overflow: hidden; border-radius: 10px; background: linear-gradient(135deg, #f5f3f1, #ece9e6); aspect-ratio: 3/4; box-shadow: var(--card-shadow); transition: box-shadow .25s ease; }
   .card:hover .imgwrap { box-shadow: var(--hover-shadow); }
   .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
   .card:hover img { transform: scale(1.045); }
@@ -69,7 +72,8 @@
   .sold img { opacity: .4; }
   .multi { color: var(--sub); font-size: 11px; margin-top: 4px; }
   a.card { text-decoration: none; color: inherit; }
-  .empty { max-width: 1320px; margin: 90px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13.5px; }
+  .empty { max-width: 420px; margin: 70px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13.5px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 40px 32px; box-shadow: var(--card-shadow); }
+  .empty-icon { display: block; font-size: 30px; margin-bottom: 10px; }
   dialog { border: 0; border-radius: 18px; padding: 0; width: min(480px, 92vw); max-height: 80vh; box-shadow: 0 24px 70px rgba(20,20,20,.16); }
   dialog::backdrop { background: rgba(15,15,15,.45); backdrop-filter: blur(2px); }
   .dlg-body { padding: 24px; display: flex; flex-direction: column; gap: 11px; max-height: 80vh; overflow-y: auto; font-family: inherit; }
@@ -82,24 +86,37 @@
   .more-wrap { max-width: 1320px; margin: 36px auto 0; text-align: center; }
   .more-wrap button.secondary { background: #fff; color: var(--ink); padding: 13px 30px; border: 1px solid var(--line); box-shadow: var(--card-shadow); }
   .more-wrap button.secondary:hover { opacity: 1; background: var(--faint); }
-  #addResult, #folderMsg { font-size: 12.5px; padding: 10px 12px; border-radius: 9px; display: none; }
-  #addResult.ok, #folderMsg.ok { display: block; background: #eef7ee; color: #2a6b2a; }
-  #addResult.warn { display: block; background: #fdf3e7; color: #92400e; }
+  #addResult, #folderMsg, #authMsg { font-size: 12.5px; padding: 10px 12px; border-radius: 9px; display: none; }
+  #addResult.ok, #folderMsg.ok, #authMsg.ok { display: block; background: #eef7ee; color: #2a6b2a; }
+  #addResult.warn, #folderMsg.warn, #authMsg.warn { display: block; background: #fdf3e7; color: #92400e; }
   .folderList { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 11px; padding: 6px; }
   .folderRow { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 13px; }
   .folderRow:hover { background: var(--faint); }
   .folderRow .fname { flex: 1; }
   .folderRow .fbrand { color: #a1a1aa; font-size: 11px; }
+  .folder-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ftab { background: var(--faint); border: 1px solid transparent; padding: 6px 13px; border-radius: 20px; font-size: 12.5px; font-weight: 500; color: var(--sub); cursor: pointer; }
+  .ftab.active { color: #fff; background: var(--ink); font-weight: 600; }
+  .ftab-add { background: #fff; border: 1px dashed var(--line); color: var(--sub); }
+  .ftab-add:hover { border-color: var(--ink); color: var(--ink); }
+  .folder-manage-row { display: flex; gap: 14px; }
+  .folder-filter-row { display: flex; gap: 6px; }
+  .folder-selectall-row { display: flex; padding: 0 2px; }
+  .folder-selectall-row label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); cursor: pointer; }
+  .fchip { background: var(--faint); border: 1px solid transparent; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; color: var(--sub); cursor: pointer; }
+  .fchip.active { color: #fff; background: var(--ink); font-weight: 600; }
+  .shared-note { font-size: 12.5px; color: var(--sub); }
+  .shared-banner-bar { max-width: 1320px; margin: 0 auto 20px; padding: 11px 16px; background: #fff8e6; border: 1px solid #f3dfa0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 12px; }
 </style></head><body>
 <header>
   <div class="topbar">
-    <p class="logo">MY SELECT SHOP</p>
+    <p class="logo"><span class="logo-mark"></span>MY SELECT SHOP</p>
     <span class="spacer"></span>
     <span id="authArea"></span>
   </div>
   <div class="nav-links">
-    <button onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
-    <button class="primary" onclick="addDialog.showModal()">+ 브랜드 등록</button>
+    <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
+    <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">+ 브랜드 등록</button>
   </div>
   <div class="gender-tabs" id="genderTabs">
     <button class="gtab active" data-gender="" onclick="setGender('')">전체</button>
@@ -125,11 +142,47 @@
   </div>
   <div class="chips" id="chips"></div>
 </header>
-<main><div class="meta" id="meta"></div><div class="grid" id="grid"></div>
+<main><div class="shared-banner-bar" id="sharedBanner" style="display:none"></div><div class="meta-row"><div class="meta" id="meta"></div></div><div class="grid" id="grid"></div>
 <div class="more-wrap" id="moreWrap" style="display:none">
   <button class="secondary" id="moreBtn" onclick="loadMore()">더 보기</button>
 </div>
 </main>
+
+<dialog id="promptDialog">
+  <div class="dlg-body">
+    <h2 id="promptTitle">입력</h2>
+    <input type="text" id="promptInput">
+    <div class="dlg-row">
+      <button class="secondary" id="promptCancelBtn">취소</button>
+      <button id="promptOkBtn">확인</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="confirmDialog">
+  <div class="dlg-body">
+    <p id="confirmMessage" style="margin:0;font-size:14px;line-height:1.6"></p>
+    <div class="dlg-row">
+      <button class="secondary" id="confirmCancelBtn">취소</button>
+      <button id="confirmOkBtn">확인</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="authDialog">
+  <div class="dlg-body">
+    <h2 id="authDialogTitle">로그인</h2>
+    <input type="email" id="authEmail" placeholder="이메일" autocomplete="username">
+    <input type="password" id="authPassword" placeholder="비밀번호" autocomplete="current-password">
+    <button class="linklike" id="authForgotLink" onclick="requestPasswordReset()" style="align-self:flex-end">비밀번호를 잊으셨나요?</button>
+    <div id="authMsg"></div>
+    <div class="dlg-row">
+      <button class="secondary" onclick="authDialog.close()">닫기</button>
+      <button id="authSubmitBtn" onclick="submitAuth()">로그인</button>
+    </div>
+    <p id="authToggleText" style="font-size:12.5px;color:var(--sub);text-align:center;margin:2px 0 0">계정이 없으신가요? <button class="linklike" onclick="toggleAuthMode()">회원가입</button></p>
+  </div>
+</dialog>
 
 <dialog id="addDialog">
   <div class="dlg-body">
@@ -148,9 +201,25 @@
 
 <dialog id="folderDialog">
   <div class="dlg-body">
+    <div class="folder-tabs" id="folderTabs"></div>
     <h2>내 폴더</h2>
-    <p style="font-size:13px;color:#71717a;margin:0">체크한 브랜드만 검색에 포함돼요.</p>
+    <p style="font-size:13px;color:#71717a;margin:0">체크한 브랜드만 검색에 포함돼요. 폴더는 최대 3개까지 만들 수 있고, 공유 링크로 다른 사람에게 보여줄 수 있어요.</p>
+    <div class="folder-manage-row" id="folderManageRow">
+      <button class="linklike" onclick="renameFolder()">이름 변경</button>
+      <button class="linklike" id="deleteFolderBtn" onclick="deleteFolder()">삭제</button>
+      <button class="linklike" onclick="copyShareLink()">공유 링크 복사</button>
+    </div>
+    <div class="folder-filter-row" id="folderFilterRow">
+      <button class="fchip active" data-filter="all" onclick="setFolderListFilter('all')">전체 브랜드</button>
+      <button class="fchip" data-filter="mine" onclick="setFolderListFilter('mine')">내가 등록한 브랜드</button>
+    </div>
     <input type="text" id="folderSearch" placeholder="브랜드 검색…" oninput="renderFolderList()">
+    <div class="folder-selectall-row" id="folderSelectAllRow">
+      <label>
+        <input type="checkbox" id="folderSelectAllCheckbox" onchange="toggleAllVisible()">
+        <span id="folderSelectAllLabel">전체 선택</span>
+      </label>
+    </div>
     <div id="folderMsg"></div>
     <div class="folderList" id="folderList"></div>
     <div class="dlg-row">

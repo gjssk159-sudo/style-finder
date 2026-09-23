@@ -63,18 +63,30 @@ create table if not exists offer (
 );
 create index if not exists idx_offer_group on offer(group_id);
 
--- ============ user_brands: 내 폴더 (사람마다 다른 유일한 테이블) ============
+-- ============ folders: 사람마다 폴더 여러 개(최대 3개), 링크로 공유 가능 ============
+create table if not exists folders (
+  id         bigserial primary key,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  name       text not null default '내 폴더',
+  share_id   text unique not null default substr(md5(random()::text || clock_timestamp()::text), 1, 10),
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_folders_user on folders(user_id);
+
+-- ============ user_brands: 폴더에 담은 브랜드 (폴더당 다름) ============
 create table if not exists user_brands (
   user_id       uuid not null references auth.users(id) on delete cascade,
+  folder_id     bigint not null references folders(id) on delete cascade,
   brand_id      text not null references brands(id) on delete cascade,
   added_at      timestamptz not null default now(),
-  primary key (user_id, brand_id)
+  primary key (folder_id, brand_id)
 );
 
 -- ============================= RLS =============================
 alter table brands enable row level security;
 alter table product_group enable row level security;
 alter table offer enable row level security;
+alter table folders enable row level security;
 alter table user_brands enable row level security;
 
 -- brands: 누구나 읽기, 로그인 사용자는 새 브랜드 등록(추가)만 가능, 수정/삭제는 서비스 롤만
@@ -86,7 +98,19 @@ create policy brands_insert on brands for insert to authenticated with check (tr
 create policy pg_select on product_group for select using (true);
 create policy offer_select on offer for select using (true);
 
--- user_brands: 자기 것만 보고 추가/삭제
-create policy ub_select on user_brands for select to authenticated using (user_id = auth.uid());
-create policy ub_insert on user_brands for insert to authenticated with check (user_id = auth.uid());
-create policy ub_delete on user_brands for delete to authenticated using (user_id = auth.uid());
+-- folders: 누구나 읽기(공유 링크로 남의 폴더를 보려면 필요), 생성/수정/삭제는 본인 것만(최대 3개)
+create policy folders_select on folders for select using (true);
+create policy folders_insert on folders for insert to authenticated with check (
+  user_id = auth.uid() and (select count(*) from folders where user_id = auth.uid()) < 3
+);
+create policy folders_update on folders for update to authenticated using (user_id = auth.uid());
+create policy folders_delete on folders for delete to authenticated using (user_id = auth.uid());
+
+-- user_brands: 누구나 읽기(공유 폴더 열람용), 추가/삭제는 본인 소유 폴더에 한해서만
+create policy ub_select on user_brands for select using (true);
+create policy ub_insert on user_brands for insert to authenticated with check (
+  folder_id in (select id from folders where user_id = auth.uid())
+);
+create policy ub_delete on user_brands for delete to authenticated using (
+  folder_id in (select id from folders where user_id = auth.uid())
+);
