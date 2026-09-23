@@ -109,6 +109,29 @@
   .fchip.active { color: #fff; background: var(--ink); font-weight: 600; }
   .shared-note { font-size: 12.5px; color: var(--sub); }
   .shared-banner-bar { max-width: 1320px; margin: 0 auto 20px; padding: 11px 16px; background: #fff8e6; border: 1px solid #f3dfa0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 12px; }
+
+  @media (max-width: 700px) {
+    /* 폰에서는 헤더가 화면에 계속 고정돼 있으면 상품 볼 공간이 거의 안 남아서 고정을 풀고,
+       패딩/폰트도 화면에 맞게 줄여서 덜 빽빽하게 보이도록. */
+    header { position: relative; padding: 14px 16px 12px; }
+    .topbar { margin-bottom: 10px; }
+    .logo { font-size: 19px; }
+    .nav-links { flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .nav-links button { padding: 7px 12px; font-size: 12px; }
+    .gender-tabs { margin-bottom: 12px; }
+    .gtab { padding: 6px 12px; font-size: 12px; }
+    .row { gap: 8px; }
+    .search-wrap { flex-basis: 100%; }
+    input[type=text]#q { font-size: 16px; } /* 16px 미만이면 iOS에서 포커스 시 자동 확대됨 */
+    select, input[type=number] { font-size: 16px; flex: 1 1 auto; min-width: 0; }
+    .price-range { flex: 1 1 auto; }
+    .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin-top: 12px; padding-bottom: 2px; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { white-space: nowrap; flex: none; }
+    main { padding: 18px 16px 40px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 18px 10px; }
+    .dlg-body { padding: 20px; }
+  }
 </style></head><body>
 <header>
   <div class="header-inner">
