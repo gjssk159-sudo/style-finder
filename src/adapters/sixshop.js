@@ -35,7 +35,7 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
       const url = `${base}${catPath}?page=${page}`;
       let cards = [];
       try {
-        const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .shopProductWrapper, .empty' });
+        const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .shopProductWrapper, a[href*="/products/"], a[href*="/product/"], .empty' });
         cards = await extractCards(pw);
         await context.close();
       } catch (err) {
@@ -73,7 +73,7 @@ async function discoverCategories(base) {
 }
 
 async function extractCards(page) {
-  return page.$$eval('.product-item, .shopProductWrapper', (divs) =>
+  const known = await page.$$eval('.product-item, .shopProductWrapper', (divs) =>
     divs
       .map((div) => {
         const a = div.querySelector('a[href*="/products/"], a[href*="/product/"]');
@@ -92,6 +92,31 @@ async function extractCards(page) {
       })
       .filter(Boolean)
   );
+  if (known.length) return known;
+
+  // 위 두 클래스 다 없는 테마(예: Next.js CSS 모듈 해시 클래스, yinandyang 등) -> 상품 링크
+  // 자체를 기준점 삼아 가장 가까운 <li>(없으면 부모)를 카드 컨테이너로 취급.
+  return page.$$eval('a[href*="/products/"], a[href*="/product/"]', (links) => {
+    const seen = new Set();
+    const out = [];
+    for (const a of links) {
+      const href = a.getAttribute('href');
+      if (!href || seen.has(href)) continue;
+      seen.add(href);
+      const container = a.closest('li') || a.parentElement;
+      const thumb = container.querySelector('.thumb.img, [imgsrc]');
+      const bgImg = thumb
+        ? thumb.getAttribute('imgsrc') ||
+          thumb.style.backgroundImage?.match(/url\(["']?(.*?)["']?\)/)?.[1]
+        : null;
+      out.push({
+        href,
+        text: container.innerText || '',
+        img: container.querySelector('img')?.getAttribute('src') || bgImg || null,
+      });
+    }
+    return out;
+  });
 }
 
 function toItem(card, id, base, source) {
