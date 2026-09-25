@@ -341,6 +341,7 @@ async function loadSharedFolder(shareId) {
   currentFolderId = folder.id;
   await loadFolderBrandIds();
   renderSharedBanner();
+  renderBrandFilter();
 }
 
 async function exitSharedView() {
@@ -358,6 +359,7 @@ async function exitSharedView() {
   renderFolderTabs();
   updateFolderNavLabel();
   renderSharedBanner();
+  renderBrandFilter();
   go();
 }
 
@@ -428,6 +430,8 @@ function setFolderListFilter(f) {
   renderFolderList();
 }
 
+let brandComboOptions = []; // 브랜드 검색창 자동완성용 이름 목록(정렬됨)
+
 function renderBrandFilter() {
   const sel = document.getElementById('brand');
   const current = sel.value;
@@ -436,6 +440,113 @@ function renderBrandFilter() {
   const mine = allBrands.filter((b) => b.status === 'ready' && myFolderIds.includes(b.id)).sort((a, b) => compareBrandNames(a.name, b.name));
   for (const b of mine) sel.insertAdjacentHTML('beforeend', `<option value="${b.name}">${b.name}</option>`);
   sel.value = current;
+  brandComboOptions = mine.map((b) => b.name);
+  const brandInput = document.getElementById('brandInput');
+  if (brandInput && document.activeElement !== brandInput) brandInput.value = current || '';
+  loadSizeOptions();
+}
+
+// ---------------- 브랜드 검색 콤보(select는 값 저장용으로 숨겨서 그대로 두고, 위에 검색 가능한 입력을 얹음) ----------------
+function openBrandCombo() {
+  filterBrandCombo();
+  document.getElementById('brandComboList').classList.add('open');
+}
+
+function closeBrandCombo() {
+  document.getElementById('brandComboList').classList.remove('open');
+}
+
+function filterBrandCombo() {
+  const list = document.getElementById('brandComboList');
+  const q = foldAccents(document.getElementById('brandInput').value || '');
+  const matches = brandComboOptions.filter((n) => foldAccents(n).includes(q));
+  const allOpt = '<div class="brand-combo-item" data-value="">브랜드 전체</div>';
+  list.innerHTML =
+    allOpt +
+    (matches.length
+      ? matches.map((n) => `<div class="brand-combo-item" data-value="${n}">${n}</div>`).join('')
+      : '<div class="brand-combo-empty">일치하는 브랜드 없음</div>');
+  list.classList.add('open');
+}
+
+function pickBrand(name) {
+  document.getElementById('brand').value = name;
+  document.getElementById('brandInput').value = name || '';
+  closeBrandCombo();
+  go();
+}
+
+document.addEventListener('click', (e) => {
+  const item = e.target.closest('.brand-combo-item');
+  if (item) { pickBrand(item.dataset.value); return; }
+  if (!e.target.closest('.brand-combo')) closeBrandCombo();
+});
+
+// ---------------- 사이즈 필터: 사이트마다 표기가 다 달라서(SMALL/S, 1/2/3, 신발 220~290 등)
+// 고정 목록 대신 지금 폴더 안 상품에 실제로 있는 값만 보여주고, 흔한 동의어는 하나로 묶음.
+const SIZE_ALIASES = {
+  XS: ['XS', 'X-SMALL', 'XSMALL'],
+  S: ['S', 'SMALL'],
+  M: ['M', 'MEDIUM'],
+  L: ['L', 'LARGE'],
+  XL: ['XL', 'X-LARGE', 'XLARGE'],
+  XXL: ['XXL', 'XX-LARGE', '2XL'],
+  OS: ['OS', 'ONE SIZE', 'FREE', 'FREE SIZE'],
+};
+const SIZE_ALIAS_LOOKUP = {};
+for (const [label, variants] of Object.entries(SIZE_ALIASES)) {
+  for (const v of variants) SIZE_ALIAS_LOOKUP[v] = label;
+}
+function sizeVariants(label) {
+  return SIZE_ALIASES[label] || [label];
+}
+
+let sizeOptions = []; // 지금 폴더에 실제로 존재하는 사이즈 표시 라벨(정렬됨)
+
+async function loadSizeOptions() {
+  if ((!currentUser && !sharedView) || !myFolderIds.length) {
+    sizeOptions = [];
+    renderSizeFilter();
+    return;
+  }
+  // select는 기본 1000행 제한이 있어서, 폴더 상품이 그보다 많으면 뒤쪽 사이즈를 놓치므로 끝까지 페이지네이션.
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from('product_group').select('sizes').in('brand_id', myFolderIds).range(from, from + 999);
+    if (error) { console.error(error); return; }
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  const normalized = new Set();
+  const others = new Set();
+  for (const row of rows) {
+    for (const raw of row.sizes || []) {
+      const cleaned = String(raw).replace(/\s*\([^)]*\)\s*/g, '').trim(); // "1 (LAST ONE)" -> "1"
+      const label = SIZE_ALIAS_LOOKUP[cleaned.toUpperCase()];
+      if (label) normalized.add(label);
+      else if (cleaned) others.add(cleaned);
+    }
+  }
+  const clothingOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'OS'];
+  const clothing = clothingOrder.filter((l) => normalized.has(l));
+  const rest = [...others].sort((a, b) => {
+    const an = parseFloat(a);
+    const bn = parseFloat(b);
+    if (!isNaN(an) && !isNaN(bn)) return an - bn;
+    if (!isNaN(an)) return -1;
+    if (!isNaN(bn)) return 1;
+    return a.localeCompare(b);
+  });
+  sizeOptions = [...clothing, ...rest];
+  renderSizeFilter();
+}
+
+function renderSizeFilter() {
+  const sel = document.getElementById('size');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">사이즈 전체</option>';
+  for (const s of sizeOptions) sel.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`);
+  sel.value = sizeOptions.includes(current) ? current : '';
 }
 
 function currentFilteredBrands() {
@@ -633,7 +744,7 @@ function buildQuery(offset) {
   if (categories.length) query = query.overlaps('categories', categories);
   if (colors.length) query = query.overlaps('colors', colors);
   if (currentGender) query = query.eq('gender', currentGender);
-  if (size) query = query.contains('sizes', [size]);
+  if (size) query = query.overlaps('sizes', sizeVariants(size));
   if (brand) query = query.eq('brand', brand);
   if (priceMin) query = query.gte('max_price', Number(priceMin));
   if (priceMax) query = query.lte('min_price', Number(priceMax));
@@ -761,8 +872,8 @@ async function loadFacetSelectors() {
   for (const [id, label] of Object.entries(window.StyleFinderTaxonomy.COLOR_LABELS)) {
     colorSel.insertAdjacentHTML('beforeend', `<option value="${id}">${label}</option>`);
   }
-  const sizeSel = document.getElementById('size');
-  for (const s of ['XS', 'S', 'M', 'L', 'XL', 'XXL']) sizeSel.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`);
+  // 사이즈 옵션은 고정 목록이 아니라 로그인/폴더 전환 시 loadSizeOptions()가 실제 데이터로 채움
+  // (브랜드마다 S/M/L, 1/2/3, 신발 사이즈 등 표기가 달라서 고정 목록으론 다 못 잡음).
 }
 
 // ---------------- 초기화 ----------------
@@ -800,7 +911,8 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
     await loadSharedFolder(shareParam);
   } else if (currentUser) {
     await loadMyFolders();
-    if (initial.get('brand')) document.getElementById('brand').value = initial.get('brand');
+    renderBrandFilter(); // loadAllBrands() 시점엔 아직 myFolderIds가 비어있어서 옵션이 없었으므로 다시 채움
+    if (initial.get('brand')) pickBrand(initial.get('brand'));
   }
   renderFolderTabs();
   updateFolderNavLabel();
