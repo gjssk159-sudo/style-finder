@@ -706,6 +706,7 @@ function qs() {
   const color = document.getElementById('color').value;
   const size = document.getElementById('size').value;
   const brand = document.getElementById('brand').value;
+  const sort = document.getElementById('sort').value;
   const priceMin = document.getElementById('priceMin').value;
   const priceMax = document.getElementById('priceMax').value;
   const inStock = document.getElementById('inStock').checked;
@@ -713,6 +714,7 @@ function qs() {
   if (color) p.set('color', color);
   if (size) p.set('size', size);
   if (brand) p.set('brand', brand);
+  if (sort !== 'brand') p.set('sort', sort);
   if (priceMin) p.set('priceMin', priceMin);
   if (priceMax) p.set('priceMax', priceMax);
   if (inStock) p.set('inStock', '1');
@@ -728,6 +730,7 @@ function buildQuery(offset) {
   const colors = [...new Set([...(color ? [color] : []), ...colorsFromQuery])];
   const size = document.getElementById('size').value;
   const brand = document.getElementById('brand').value;
+  const sort = document.getElementById('sort').value;
   const priceMin = document.getElementById('priceMin').value;
   const priceMax = document.getElementById('priceMax').value;
   const inStock = document.getElementById('inStock').checked;
@@ -736,10 +739,14 @@ function buildQuery(offset) {
     .from('product_group')
     // offer!inner: 판매 링크(offer)가 하나도 없는 유령 상품은 아예 결과에서 제외 (클릭해도 갈 곳 없는 카드 방지)
     .select('id,brand,title,title_norm,categories,colors,sizes,min_price,max_price,image,in_stock,offer_count,offer!inner(source_id,url,price,in_stock)', { count: 'exact' })
-    .in('brand_id', myFolderIds)
-    .order('brand')
-    .order('title')
-    .range(offset, offset + PAGE_SIZE - 1);
+    .in('brand_id', myFolderIds);
+
+  // 가격 없는 상품이 낮은순/높은순에서 맨 위로 튀지 않게 null은 항상 뒤로.
+  if (sort === 'recent') query = query.order('updated_at', { ascending: false });
+  else if (sort === 'price_asc') query = query.order('min_price', { ascending: true, nullsFirst: false });
+  else if (sort === 'price_desc') query = query.order('max_price', { ascending: false, nullsFirst: false });
+  else query = query.order('brand').order('title');
+  query = query.order('id').range(offset, offset + PAGE_SIZE - 1); // 페이지네이션 안정성용 동률 구분 키
 
   if (categories.length) query = query.overlaps('categories', categories);
   if (colors.length) query = query.overlaps('colors', colors);
@@ -879,7 +886,7 @@ async function loadFacetSelectors() {
 // ---------------- 초기화 ----------------
 document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
 document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth(); });
-for (const id of ['color', 'size', 'brand', 'inStock']) document.getElementById(id).addEventListener('change', go);
+for (const id of ['color', 'size', 'brand', 'sort', 'inStock']) document.getElementById(id).addEventListener('change', go);
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
 (async () => {
@@ -892,6 +899,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
   if (initial.get('color')) document.getElementById('color').value = initial.get('color');
   if (initial.get('size')) document.getElementById('size').value = initial.get('size');
+  if (initial.get('sort')) document.getElementById('sort').value = initial.get('sort');
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
   if (initial.get('priceMax')) document.getElementById('priceMax').value = initial.get('priceMax');
   if (initial.get('inStock')) document.getElementById('inStock').checked = true;
