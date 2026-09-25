@@ -4,9 +4,12 @@
 // 매칭 규칙:
 //  - 한글 키워드: 부분 문자열 (한글은 띄어쓰기가 불규칙)
 //  - 영문 키워드(4자 이상): 뒤쪽 경계 + 복수형 s/es 허용, 앞쪽은 느슨하게
-//      → "overcoat"가 "coat"로 잡히되 "bootscut"은 "boots"로 안 잡힘
+//      → "overcoat"/"carcoat"가 "coat"로, "workpants"가 "pant"로 잡힘
 //  - 영문 키워드(3자 이하: hat, cap, tee, bag ...): 앞뒤 경계 모두 요구
 //      → "what"이 "hat"으로 잡히는 사고 방지
+//  - 키워드 앞에 "^"를 붙이면 4자 이상이어도 앞쪽 경계까지 강제(엄격 매칭)
+//      → "ring"을 그냥 쓰면 "spring"에도 걸리므로 "^ring"으로; "tanker jacket"의 "tank"도 마찬가지
+//  - 키워드 안의 공백/하이픈은 공백·하이픈·붙여쓰기 어느 쪽으로 써도 매칭(zip up = zip-up = zipup)
 // exclude 키워드에 걸리면 그 카테고리는 스킵. 상품 하나가 여러 카테고리에 속할 수 있음.
 
 import { readFileSync } from 'node:fs';
@@ -24,9 +27,14 @@ const reCache = new Map();
 function keywordRegex(k) {
   let re = reCache.get(k);
   if (!re) {
-    const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const body = `${esc}(?:es|s)?(?=[^a-z0-9]|$)`;
-    const pattern = k.length <= 3 ? `(?<![a-z0-9])${body}` : body;
+    const strict = k.startsWith('^');
+    const raw = strict ? k.slice(1) : k;
+    const esc = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // 여러 단어로 된 키워드는 실제 상품명에서 "zip up"/"zip-up"/"zipup"처럼 공백·하이픈·붙여쓰기가
+    // 제각각이라, 키워드 안의 구분자를 세 가지 다 허용하는 패턴으로 바꿔서 하나만 등록해도 다 잡히게.
+    const flexible = esc.replace(/[ \-]+/g, '[\\s-]*');
+    const body = `${flexible}(?:es|s)?(?=[^a-z0-9]|$)`;
+    const pattern = raw.length <= 3 || strict ? `(?<![a-z0-9])${body}` : body;
     re = new RegExp(pattern, 'i');
     reCache.set(k, re);
   }
