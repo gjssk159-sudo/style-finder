@@ -46,13 +46,20 @@ function hit(hay, keyword) {
   return isAscii(k) ? keywordRegex(k).test(hay) : hay.includes(k);
 }
 
+// 어떤 카테고리 키워드에도 안 걸리는 상품은 검색 카테고리 필터를 걸면 아예 안 보이게 되는데,
+// 실제로 존재하는 상품인 이상 반드시 뭔가 하나의 카테고리에는 속해 있어야 말이 되므로,
+// 매칭되는 게 하나도 없으면 "기타"로 분류해서 빠지는 상품이 없게 한다.
+const FALLBACK_CATEGORY = 'etc';
+
 export function classify(...texts) {
   const hay = texts.filter(Boolean).join(' ').toLowerCase();
-  if (!hay.trim()) return [];
   const hits = [];
-  for (const cat of taxonomy.categories) {
-    if ((cat.exclude || []).some((x) => hit(hay, x))) continue;
-    if (cat.keywords.some((k) => hit(hay, k))) hits.push(cat.id);
+  if (hay.trim()) {
+    for (const cat of taxonomy.categories) {
+      if (cat.id === FALLBACK_CATEGORY) continue; // 키워드 매칭 대상이 아니라 안전망 전용
+      if ((cat.exclude || []).some((x) => hit(hay, x))) continue;
+      if (cat.keywords.some((k) => hit(hay, k))) hits.push(cat.id);
+    }
   }
-  return hits;
+  return hits.length ? hits : [FALLBACK_CATEGORY];
 }

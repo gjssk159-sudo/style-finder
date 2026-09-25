@@ -23,6 +23,7 @@
     { "id": "bag", "label": "가방", "keywords": ["가방", "bag", "tote", "토트", "크로스백", "크로스바디", "cross bag", "backpack", "백팩", "숄더백", "pouch", "포치", "waist bag"] },
     { "id": "shoes", "label": "신발", "keywords": ["신발", "슈즈", "^shoe", "sneaker", "스니커", "boot", "부츠", "샌들", "sandal", "로퍼", "loafer", "derby", "mule", "clog", "슬립온", "mary jane", "메리제인", "flat shoes", "trainers"], "exclude": ["bootscut", "boot cut", "bootcut", "boot-cut"] },
     { "id": "acc", "label": "액세서리", "keywords": ["액세서리", "accessory", "벨트", "belt", "sock", "양말", "머플러", "muffler", "스카프", "scarf", "glove", "장갑", "키링", "keyring", "keychain", "clip", "넥워머", "gaiter", "wallet", "지갑", "necklace", "목걸이", "bracelet", "팔찌", "반지", "^ring", "earring", "귀걸이", "sunglasses", "선글라스", "bandana", "반다나"] },
-    { "id": "sleeveless_top", "label": "나시", "keywords": ["나시", "민소매", "sleeveless", "camisole", "cami", "bralette"], "queryAliases": ["상의"] }
+    { "id": "sleeveless_top", "label": "나시", "keywords": ["나시", "민소매", "sleeveless", "camisole", "cami", "bralette"], "queryAliases": ["상의"] },
+    { "id": "etc", "label": "기타", "keywords": [], "queryAliases": ["기타"] }
   ]
 }
