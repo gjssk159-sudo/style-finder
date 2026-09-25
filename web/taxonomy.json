@@ -6,6 +6,7 @@
     { "id": "hoodie", "label": "후드티", "keywords": ["후드티", "후디", "후드 티", "hoodie", "hoody", "hooded sweat", "hoodie sweat", "pullover hood", "pullover hoodie"], "exclude": ["집업", "zip hood", "zip hoodie", "zip hooded", "zip hoody", "zip-up hood", "zip-up hoodie", "zip-up hooded", "zip-up hoody", "zip up hood", "zip up hoodie", "zip up hooded", "zip up hoody", "zipup hood", "zipup hoodie", "zipup hooded", "zipup hoody", "hood zip", "hoodie zip", "hooded zip", "hoody zip", "hood zip-up", "hoodie zip-up", "hooded zip-up", "hoody zip-up", "hood zip up", "hoodie zip up", "hooded zip up", "hoody zip up", "hood zipup", "hoodie zipup", "hooded zipup", "hoody zipup"], "queryAliases": ["후드", "상의"] },
     { "id": "sweatshirt", "label": "맨투맨", "keywords": ["맨투맨", "스웨트셔츠", "스웨트 셔츠", "sweatshirt", "sweat shirt", "crewneck", "crew neck", "크루넥"], "queryAliases": ["트레이닝복", "츄리닝", "상의"] },
     { "id": "shirt", "label": "셔츠", "keywords": ["셔츠", "남방", "shirt", "우븐 셔츠", "oxford shirt", "overshirt", "over shirt", "blouse", "블라우스"], "exclude": ["티셔츠", "t-shirt", "t shirt", "tshirt", "tee", "sweatshirt", "sweat shirt", "스웨트", "맨투맨"], "queryAliases": ["상의"] },
+    { "id": "sleeveless_top", "label": "나시", "keywords": ["나시", "민소매", "sleeveless", "camisole", "cami", "bralette"], "queryAliases": ["상의"] },
     { "id": "tshirt", "label": "티셔츠", "keywords": ["티셔츠", "티 셔츠", "t-shirt", "t shirt", "tshirt", "tee", "반팔", "반팔티", "half tee", "ss tee", "^tank", "tank top", "탱크탑"], "exclude": ["긴팔", "긴팔티", "롱슬리브", "롱 슬리브", "long sleeve", "longsleeve", "long-sleeve", "ls tee", "l/s tee"], "queryAliases": ["상의"] },
     { "id": "longsleeve_tee", "label": "긴팔티셔츠", "keywords": ["긴팔티", "긴팔 티셔츠", "긴팔티셔츠", "긴팔", "롱슬리브", "롱 슬리브", "long sleeve", "longsleeve", "long-sleeve", "ls tee", "l/s tee"], "exclude": ["반팔", "half tee", "ss tee"], "queryAliases": ["상의", "롱슬리브"] },
     { "id": "knit", "label": "니트", "keywords": ["니트", "스웨터", "knit", "sweater", "가디건", "cardigan", "니트웨어", "니트가디건", "pullover"], "exclude": ["hood", "hoodie", "hooded", "hoody"], "queryAliases": ["상의"] },
@@ -23,7 +24,6 @@
     { "id": "bag", "label": "가방", "keywords": ["가방", "bag", "tote", "토트", "크로스백", "크로스바디", "cross bag", "backpack", "백팩", "숄더백", "pouch", "포치", "waist bag"] },
     { "id": "shoes", "label": "신발", "keywords": ["신발", "슈즈", "^shoe", "sneaker", "스니커", "boot", "부츠", "샌들", "sandal", "로퍼", "loafer", "derby", "mule", "clog", "슬립온", "mary jane", "메리제인", "flat shoes", "trainers"], "exclude": ["bootscut", "boot cut", "bootcut", "boot-cut"] },
     { "id": "acc", "label": "액세서리", "keywords": ["액세서리", "accessory", "벨트", "belt", "sock", "양말", "머플러", "muffler", "스카프", "scarf", "glove", "장갑", "키링", "keyring", "keychain", "clip", "넥워머", "gaiter", "wallet", "지갑", "necklace", "목걸이", "bracelet", "팔찌", "반지", "^ring", "earring", "귀걸이", "sunglasses", "선글라스", "bandana", "반다나"] },
-    { "id": "sleeveless_top", "label": "나시", "keywords": ["나시", "민소매", "sleeveless", "camisole", "cami", "bralette"], "queryAliases": ["상의"] },
     { "id": "etc", "label": "기타", "keywords": [], "queryAliases": ["기타"] }
   ]
 }

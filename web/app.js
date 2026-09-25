@@ -2,11 +2,29 @@
 // 보안은 RLS(supabase/schema.sql)가 담당: 내 폴더(user_brands)는 로그인한 나만 보고 고치고,
 // brands/product_group/offer는 다 같이 읽지만 쓰기는 서비스 롤(수집 파이프라인)만 가능.
 
+// "로그인 상태 유지" 체크박스 값에 따라 세션 토큰을 localStorage(껐다 켜도 유지)
+// 또는 sessionStorage(탭 닫으면 삭제)에 쓴다. 체크 여부 자체는 항상 localStorage에 기억.
+const REMEMBER_KEY = 'auth_remember';
+function setRememberLogin(remember) {
+  try { localStorage.setItem(REMEMBER_KEY, remember ? '1' : '0'); } catch {}
+}
+function shouldRemember() {
+  try { return localStorage.getItem(REMEMBER_KEY) !== '0'; } catch { return true; }
+}
+const hybridStorage = {
+  getItem: (key) => localStorage.getItem(key) ?? sessionStorage.getItem(key),
+  setItem: (key, value) => {
+    (shouldRemember() ? localStorage : sessionStorage).setItem(key, value);
+    (shouldRemember() ? sessionStorage : localStorage).removeItem(key);
+  },
+  removeItem: (key) => { localStorage.removeItem(key); sessionStorage.removeItem(key); },
+};
+
 const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
   auth: {
-    persistSession: true,    // 세션을 localStorage에 저장 → 앱 다시 열어도 로그인 유지
+    persistSession: true,    // 세션을 저장 → 앱 다시 열어도 로그인 유지
     autoRefreshToken: true,  // 토큰 만료 전에 자동 갱신
-    storage: window.localStorage,
+    storage: hybridStorage,
     detectSessionInUrl: false,
   },
 });
@@ -158,6 +176,7 @@ function openAuthDialog() {
   updateAuthDialogMode();
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
+  document.getElementById('authRemember').checked = shouldRemember();
   resetAuthMsg();
   authDialog.showModal();
 }
@@ -208,6 +227,7 @@ async function submitAuth() {
   msg.className = '';
   msg.style.display = 'block';
   msg.textContent = '처리 중…';
+  setRememberLogin(document.getElementById('authRemember').checked);
   if (authMode === 'signin') {
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) { msg.className = 'warn'; msg.textContent = authErrorMessage(error, 'signin'); return; }
