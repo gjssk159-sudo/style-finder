@@ -2,7 +2,14 @@
 // 보안은 RLS(supabase/schema.sql)가 담당: 내 폴더(user_brands)는 로그인한 나만 보고 고치고,
 // brands/product_group/offer는 다 같이 읽지만 쓰기는 서비스 롤(수집 파이프라인)만 가능.
 
-const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,    // 세션을 localStorage에 저장 → 앱 다시 열어도 로그인 유지
+    autoRefreshToken: true,  // 토큰 만료 전에 자동 갱신
+    storage: window.localStorage,
+    detectSessionInUrl: false,
+  },
+});
 let currentUser = null;
 let myFolderIds = []; // 현재 보고 있는 폴더(내 폴더 또는 공유받은 폴더)에 있는 brand_id 목록
 let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
@@ -890,11 +897,6 @@ for (const id of ['color', 'size', 'brand', 'sort', 'inStock']) document.getElem
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
 (async () => {
-  await window.StyleFinderTaxonomy.loadTaxonomy();
-  renderChips();
-  await loadFacetSelectors();
-  await loadAllBrands(); // brands는 누구나 읽기 가능 — 로그인 전에도 공유 폴더 열람/검색 매칭에 필요
-
   const initial = new URLSearchParams(location.search);
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
   if (initial.get('color')) document.getElementById('color').value = initial.get('color');
@@ -910,8 +912,14 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
     }
   }
 
-  const { data: { session } } = await sb.auth.getSession();
-  currentUser = session?.user || null;
+  // 서로 독립적인 초기 요청들(사전 로드, 브랜드 목록, 로그인 세션)을 동시에 보내서
+  // 줄줄이 기다리며 부팅마다 1~2초씩 걸리던 걸 줄임.
+  const [, , sessionResult] = await Promise.all([
+    window.StyleFinderTaxonomy.loadTaxonomy().then(() => { renderChips(); return loadFacetSelectors(); }),
+    loadAllBrands(), // brands는 누구나 읽기 가능 — 로그인 전에도 공유 폴더 열람/검색 매칭에 필요
+    sb.auth.getSession(),
+  ]);
+  currentUser = sessionResult.data.session?.user || null;
   renderAuthArea();
 
   const shareParam = initial.get('share');
