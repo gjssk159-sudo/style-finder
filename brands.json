@@ -541,6 +541,20 @@
       "notes": "자동 판별됨 (cafe24_sitemap)."
     },
     {
+      "id": "krackerhouse",
+      "name": "크래커하우스",
+      "nameEn": "Krackerhouse",
+      "type": "brand",
+      "shopUrl": "https://krackerhouse.com",
+      "platform": "cafe24",
+      "discovery": {
+        "path": "/sitemap.xml",
+        "method": "cafe24_sitemap"
+      },
+      "status": "ready",
+      "notes": "자동 판별됨 (cafe24_sitemap)."
+    },
+    {
       "id": "label-archive",
       "name": "LABEL ARCHIVE",
       "nameEn": "LABEL ARCHIVE",

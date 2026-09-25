@@ -37,6 +37,15 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
       try {
         const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .shopProductWrapper, a[href*="/products/"], a[href*="/product/"], .empty' });
         cards = await extractCards(pw);
+        // 상품이 많은 카테고리(mudule.com의 mudule0/mer 등 여러 페이지짜리)는 waitForSelector가
+        // 먼저 뜨는 스켈레톤(제목/가격 placeholder)에 반응해버려서 카드가 0개로 잡히는 경우가 있었음.
+        // 진짜 빈 페이지(.empty 존재)가 아니면 하이드레이션이 끝날 때까지 몇 번 더 기다려본다.
+        for (let attempt = 0; cards.length === 0 && attempt < 5; attempt++) {
+          const isEmpty = await pw.$('.empty').then(Boolean).catch(() => false);
+          if (isEmpty) break;
+          await pw.waitForTimeout(700);
+          cards = await extractCards(pw);
+        }
         await context.close();
       } catch (err) {
         console.warn(`  ! ${url} -> ${err.message}`);
