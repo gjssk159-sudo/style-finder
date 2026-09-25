@@ -895,8 +895,7 @@
       "shopUrl": "https://saros.kr",
       "platform": "cafe24",
       "discovery": {
-        "path": "/sitemap.xml",
-        "method": "cafe24_sitemap"
+        "method": "cafe24_categories"
       },
       "status": "ready",
       "notes": "자동 판별됨 (cafe24_sitemap)."

@@ -38,7 +38,18 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
   // 오래된 상품들만 가리켜서 신뢰 불가) sitemap 시도 자체를 건너뜀.
   const forceCategories = source.discovery?.method === 'cafe24_categories';
   const allUrls = forceCategories ? [] : await collectSitemapUrls(base + sitemapPath);
-  productUrls = [...new Set(allUrls.filter(isProductUrl))];
+  const baseHost = new URL(base).hostname;
+  // sitemap.xml이 (도메인 이전/공유 호스팅 등의 이유로) 완전히 다른 도메인을 가리키는 경우가 실제로
+  // 있음(실측: saros.kr의 sitemap이 sgnt.co.kr — 다른 회사 가구 쇼핑몰 — 상품만 나열하고 있었음).
+  // 그런 sitemap을 그대로 믿으면 전혀 다른 브랜드의 상품이 섞여 들어가므로, base와 호스트가 다른
+  // URL은 무조건 버린다.
+  const sameHost = allUrls.filter((u) => {
+    try { return new URL(u).hostname === baseHost; } catch { return false; }
+  });
+  if (sameHost.length < allUrls.length) {
+    console.log(`  sitemap에 다른 도메인 URL ${allUrls.length - sameHost.length}개 발견 → 제외`);
+  }
+  productUrls = [...new Set(sameHost.filter(isProductUrl))];
   // sitemap이 있어도 상품이 너무 적으면(예: 61개 URL 중 상품 1개) 실제로는 오래됐거나
   // 비공개 상품이 대부분 빠진 불완전한 sitemap일 가능성이 큼 -> 카테고리 크롤링으로 보정.
   if (!forceCategories && productUrls.length >= 5) {
