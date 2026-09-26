@@ -7,6 +7,9 @@
 //  - 카테고리 목록은 홈 GNB의 최상위 숫자 경로(/123)들
 
 import { renderPage } from '../lib/browser.js';
+import { mapPool } from '../lib/concurrency.js';
+
+const CATEGORY_CONCURRENCY = 4;
 
 export async function collectImweb(source, { limit = Infinity } = {}) {
   const base = source.shopUrl.replace(/\/$/, '');
@@ -16,21 +19,33 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
 
   const items = new Map(); // idx -> item (여러 카테고리에 중복 등장 방지)
 
-  for (const catHref of categoryHrefs) {
-    if (items.size >= limit) break;
+  // 카테고리끼리는 서로 독립적(다른 목록)이라 동시에 처리 가능 — 순차로 하나씩 돌면
+  // 카테고리 많은 브랜드(label-archive 등)가 지나치게 오래 걸림. 카테고리 안 페이지 순서는
+  // emptyStreak 판정 때문에 순차 유지.
+  await mapPool(categoryHrefs, async (catHref) => {
+    if (items.size >= limit) return;
     let page = 1;
     let emptyStreak = 0;
     while (page <= 20) {
       if (items.size >= limit) break;
       const url = `${base}${catHref}${catHref.includes('?') ? '&' : '?'}page=${page}`;
       let cards = [];
-      try {
-        const { page: pw, context } = await renderPage(url);
-        cards = await extractCards(pw);
-        await context.close();
-      } catch (err) {
-        console.warn(`  ! ${url} -> ${err.message}`);
-        break;
+      // 타임아웃/일시적 네트워크 에러로 카테고리 전체를 포기하면, 하필 그 페이지에서 끊겼는지에 따라
+      // 실행할 때마다 결과 개수가 들쭉날쭉해짐(실측: earthjigu 214개↔81개). 몇 번 재시도해보고
+      // 그래도 안 되면 이 페이지만 빈 것으로 치고 다음 페이지로 넘어간다(카테고리 전체는 안 버림).
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        try {
+          // waitForSelector를 안 주면 매 페이지마다 무조건 2초씩 고정으로 기다려서(브랜드마다
+          // 페이지 수십 개면 그것만으로도 크게 느려짐) 상품 카드가 뜨는 즉시 넘어가게 지정.
+          // 진짜 빈 페이지(더 없음)면 8초 타임아웃 후 그냥 진행(=found 0으로 자연 처리).
+          const { page: pw, context } = await renderPage(url, { waitForSelector: 'a[href*="idx="]' });
+          cards = await extractCards(pw);
+          await context.close();
+          ok = true;
+        } catch (err) {
+          if (attempt === 2) console.warn(`  ! ${url} -> ${err.message}`);
+        }
       }
 
       let found = 0;
@@ -47,7 +62,7 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
       }
       page++;
     }
-  }
+  }, CATEGORY_CONCURRENCY);
 
   return [...items.values()].slice(0, Number.isFinite(limit) ? limit : undefined);
 }
@@ -56,10 +71,23 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
 // 친화적 슬러그(/outerwear, /pants, earthjigu.com)를 쓰는 곳도 있어서 패턴 하나로 못 잡음.
 // 그래서 로그인/장바구니/문의 같은 뻔한 비카테고리 경로만 걸러내고 나머지 최상위 경로를
 // 전부 후보로 시도한다 (진짜 카테고리가 아니면 상품이 0개 나와서 자연히 스킵됨).
-const NON_CATEGORY = /^(login|logout|shop_cart|cart|faq|home|mypage|join|order|board|event|notice|search|member|about|contact|terms|privacy|shipping)/i;
+const NON_CATEGORY = /^(login|logout|shop_cart|cart|faq|home|mypage|join|order|board|event|notice|search|member|about|contact|terms|privacy|shipping|stockist|site_join)/i;
 
 async function discoverCategories(base) {
-  const { page, context } = await renderPage(base + '/');
+  // 여기서 실패하면 브랜드 전체가 통째로 죽으므로(카테고리 자체를 못 찾음), 일시적
+  // 타임아웃/네트워크 에러는 몇 번 재시도한다.
+  let page, context;
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      ({ page, context } = await renderPage(base + '/'));
+      lastErr = null;
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
   try {
     const hrefs = await page.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
     const out = new Set();

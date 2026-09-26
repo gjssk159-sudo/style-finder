@@ -32,24 +32,32 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
     let emptyStreak = 0;
     while (page <= 15) {
       if (items.size >= limit) break;
-      const url = `${base}${catPath}?page=${page}`;
+      // sixshop 테마 커스텀 슬러그 카테고리는 실제 페이지네이션 파라미터가 productListPage다
+      // (?page=는 그냥 무시되고 항상 1페이지만 나옴 — mudule.com에서 실측 확인).
+      const url = `${base}${catPath}?productListPage=${page}`;
       let cards = [];
-      try {
-        const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .shopProductWrapper, a[href*="/products/"], a[href*="/product/"], .empty' });
-        cards = await extractCards(pw);
-        // 상품이 많은 카테고리(mudule.com의 mudule0/mer 등 여러 페이지짜리)는 waitForSelector가
-        // 먼저 뜨는 스켈레톤(제목/가격 placeholder)에 반응해버려서 카드가 0개로 잡히는 경우가 있었음.
-        // 진짜 빈 페이지(.empty 존재)가 아니면 하이드레이션이 끝날 때까지 몇 번 더 기다려본다.
-        for (let attempt = 0; cards.length === 0 && attempt < 5; attempt++) {
-          const isEmpty = await pw.$('.empty').then(Boolean).catch(() => false);
-          if (isEmpty) break;
-          await pw.waitForTimeout(700);
+      // 타임아웃/일시적 네트워크 에러로 카테고리 전체를 포기하면, 하필 그 페이지에서 끊겼는지에 따라
+      // 실행할 때마다 결과 개수가 들쭉날쭉해짐. 몇 번 재시도해보고 그래도 안 되면 이 페이지만
+      // 빈 것으로 치고 다음 페이지로 넘어간다(카테고리 전체는 안 버림).
+      let ok = false;
+      for (let attempt = 0; attempt < 3 && !ok; attempt++) {
+        try {
+          const { page: pw, context } = await renderPage(url, { waitForSelector: '.product-item, .shopProductWrapper, a[href*="/products/"], a[href*="/product/"], .empty' });
           cards = await extractCards(pw);
+          // 상품이 많은 카테고리(mudule.com의 mudule0/mer 등 여러 페이지짜리)는 waitForSelector가
+          // 먼저 뜨는 스켈레톤(제목/가격 placeholder)에 반응해버려서 카드가 0개로 잡히는 경우가 있었음.
+          // 진짜 빈 페이지(.empty 존재)가 아니면 하이드레이션이 끝날 때까지 몇 번 더 기다려본다.
+          for (let hydrateAttempt = 0; cards.length === 0 && hydrateAttempt < 5; hydrateAttempt++) {
+            const isEmpty = await pw.$('.empty').then(Boolean).catch(() => false);
+            if (isEmpty) break;
+            await pw.waitForTimeout(700);
+            cards = await extractCards(pw);
+          }
+          await context.close();
+          ok = true;
+        } catch (err) {
+          if (attempt === 2) console.warn(`  ! ${url} -> ${err.message}`);
         }
-        await context.close();
-      } catch (err) {
-        console.warn(`  ! ${url} -> ${err.message}`);
-        break;
       }
 
       let found = 0;
@@ -72,7 +80,19 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
 }
 
 async function discoverCategories(base) {
-  const { page, context } = await renderPage(base + '/');
+  // 여기서 실패하면 브랜드 전체가 통째로 죽으므로, 일시적 타임아웃/네트워크 에러는 재시도한다.
+  let page, context;
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      ({ page, context } = await renderPage(base + '/'));
+      lastErr = null;
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
   try {
     const hrefs = await page.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
     return [...new Set(hrefs.filter((h) => h && CATEGORY_RE.test(h)))];
