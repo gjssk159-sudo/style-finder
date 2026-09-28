@@ -810,6 +810,12 @@ function armImageTimeouts(container) {
   }
 }
 
+// 모바일/PWA에서는 target="_blank"가 새 탭이 아니라 새 웹뷰를 새로 띄우는 식으로 동작해서
+// 열리는 데 오래 걸리고, 뒤로가기도 애매해짐(실측: 상품 클릭 후 뒤로가기하면 스크롤/더보기
+// 상태가 날아감). 데스크톱은 새 탭이 편하니 그대로 두고, 모바일/설치된 PWA에서만 같은
+// 화면에서 바로 이동하게 해서 빠르고 뒤로가기도 평범하게 동작하도록 함.
+const OPEN_IN_PLACE = matchMedia('(display-mode: standalone)').matches || matchMedia('(max-width: 820px)').matches;
+
 function cardsHtml(data) {
   return data
     .map((g) => {
@@ -821,7 +827,8 @@ function cardsHtml(data) {
           return `<span class="tag" style="background:${bg};color:${fg}">${c}</span>`;
         })
         .join('');
-      return `<a class="card" href="${url}" target="_blank" rel="noopener">
+      const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
+      return `<a class="card" href="${url}" ${linkAttrs}>
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
           ${g.image ? `<img src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
@@ -885,6 +892,7 @@ async function go() {
   grid.innerHTML = cardsHtml(data);
   armImageTimeouts(grid);
   updateMoreButton(data.length);
+  saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
 async function loadMore() {
@@ -896,6 +904,7 @@ async function loadMore() {
   grid.insertAdjacentHTML('beforeend', cardsHtml(data));
   armImageTimeouts(grid);
   updateMoreButton(pageOffset + data.length);
+  saveScrollState();
 }
 
 // ---------------- 스크롤/더보기 상태 복원 ----------------
@@ -918,6 +927,13 @@ function saveScrollState() {
 }
 addEventListener('pagehide', saveScrollState);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState(); });
+// "떠나는 순간" 이벤트만 믿으면 모바일 브라우저마다 타이밍이 달라서 못 미더우므로,
+// 스크롤하는 동안에도 계속 저장해서 언제 떠나든 최신 상태가 이미 저장돼 있게 한다.
+let scrollSaveTimer = null;
+addEventListener('scroll', () => {
+  clearTimeout(scrollSaveTimer);
+  scrollSaveTimer = setTimeout(saveScrollState, 200);
+}, { passive: true });
 
 // go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
 // 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
