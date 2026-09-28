@@ -2,6 +2,12 @@
 // 보안은 RLS(supabase/schema.sql)가 담당: 내 폴더(user_brands)는 로그인한 나만 보고 고치고,
 // brands/product_group/offer는 다 같이 읽지만 쓰기는 서비스 롤(수집 파이프라인)만 가능.
 
+// 상품 클릭 후 뒤로가기(bfcache 복원)하면 iOS가 자체적으로 스크롤을 0으로 리셋해버리는 게
+// 진짜 원인이었음(실측 확인됨). pageshow에서 우리가 다시 옮겨도 iOS가 그 뒤에 또 0으로
+// 되돌리는 경쟁이 계속 있었는데, 'manual'로 바꾸면 브라우저가 스크롤 복원 자체를 안 건드리고
+// 전적으로 우리(pageshow 핸들러)에게 맡긴다 — 애초에 싸울 상대가 없어짐.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
 // "로그인 상태 유지" 체크박스 값에 따라 세션 토큰을 localStorage(껐다 켜도 유지)
 // 또는 sessionStorage(탭 닫으면 삭제)에 쓴다. 체크 여부 자체는 항상 localStorage에 기억.
 const REMEMBER_KEY = 'auth_remember';
@@ -37,7 +43,7 @@ let currentFolderId = null; // 지금 검색에 쓰이는 폴더 id
 let sharedView = null;      // 공유 링크로 남의 폴더를 보는 중이면 {id,name,share_id,user_id}
 let bootComplete = false;   // 부팅 흐름이 스크롤 복원 여부를 판단하기 전까지, 초기 세션 감지 이벤트가 go()로 화면을 덮어쓰지 않게 막는 플래그
 const PAGE_SIZE = 60;
-let pageOffset = 0;
+let currentPage = 1; // 1부터 시작
 let lastTotal = 0;
 
 // "müdule"/"jabbérwocky"처럼 발음기호 들어간 브랜드명을 "mudule"/"jabberwocky"로 쳐도 찾게.
@@ -750,6 +756,7 @@ function qs() {
   if (inStock) p.set('inStock', '1');
   if (currentGender) p.set('gender', currentGender);
   if (sharedView) p.set('share', sharedView.share_id);
+  if (currentPage > 1) p.set('p', currentPage);
   return p;
 }
 
@@ -844,23 +851,25 @@ function cardsHtml(data) {
     .join('');
 }
 
-function updateMoreButton(shownCount) {
+// 예전엔 "더보기"로 계속 쌓아서 보여줬는데, 모바일에서 상품 클릭 후 뒤로가기하면 스크롤이
+// 맨 위로 리셋되는 iOS 버그(뒤에서 설명) 때문에 쌓아둔 게 많을수록 "맨 처음까지 되돌아간
+// 것처럼" 크게 티가 났음. 페이지 단위로 나누면 리셋돼도 "그 페이지 맨 위"까지만 밀리니까
+// 훨씬 덜 거슬리고, 몇 페이지째인지 URL에도 남아서(qs()의 p) 새로고침해도 그 페이지 그대로 뜬다.
+function updatePager() {
   const wrap = document.getElementById('moreWrap');
-  const btn = document.getElementById('moreBtn');
-  if (lastTotal > shownCount) {
-    wrap.style.display = 'block';
-    btn.textContent = `더 보기 (${shownCount}/${lastTotal})`;
-  } else {
-    wrap.style.display = 'none';
-  }
+  const totalPages = Math.max(1, Math.ceil(lastTotal / PAGE_SIZE));
+  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+  document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+  document.getElementById('pageLabel').textContent = `${currentPage} / ${totalPages}페이지 · 총 ${lastTotal}개`;
 }
 
-async function go() {
+async function renderCurrentPage() {
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
   const p = qs();
   history.replaceState(0, '', p.toString() ? '?' + p.toString() : location.pathname);
-  pageOffset = 0;
 
   if (!currentUser && !sharedView) {
     meta.textContent = '';
@@ -877,7 +886,8 @@ async function go() {
     return;
   }
 
-  const { query, categories, colors, keywords } = buildQuery(pageOffset);
+  const offset = (currentPage - 1) * PAGE_SIZE;
+  const { query, categories, colors, keywords } = buildQuery(offset, PAGE_SIZE);
   const { data, error, count } = await query;
   if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
 
@@ -891,40 +901,21 @@ async function go() {
   if (!data.length) { grid.innerHTML = '<div class="empty"><span class="empty-icon">🔎</span>결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
   grid.innerHTML = cardsHtml(data);
   armImageTimeouts(grid);
-  updateMoreButton(data.length);
+  updatePager();
   saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
-let loadingMore = false;
-async function loadMore() {
-  // "더보기" 버튼만 다시 못 누르게 막아도, 로딩 중에 화면에 이미 떠 있는 다른 상품을 눌러서
-  // 나가버리면 아직 안 붙은 다음 목록은 저장이 안 되고 그 전 상태(더보기 누르기 전)만 남아
-  // "복원해도 다시 처음으로 돌아간다"로 보였음(실측: shown 60, scrollY 9871 — 더보기 버튼
-  // 바로 위까지 스크롤한 상태에서 응답을 못 기다리고 나간 경우). 그래서 버튼만 막는 게 아니라
-  // 로딩 중엔 그리드 전체를 못 누르게(pointer-events:none) 막아서 빠져나갈 구멍을 없앤다.
-  if (loadingMore) return;
-  loadingMore = true;
-  const btn = document.getElementById('moreBtn');
-  const grid = document.getElementById('grid');
-  const prevText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = '불러오는 중…';
-  grid.style.pointerEvents = 'none';
-  try {
-    pageOffset += PAGE_SIZE;
-    const { query } = buildQuery(pageOffset);
-    const { data, error } = await query;
-    if (error) { pageOffset -= PAGE_SIZE; return; }
-    grid.insertAdjacentHTML('beforeend', cardsHtml(data));
-    armImageTimeouts(grid);
-    updateMoreButton(pageOffset + data.length);
-    saveScrollState();
-  } finally {
-    loadingMore = false;
-    btn.disabled = false;
-    grid.style.pointerEvents = '';
-    if (btn.textContent === '불러오는 중…') btn.textContent = prevText;
-  }
+async function go() {
+  currentPage = 1;
+  await renderCurrentPage();
+}
+
+async function goToPage(page) {
+  const totalPages = Math.max(1, Math.ceil(lastTotal / PAGE_SIZE));
+  if (page < 1 || page > totalPages || page === currentPage) return;
+  currentPage = page;
+  await renderCurrentPage();
+  window.scrollTo(0, 0); // 새 페이지로 넘어간 거니 평범한 페이지네이션처럼 맨 위에서 시작
 }
 
 // ---------------- 스크롤/더보기 상태 복원 ----------------
@@ -939,15 +930,15 @@ async function loadMore() {
 const SCROLL_STATE_KEY = 'sf_scroll_state';
 const SCROLL_STATE_MAX_AGE_MS = 30 * 60 * 1000;
 
-// 원인 파악용 임시 로그 — 어떤 저장이 최종값을 덮어썼는지 순서를 보려고 마지막 몇 번을 남김.
-const SAVE_LOG_KEY = 'sf_save_log';
+// 페이지 단위로 바뀌면서 "몇 개를 불러왔었는지"는 이제 URL의 p로 충분히 복원되니, 여기선
+// 그 페이지 안에서 스크롤로 어디까지 내려가 있었는지만 기억하면 된다(상품을 눌러서 나갔다가
+// 뒤로가기했을 때 정확히 그 지점으로). 페이지를 실제로 넘기는 것(goToPage)과는 다른 얘기라
+// 그때는 평범하게 맨 위에서 시작한다.
 function saveScrollState() {
-  const shown = document.querySelectorAll('#grid .card').length;
-  if (!shown) return;
+  if (!document.querySelector('#grid .card')) return;
   try {
     localStorage.setItem(SCROLL_STATE_KEY, JSON.stringify({
       params: qs().toString(),
-      shown,
       scrollY: window.scrollY,
       savedAt: Date.now(),
     }));
@@ -963,38 +954,21 @@ addEventListener('scroll', () => {
   scrollSaveTimer = setTimeout(saveScrollState, 200);
 }, { passive: true });
 
-// go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
-// 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
-// 호출한 쪽이 평범하게 go()를 부르게 한다.
-async function restoreIfReturning() {
+// 지금 조건(qs())과 저장해둔 조건이 같을 때만, 저장해둔 스크롤 위치로 옮긴다.
+function restoreScrollIfMatching() {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
-  if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
-  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
-  if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
-  localStorage.removeItem(SCROLL_STATE_KEY);
-
-  const grid = document.getElementById('grid');
-  const meta = document.getElementById('meta');
-  history.replaceState(0, '', saved.params ? '?' + saved.params : location.pathname);
-
-  const { query, categories, colors, keywords } = buildQuery(0, saved.shown);
-  const { data, error, count } = await query;
-  if (error || !data.length) return false;
-
-  lastTotal = count || 0;
-  pageOffset = Math.max(0, Math.ceil(data.length / PAGE_SIZE) - 1) * PAGE_SIZE;
-  const parts = [`${lastTotal}개`];
-  if (categories.length) parts.push('카테고리: ' + categories.join(', '));
-  if (colors.length) parts.push('색상: ' + colors.join(', '));
-  if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
-  meta.textContent = parts.join('  ·  ');
-  grid.innerHTML = cardsHtml(data);
-  armImageTimeouts(grid);
-  updateMoreButton(data.length);
-  setTimeout(() => window.scrollTo(0, saved.scrollY), 50);
-  return true;
+  if (!saved || saved.params !== qs().toString()) return;
+  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return;
+  // 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로
+  // 얼렸다가 복원하는데(bfcache), 이때 스크롤 위치를 0으로 리셋해버리는 iOS/WebKit
+  // 버그가 있음. 한 번만 옮기면 그 뒤에 iOS가 다시 0으로 되돌리는 경우가 있어서,
+  // 여러 시점에 걸쳐 반복해서 강제로 맞춰준다.
+  for (const delay of [0, 50, 100, 200, 400, 800]) {
+    setTimeout(() => window.scrollTo(0, saved.scrollY), delay);
+  }
 }
+addEventListener('pageshow', (e) => { if (e.persisted) restoreScrollIfMatching(); });
 
 function renderChips() {
   document.getElementById('chips').innerHTML = window.StyleFinderTaxonomy.CATEGORIES
@@ -1036,6 +1010,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
       btn.classList.toggle('active', btn.dataset.gender === currentGender);
     }
   }
+  if (initial.get('p')) currentPage = Math.max(1, parseInt(initial.get('p'), 10) || 1);
 
   // 서로 독립적인 초기 요청들(사전 로드, 브랜드 목록, 로그인 세션)을 동시에 보내서
   // 줄줄이 기다리며 부팅마다 1~2초씩 걸리던 걸 줄임.
@@ -1057,27 +1032,10 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   renderFolderTabs();
   updateFolderNavLabel();
   renderSharedBanner();
-  // 예전엔 여기서 브랜드 필터가 있으면 pickBrand()를 await 없이 불렀는데, 그 안의 go()가
-  // 뒤이은 restoreIfReturning()과 순서가 뒤섞여 복원한 화면을 나중에 덮어써버릴 수 있었음(레이스).
-  // 브랜드 값은 위에서 이미 채워놨으니 여기선 무조건 이 한 경로로만 그린다.
-  if (!(await restoreIfReturning())) go();
+  // currentPage는 위에서 URL의 p로 이미 정해놨으니 go()(항상 1페이지로 리셋)가 아니라
+  // renderCurrentPage()로 바로 그 페이지를 그린다. 스크롤 위치는 pageshow(bfcache 복원)에서
+  // 따로 처리하지만, 이건 일반 로드(새로고침 등)에도 적용되게 여기서도 한 번 시도한다.
+  await renderCurrentPage();
+  restoreScrollIfMatching();
   bootComplete = true;
 })();
-
-// 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로 얼렸다가
-// 복원한다(bfcache) — DOM(카드 120개 등)은 이미 온전히 그대로 있는데, 스크롤 위치만 0으로
-// 리셋되는 iOS/WebKit의 알려진 동작. 그래서 "더보기 누르기 전으로 돌아간 것처럼" 보였을 뿐,
-// 실제로 상품이 사라진 적은 없었음. bfcache 복원 순간을 감지해서 저장해둔 스크롤 위치로
-// 옮겨주기만 하면 끝 — 위의 restoreIfReturning()(데이터 다시 불러오기)는 이 경우엔 필요 없음.
-addEventListener('pageshow', (e) => {
-  if (!e.persisted) return;
-  let saved;
-  try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
-  if (!saved || saved.params !== qs().toString()) return;
-  // pageshow가 뜬 시점에 딱 한 번만 옮기면, iOS 자체의 스크롤 리셋이 그 뒤에 늦게 일어나서
-  // 우리가 옮겨놓은 걸 다시 덮어써버리는 경우가 있었음(실측: 여전히 맨 위로 감). 언제
-  // 끝날지 몰라서 여러 시점에 걸쳐 반복해서 강제로 맞춰준다.
-  for (const delay of [0, 50, 100, 200, 400, 800]) {
-    setTimeout(() => window.scrollTo(0, saved.scrollY), delay);
-  }
-});

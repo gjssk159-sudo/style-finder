@@ -200,7 +200,9 @@
 </header>
 <main><div class="shared-banner-bar" id="sharedBanner" style="display:none"></div><div class="meta-row"><div class="meta" id="meta"></div></div><div class="grid" id="grid"></div>
 <div class="more-wrap" id="moreWrap" style="display:none">
-  <button class="secondary" id="moreBtn" onclick="loadMore()">더 보기</button>
+  <button class="secondary" id="prevPageBtn" onclick="goToPage(currentPage - 1)">이전</button>
+  <span id="pageLabel" style="margin:0 12px;color:var(--sub);font-size:12.5px"></span>
+  <button class="secondary" id="nextPageBtn" onclick="goToPage(currentPage + 1)">다음</button>
 </div>
 </main>
 
