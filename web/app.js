@@ -892,7 +892,7 @@ async function go() {
   grid.innerHTML = cardsHtml(data);
   armImageTimeouts(grid);
   updateMoreButton(data.length);
-  saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
+  saveScrollState('go'); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
 let loadingMore = false;
@@ -925,7 +925,7 @@ async function loadMore() {
     grid.insertAdjacentHTML('beforeend', cardsHtml(data));
     armImageTimeouts(grid);
     updateMoreButton(pageOffset + data.length);
-    saveScrollState();
+    saveScrollState('loadMore');
   } finally {
     loadingMore = false;
     btn.disabled = false;
@@ -946,7 +946,9 @@ async function loadMore() {
 const SCROLL_STATE_KEY = 'sf_scroll_state';
 const SCROLL_STATE_MAX_AGE_MS = 30 * 60 * 1000;
 
-function saveScrollState() {
+// 원인 파악용 임시 로그 — 어떤 저장이 최종값을 덮어썼는지 순서를 보려고 마지막 몇 번을 남김.
+const SAVE_LOG_KEY = 'sf_save_log';
+function saveScrollState(source) {
   const shown = document.querySelectorAll('#grid .card').length;
   if (!shown) return;
   try {
@@ -956,25 +958,29 @@ function saveScrollState() {
       scrollY: window.scrollY,
       savedAt: Date.now(),
     }));
+    const log = JSON.parse(localStorage.getItem(SAVE_LOG_KEY) || '[]');
+    log.push({ source, shown, scrollY: Math.round(window.scrollY), t: Date.now() });
+    localStorage.setItem(SAVE_LOG_KEY, JSON.stringify(log.slice(-8)));
   } catch {}
 }
-addEventListener('pagehide', saveScrollState);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState(); });
+addEventListener('pagehide', () => saveScrollState('pagehide'));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState('visibilitychange'); });
 // "떠나는 순간" 이벤트만 믿으면 모바일 브라우저마다 타이밍이 달라서 못 미더우므로,
 // 스크롤하는 동안에도 계속 저장해서 언제 떠나든 최신 상태가 이미 저장돼 있게 한다.
 let scrollSaveTimer = null;
 addEventListener('scroll', () => {
   clearTimeout(scrollSaveTimer);
-  scrollSaveTimer = setTimeout(saveScrollState, 200);
+  scrollSaveTimer = setTimeout(() => saveScrollState('scroll'), 200);
 }, { passive: true });
 
 // go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
 // 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
 // 호출한 쪽이 평범하게 go()를 부르게 한다.
 async function restoreIfReturning() {
-  let saved;
+  let saved, log;
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
-  alert('저장된 상태: ' + JSON.stringify(saved) + '\n현재 조건: ' + qs().toString() + ' / myFolderIds=' + myFolderIds.length + ' / currentUser=' + !!currentUser);
+  try { log = JSON.parse(localStorage.getItem(SAVE_LOG_KEY) || '[]'); } catch { log = []; }
+  alert('저장된 상태: ' + JSON.stringify(saved) + '\n최근 저장 기록: ' + JSON.stringify(log) + '\n현재 조건: ' + qs().toString() + ' / myFolderIds=' + myFolderIds.length + ' / currentUser=' + !!currentUser);
   if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
   if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
   if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
