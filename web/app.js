@@ -944,19 +944,10 @@ addEventListener('scroll', () => {
 // go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
 // 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
 // 호출한 쪽이 평범하게 go()를 부르게 한다.
-// 원인 파악용 임시 디버그 배너 — 탭하면 사라짐. 원인 찾으면 지울 것.
+// 원인 파악용 임시 진단 — CSS로 띄우던 배너가 iOS PWA에서 위치/표시 문제로 안 보였을 수
+// 있어서, 절대 놓칠 수 없는 네이티브 alert로 바꿈. 원인 찾으면 지울 것.
 function showDebugBanner(text) {
-  try {
-    let el = document.getElementById('sfDebugBanner');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'sfDebugBanner';
-      el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#111;color:#7fff7f;font:11px/1.4 monospace;padding:8px;max-height:45vh;overflow:auto;white-space:pre-wrap;';
-      el.onclick = () => el.remove();
-      document.body.appendChild(el);
-    }
-    el.textContent = text;
-  } catch {}
+  try { alert(text); } catch {}
 }
 
 async function restoreIfReturning() {
@@ -1033,6 +1024,10 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
   if (initial.get('color')) document.getElementById('color').value = initial.get('color');
   if (initial.get('size')) document.getElementById('size').value = initial.get('size');
+  if (initial.get('brand')) {
+    document.getElementById('brand').value = initial.get('brand');
+    document.getElementById('brandInput').value = initial.get('brand');
+  }
   if (initial.get('sort')) document.getElementById('sort').value = initial.get('sort');
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
   if (initial.get('priceMax')) document.getElementById('priceMax').value = initial.get('priceMax');
@@ -1060,11 +1055,13 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   } else if (currentUser) {
     await loadMyFolders();
     renderBrandFilter(); // loadAllBrands() 시점엔 아직 myFolderIds가 비어있어서 옵션이 없었으므로 다시 채움
-    if (initial.get('brand')) pickBrand(initial.get('brand'));
   }
   renderFolderTabs();
   updateFolderNavLabel();
   renderSharedBanner();
+  // 예전엔 여기서 브랜드 필터가 있으면 pickBrand()를 await 없이 불렀는데, 그 안의 go()가
+  // 뒤이은 restoreIfReturning()과 순서가 뒤섞여 복원한 화면을 나중에 덮어써버릴 수 있었음(레이스).
+  // 브랜드 값은 위에서 이미 채워놨으니 여기선 무조건 이 한 경로로만 그린다.
   if (!(await restoreIfReturning())) go();
   bootComplete = true;
 })();
