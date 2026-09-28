@@ -914,7 +914,14 @@ async function loadMore() {
     pageOffset += PAGE_SIZE;
     const { query } = buildQuery(pageOffset);
     const { data, error } = await query;
-    if (error) return;
+    if (error) {
+      alert('더보기 실패: ' + error.message + '\noffset=' + pageOffset + ' myFolderIds=' + myFolderIds.length);
+      pageOffset -= PAGE_SIZE;
+      return;
+    }
+    if (!data.length) {
+      alert('더보기: 데이터 0개 옴 offset=' + pageOffset + ' myFolderIds=' + myFolderIds.length);
+    }
     grid.insertAdjacentHTML('beforeend', cardsHtml(data));
     armImageTimeouts(grid);
     updateMoreButton(pageOffset + data.length);
@@ -967,6 +974,7 @@ addEventListener('scroll', () => {
 async function restoreIfReturning() {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
+  alert('저장된 상태: ' + JSON.stringify(saved) + '\n현재 조건: ' + qs().toString() + ' / myFolderIds=' + myFolderIds.length + ' / currentUser=' + !!currentUser);
   if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
   if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
   if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
