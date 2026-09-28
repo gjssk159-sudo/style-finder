@@ -911,17 +911,23 @@ async function loadMore() {
 // 모바일(특히 홈화면 추가한 PWA)에서는 상품 카드의 target="_blank"가 새 탭으로 안 열리고
 // 같은 화면에서 이동해버리는 경우가 많아서, 뒤로가기하면 완전히 새로고침되며 스크롤 위치와
 // "더보기"로 불러온 목록이 전부 날아가는 문제가 있었음. 떠나기 직전에 지금 상태(검색 조건,
-// 로드된 개수, 스크롤 위치)를 sessionStorage에 남겨뒀다가, 돌아왔을 때 같은 검색이면 복원한다.
+// 로드된 개수, 스크롤 위치)를 남겨뒀다가, 돌아왔을 때 같은 검색이면 복원한다.
+// sessionStorage 대신 localStorage를 쓰는 이유: iOS PWA(홈 화면에 추가)에서는 외부 사이트로
+// 나갔다 돌아올 때 sessionStorage가 안 살아있는 경우가 있었음(실측: 로그인 유지는 localStorage라
+// 항상 잘 되는데 sessionStorage 기반 스크롤 복원만 계속 실패). 너무 오래된 상태까지 복원되는 걸
+// 막기 위해 타임스탬프를 같이 저장하고 30분 넘으면 무시한다.
 const SCROLL_STATE_KEY = 'sf_scroll_state';
+const SCROLL_STATE_MAX_AGE_MS = 30 * 60 * 1000;
 
 function saveScrollState() {
   const shown = document.querySelectorAll('#grid .card').length;
   if (!shown) return;
   try {
-    sessionStorage.setItem(SCROLL_STATE_KEY, JSON.stringify({
+    localStorage.setItem(SCROLL_STATE_KEY, JSON.stringify({
       params: qs().toString(),
       shown,
       scrollY: window.scrollY,
+      savedAt: Date.now(),
     }));
   } catch {}
 }
@@ -940,10 +946,11 @@ addEventListener('scroll', () => {
 // 호출한 쪽이 평범하게 go()를 부르게 한다.
 async function restoreIfReturning() {
   let saved;
-  try { saved = JSON.parse(sessionStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
+  try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
   if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
+  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
   if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
-  sessionStorage.removeItem(SCROLL_STATE_KEY);
+  localStorage.removeItem(SCROLL_STATE_KEY);
 
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
