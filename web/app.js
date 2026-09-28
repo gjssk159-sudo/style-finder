@@ -897,22 +897,24 @@ async function go() {
 
 let loadingMore = false;
 async function loadMore() {
-  // 로딩 중에 버튼이 그대로 눌러진 채라, 응답 오기 전에 사용자가 다른 상품을 눌러서
+  // "더보기" 버튼만 다시 못 누르게 막아도, 로딩 중에 화면에 이미 떠 있는 다른 상품을 눌러서
   // 나가버리면 아직 안 붙은 다음 목록은 저장이 안 되고 그 전 상태(더보기 누르기 전)만 남아
   // "복원해도 다시 처음으로 돌아간다"로 보였음(실측: shown 60, scrollY 9871 — 더보기 버튼
-  // 바로 위까지 스크롤한 상태에서 응답을 못 기다리고 나간 경우). 중복 클릭 방지 + 로딩 표시.
+  // 바로 위까지 스크롤한 상태에서 응답을 못 기다리고 나간 경우). 그래서 버튼만 막는 게 아니라
+  // 로딩 중엔 그리드 전체를 못 누르게(pointer-events:none) 막아서 빠져나갈 구멍을 없앤다.
   if (loadingMore) return;
   loadingMore = true;
   const btn = document.getElementById('moreBtn');
+  const grid = document.getElementById('grid');
   const prevText = btn.textContent;
   btn.disabled = true;
   btn.textContent = '불러오는 중…';
+  grid.style.pointerEvents = 'none';
   try {
     pageOffset += PAGE_SIZE;
     const { query } = buildQuery(pageOffset);
     const { data, error } = await query;
     if (error) return;
-    const grid = document.getElementById('grid');
     grid.insertAdjacentHTML('beforeend', cardsHtml(data));
     armImageTimeouts(grid);
     updateMoreButton(pageOffset + data.length);
@@ -920,6 +922,7 @@ async function loadMore() {
   } finally {
     loadingMore = false;
     btn.disabled = false;
+    grid.style.pointerEvents = '';
     if (btn.textContent === '불러오는 중…') btn.textContent = prevText;
   }
 }
