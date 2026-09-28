@@ -1071,8 +1071,13 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
 // 옮겨주기만 하면 끝 — 위의 restoreIfReturning()(데이터 다시 불러오기)는 이 경우엔 필요 없음.
 addEventListener('pageshow', (e) => {
   if (!e.persisted) return;
-  try {
-    const saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null');
-    if (saved && saved.params === qs().toString()) window.scrollTo(0, saved.scrollY);
-  } catch {}
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
+  if (!saved || saved.params !== qs().toString()) return;
+  // pageshow가 뜬 시점에 딱 한 번만 옮기면, iOS 자체의 스크롤 리셋이 그 뒤에 늦게 일어나서
+  // 우리가 옮겨놓은 걸 다시 덮어써버리는 경우가 있었음(실측: 여전히 맨 위로 감). 언제
+  // 끝날지 몰라서 여러 시점에 걸쳐 반복해서 강제로 맞춰준다.
+  for (const delay of [0, 50, 100, 200, 400, 800]) {
+    setTimeout(() => window.scrollTo(0, saved.scrollY), delay);
+  }
 });
