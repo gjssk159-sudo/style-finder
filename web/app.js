@@ -1075,3 +1075,11 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (!(await restoreIfReturning())) go();
   bootComplete = true;
 })();
+
+// 진단: 뒤로가기 때 restoreIfReturning() 알림이 전혀 안 뜬다는 제보가 있어서, 스크립트가
+// 다시 실행되는 게 아니라 iOS가 페이지를 그대로 얼렸다 복원하는(bfcache) 것인지 확인.
+// bfcache로 복원되면 이 리스너만 실행되고, 위의 부팅 IIFE는 다시 안 돈다.
+addEventListener('pageshow', (e) => {
+  alert((e.persisted ? '페이지가 bfcache로 복원됨(스크립트 재실행 안 됨)' : '일반 로드(스크립트 재실행됨)')
+    + '\n카드 개수: ' + document.querySelectorAll('#grid .card').length + '\nscrollY: ' + window.scrollY);
+});
