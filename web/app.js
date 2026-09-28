@@ -892,7 +892,7 @@ async function go() {
   grid.innerHTML = cardsHtml(data);
   armImageTimeouts(grid);
   updateMoreButton(data.length);
-  saveScrollState('go'); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
+  saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
 let loadingMore = false;
@@ -914,18 +914,11 @@ async function loadMore() {
     pageOffset += PAGE_SIZE;
     const { query } = buildQuery(pageOffset);
     const { data, error } = await query;
-    if (error) {
-      alert('더보기 실패: ' + error.message + '\noffset=' + pageOffset + ' myFolderIds=' + myFolderIds.length);
-      pageOffset -= PAGE_SIZE;
-      return;
-    }
-    if (!data.length) {
-      alert('더보기: 데이터 0개 옴 offset=' + pageOffset + ' myFolderIds=' + myFolderIds.length);
-    }
+    if (error) { pageOffset -= PAGE_SIZE; return; }
     grid.insertAdjacentHTML('beforeend', cardsHtml(data));
     armImageTimeouts(grid);
     updateMoreButton(pageOffset + data.length);
-    saveScrollState('loadMore');
+    saveScrollState();
   } finally {
     loadingMore = false;
     btn.disabled = false;
@@ -948,7 +941,7 @@ const SCROLL_STATE_MAX_AGE_MS = 30 * 60 * 1000;
 
 // 원인 파악용 임시 로그 — 어떤 저장이 최종값을 덮어썼는지 순서를 보려고 마지막 몇 번을 남김.
 const SAVE_LOG_KEY = 'sf_save_log';
-function saveScrollState(source) {
+function saveScrollState() {
   const shown = document.querySelectorAll('#grid .card').length;
   if (!shown) return;
   try {
@@ -958,29 +951,24 @@ function saveScrollState(source) {
       scrollY: window.scrollY,
       savedAt: Date.now(),
     }));
-    const log = JSON.parse(localStorage.getItem(SAVE_LOG_KEY) || '[]');
-    log.push({ source, shown, scrollY: Math.round(window.scrollY), t: Date.now() });
-    localStorage.setItem(SAVE_LOG_KEY, JSON.stringify(log.slice(-8)));
   } catch {}
 }
-addEventListener('pagehide', () => saveScrollState('pagehide'));
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState('visibilitychange'); });
+addEventListener('pagehide', saveScrollState);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState(); });
 // "떠나는 순간" 이벤트만 믿으면 모바일 브라우저마다 타이밍이 달라서 못 미더우므로,
 // 스크롤하는 동안에도 계속 저장해서 언제 떠나든 최신 상태가 이미 저장돼 있게 한다.
 let scrollSaveTimer = null;
 addEventListener('scroll', () => {
   clearTimeout(scrollSaveTimer);
-  scrollSaveTimer = setTimeout(() => saveScrollState('scroll'), 200);
+  scrollSaveTimer = setTimeout(saveScrollState, 200);
 }, { passive: true });
 
 // go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
 // 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
 // 호출한 쪽이 평범하게 go()를 부르게 한다.
 async function restoreIfReturning() {
-  let saved, log;
+  let saved;
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
-  try { log = JSON.parse(localStorage.getItem(SAVE_LOG_KEY) || '[]'); } catch { log = []; }
-  alert('저장된 상태: ' + JSON.stringify(saved) + '\n최근 저장 기록: ' + JSON.stringify(log) + '\n현재 조건: ' + qs().toString() + ' / myFolderIds=' + myFolderIds.length + ' / currentUser=' + !!currentUser);
   if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
   if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
   if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
@@ -1076,10 +1064,15 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   bootComplete = true;
 })();
 
-// 진단: 뒤로가기 때 restoreIfReturning() 알림이 전혀 안 뜬다는 제보가 있어서, 스크립트가
-// 다시 실행되는 게 아니라 iOS가 페이지를 그대로 얼렸다 복원하는(bfcache) 것인지 확인.
-// bfcache로 복원되면 이 리스너만 실행되고, 위의 부팅 IIFE는 다시 안 돈다.
+// 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로 얼렸다가
+// 복원한다(bfcache) — DOM(카드 120개 등)은 이미 온전히 그대로 있는데, 스크롤 위치만 0으로
+// 리셋되는 iOS/WebKit의 알려진 동작. 그래서 "더보기 누르기 전으로 돌아간 것처럼" 보였을 뿐,
+// 실제로 상품이 사라진 적은 없었음. bfcache 복원 순간을 감지해서 저장해둔 스크롤 위치로
+// 옮겨주기만 하면 끝 — 위의 restoreIfReturning()(데이터 다시 불러오기)는 이 경우엔 필요 없음.
 addEventListener('pageshow', (e) => {
-  alert((e.persisted ? '페이지가 bfcache로 복원됨(스크립트 재실행 안 됨)' : '일반 로드(스크립트 재실행됨)')
-    + '\n카드 개수: ' + document.querySelectorAll('#grid .card').length + '\nscrollY: ' + window.scrollY);
+  if (!e.persisted) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null');
+    if (saved && saved.params === qs().toString()) window.scrollTo(0, saved.scrollY);
+  } catch {}
 });
