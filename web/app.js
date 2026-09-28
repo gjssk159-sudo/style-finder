@@ -895,16 +895,33 @@ async function go() {
   saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
+let loadingMore = false;
 async function loadMore() {
-  pageOffset += PAGE_SIZE;
-  const { query } = buildQuery(pageOffset);
-  const { data, error } = await query;
-  if (error) return;
-  const grid = document.getElementById('grid');
-  grid.insertAdjacentHTML('beforeend', cardsHtml(data));
-  armImageTimeouts(grid);
-  updateMoreButton(pageOffset + data.length);
-  saveScrollState();
+  // 로딩 중에 버튼이 그대로 눌러진 채라, 응답 오기 전에 사용자가 다른 상품을 눌러서
+  // 나가버리면 아직 안 붙은 다음 목록은 저장이 안 되고 그 전 상태(더보기 누르기 전)만 남아
+  // "복원해도 다시 처음으로 돌아간다"로 보였음(실측: shown 60, scrollY 9871 — 더보기 버튼
+  // 바로 위까지 스크롤한 상태에서 응답을 못 기다리고 나간 경우). 중복 클릭 방지 + 로딩 표시.
+  if (loadingMore) return;
+  loadingMore = true;
+  const btn = document.getElementById('moreBtn');
+  const prevText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '불러오는 중…';
+  try {
+    pageOffset += PAGE_SIZE;
+    const { query } = buildQuery(pageOffset);
+    const { data, error } = await query;
+    if (error) return;
+    const grid = document.getElementById('grid');
+    grid.insertAdjacentHTML('beforeend', cardsHtml(data));
+    armImageTimeouts(grid);
+    updateMoreButton(pageOffset + data.length);
+    saveScrollState();
+  } finally {
+    loadingMore = false;
+    btn.disabled = false;
+    if (btn.textContent === '불러오는 중…') btn.textContent = prevText;
+  }
 }
 
 // ---------------- 스크롤/더보기 상태 복원 ----------------
@@ -944,37 +961,13 @@ addEventListener('scroll', () => {
 // go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
 // 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
 // 호출한 쪽이 평범하게 go()를 부르게 한다.
-// 원인 파악용 임시 진단 — CSS로 띄우던 배너가 iOS PWA에서 위치/표시 문제로 안 보였을 수
-// 있어서, 절대 놓칠 수 없는 네이티브 alert로 바꿈. 원인 찾으면 지울 것.
-function showDebugBanner(text) {
-  try { alert(text); } catch {}
-}
-
 async function restoreIfReturning() {
-  const raw = (() => { try { return localStorage.getItem(SCROLL_STATE_KEY); } catch { return '(localStorage 접근 실패)'; } })();
   let saved;
-  try { saved = JSON.parse(raw || 'null'); } catch { saved = null; }
-  const debug = {
-    raw,
-    curParams: qs().toString(),
-    currentUser: !!currentUser,
-    sharedView: !!sharedView,
-    myFolderIdsLen: myFolderIds.length,
-  };
-  if (!saved || !saved.shown || saved.params !== qs().toString()) {
-    showDebugBanner('복원 안 됨: 저장된 상태 없음/불일치\n' + JSON.stringify({ ...debug, saved }, null, 2));
-    return false;
-  }
-  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) {
-    showDebugBanner('복원 안 됨: 30분 지남\n' + JSON.stringify({ ...debug, saved }, null, 2));
-    return false;
-  }
-  if ((!currentUser && !sharedView) || myFolderIds.length === 0) {
-    showDebugBanner('복원 안 됨: 로그인/폴더 상태\n' + JSON.stringify({ ...debug, saved }, null, 2));
-    return false;
-  }
+  try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
+  if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
+  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
+  if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
   localStorage.removeItem(SCROLL_STATE_KEY);
-  showDebugBanner('복원 시도함\n' + JSON.stringify({ ...debug, saved }, null, 2));
 
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
