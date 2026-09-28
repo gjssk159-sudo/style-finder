@@ -944,13 +944,46 @@ addEventListener('scroll', () => {
 // go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
 // 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
 // 호출한 쪽이 평범하게 go()를 부르게 한다.
+// 원인 파악용 임시 디버그 배너 — 탭하면 사라짐. 원인 찾으면 지울 것.
+function showDebugBanner(text) {
+  try {
+    let el = document.getElementById('sfDebugBanner');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'sfDebugBanner';
+      el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#111;color:#7fff7f;font:11px/1.4 monospace;padding:8px;max-height:45vh;overflow:auto;white-space:pre-wrap;';
+      el.onclick = () => el.remove();
+      document.body.appendChild(el);
+    }
+    el.textContent = text;
+  } catch {}
+}
+
 async function restoreIfReturning() {
+  const raw = (() => { try { return localStorage.getItem(SCROLL_STATE_KEY); } catch { return '(localStorage 접근 실패)'; } })();
   let saved;
-  try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
-  if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
-  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return false;
-  if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
+  try { saved = JSON.parse(raw || 'null'); } catch { saved = null; }
+  const debug = {
+    raw,
+    curParams: qs().toString(),
+    currentUser: !!currentUser,
+    sharedView: !!sharedView,
+    myFolderIdsLen: myFolderIds.length,
+  };
+  if (!saved || !saved.shown || saved.params !== qs().toString()) {
+    showDebugBanner('복원 안 됨: 저장된 상태 없음/불일치\n' + JSON.stringify({ ...debug, saved }, null, 2));
+    return false;
+  }
+  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) {
+    showDebugBanner('복원 안 됨: 30분 지남\n' + JSON.stringify({ ...debug, saved }, null, 2));
+    return false;
+  }
+  if ((!currentUser && !sharedView) || myFolderIds.length === 0) {
+    showDebugBanner('복원 안 됨: 로그인/폴더 상태\n' + JSON.stringify({ ...debug, saved }, null, 2));
+    return false;
+  }
   localStorage.removeItem(SCROLL_STATE_KEY);
+  showDebugBanner('복원 시도함\n' + JSON.stringify({ ...debug, saved }, null, 2));
 
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
