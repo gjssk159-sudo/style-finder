@@ -35,6 +35,7 @@ let currentGender = ''; // '' | 'women' | 'men' | 'unisex' — 원본에 성별 
 let myFolders = [];        // 로그인한 사람의 폴더 목록 [{id,name,share_id}] (최대 3개)
 let currentFolderId = null; // 지금 검색에 쓰이는 폴더 id
 let sharedView = null;      // 공유 링크로 남의 폴더를 보는 중이면 {id,name,share_id,user_id}
+let bootComplete = false;   // 부팅 흐름이 스크롤 복원 여부를 판단하기 전까지, 초기 세션 감지 이벤트가 go()로 화면을 덮어쓰지 않게 막는 플래그
 const PAGE_SIZE = 60;
 let pageOffset = 0;
 let lastTotal = 0;
@@ -269,7 +270,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
     }
     renderFolderTabs();
     updateFolderNavLabel();
-    go();
+    // 부팅 중 처음 감지되는 세션 이벤트는 부팅 흐름(스크롤 복원 or go())이 알아서 처리하므로 건너뜀 —
+    // 안 그러면 뒤로가기로 돌아왔을 때 복원한 화면을 이 go()가 바로 덮어써버림.
+    if (bootComplete) go();
   }
 });
 
@@ -750,7 +753,7 @@ function qs() {
   return p;
 }
 
-function buildQuery(offset) {
+function buildQuery(offset, count = PAGE_SIZE) {
   const raw = document.getElementById('q').value;
   const { categories, colors: colorsFromQuery, keywords } = window.StyleFinderTaxonomy.parseQuery(raw);
   const color = document.getElementById('color').value;
@@ -773,7 +776,7 @@ function buildQuery(offset) {
   else if (sort === 'price_asc') query = query.order('min_price', { ascending: true, nullsFirst: false });
   else if (sort === 'price_desc') query = query.order('max_price', { ascending: false, nullsFirst: false });
   else query = query.order('brand').order('title');
-  query = query.order('id').range(offset, offset + PAGE_SIZE - 1); // 페이지네이션 안정성용 동률 구분 키
+  query = query.order('id').range(offset, offset + count - 1); // 페이지네이션 안정성용 동률 구분 키
 
   if (categories.length) query = query.overlaps('categories', categories);
   if (colors.length) query = query.overlaps('colors', colors);
@@ -895,6 +898,59 @@ async function loadMore() {
   updateMoreButton(pageOffset + data.length);
 }
 
+// ---------------- 스크롤/더보기 상태 복원 ----------------
+// 모바일(특히 홈화면 추가한 PWA)에서는 상품 카드의 target="_blank"가 새 탭으로 안 열리고
+// 같은 화면에서 이동해버리는 경우가 많아서, 뒤로가기하면 완전히 새로고침되며 스크롤 위치와
+// "더보기"로 불러온 목록이 전부 날아가는 문제가 있었음. 떠나기 직전에 지금 상태(검색 조건,
+// 로드된 개수, 스크롤 위치)를 sessionStorage에 남겨뒀다가, 돌아왔을 때 같은 검색이면 복원한다.
+const SCROLL_STATE_KEY = 'sf_scroll_state';
+
+function saveScrollState() {
+  const shown = document.querySelectorAll('#grid .card').length;
+  if (!shown) return;
+  try {
+    sessionStorage.setItem(SCROLL_STATE_KEY, JSON.stringify({
+      params: qs().toString(),
+      shown,
+      scrollY: window.scrollY,
+    }));
+  } catch {}
+}
+addEventListener('pagehide', saveScrollState);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState(); });
+
+// go()와 같은 조건(현재 검색어/필터)으로 돌아온 경우에만 복원. 맞으면 true를 돌려주고,
+// 아니면(다른 검색, 저장된 게 없음, 로그인 전이라 아직 폴더가 안 잡힘 등) false를 돌려줘서
+// 호출한 쪽이 평범하게 go()를 부르게 한다.
+async function restoreIfReturning() {
+  let saved;
+  try { saved = JSON.parse(sessionStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
+  if (!saved || !saved.shown || saved.params !== qs().toString()) return false;
+  if ((!currentUser && !sharedView) || myFolderIds.length === 0) return false;
+  sessionStorage.removeItem(SCROLL_STATE_KEY);
+
+  const grid = document.getElementById('grid');
+  const meta = document.getElementById('meta');
+  history.replaceState(0, '', saved.params ? '?' + saved.params : location.pathname);
+
+  const { query, categories, colors, keywords } = buildQuery(0, saved.shown);
+  const { data, error, count } = await query;
+  if (error || !data.length) return false;
+
+  lastTotal = count || 0;
+  pageOffset = Math.max(0, Math.ceil(data.length / PAGE_SIZE) - 1) * PAGE_SIZE;
+  const parts = [`${lastTotal}개`];
+  if (categories.length) parts.push('카테고리: ' + categories.join(', '));
+  if (colors.length) parts.push('색상: ' + colors.join(', '));
+  if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
+  meta.textContent = parts.join('  ·  ');
+  grid.innerHTML = cardsHtml(data);
+  armImageTimeouts(grid);
+  updateMoreButton(data.length);
+  setTimeout(() => window.scrollTo(0, saved.scrollY), 50);
+  return true;
+}
+
 function renderChips() {
   document.getElementById('chips').innerHTML = window.StyleFinderTaxonomy.CATEGORIES
     .map((c) => `<span class="chip" onclick="document.getElementById('q').value='${c.label}';go()">${c.label}</span>`)
@@ -953,5 +1009,6 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   renderFolderTabs();
   updateFolderNavLabel();
   renderSharedBanner();
-  go();
+  if (!(await restoreIfReturning())) go();
+  bootComplete = true;
 })();
