@@ -864,10 +864,10 @@ function updatePager() {
   wrap.style.justifyContent = 'center';
   document.getElementById('prevPageBtn').disabled = currentPage <= 1;
   document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
-  // 몇 페이지인지보다 "전체 중 몇 번째를 보고 있는지"가 더 감이 와서 범위로 표시(길어지니 페이지 수는 뺌).
+  // 페이지 수(1/6페이지)와 상품 범위(61-120/319개) 둘 다 단위를 붙여서 명확하게 표시.
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, lastTotal);
-  document.getElementById('pageLabel').textContent = `${start}–${end} / ${lastTotal}개`;
+  document.getElementById('pageLabel').textContent = `${currentPage}/${totalPages}페이지 · ${start}-${end}/${lastTotal}개`;
 }
 
 async function renderCurrentPage() {
@@ -989,9 +989,24 @@ function restoreScrollIfMatching() {
   };
   enforce();
 }
+// bfcache로 복원되면(persisted) armImageTimeouts()가 걸어둔 8초 타이머가 "실제 경과 시간"
+// 기준으로 판정돼서, 나갔다 오는 사이 8초가 넘어버리면 사실 멀쩡히 뜰 이미지까지 로딩 중이었다는
+// 이유만으로 지워져 있었음(실측: 뒤로가기 후 사진 빠짐). 복원 시점에 아직 안 끝난 이미지는
+// 새로 다시 시도하게 한다.
+function retryUnfinishedImages() {
+  for (const img of document.querySelectorAll('#grid img')) {
+    if (!img.complete) {
+      delete img.dataset.armed;
+      const src = img.src;
+      img.removeAttribute('src');
+      img.src = src;
+    }
+  }
+  armImageTimeouts(document.getElementById('grid'));
+}
 // persisted pageshow만 믿으면 이 기기에서 실제로 그 값이 기대와 다르게 나올 수도 있어서,
 // 화면이 다시 보이거나 포커스를 받는 다른 계기에도 같은 감시를 걸어 놓친 경우를 커버한다.
-addEventListener('pageshow', () => restoreScrollIfMatching());
+addEventListener('pageshow', (e) => { if (e.persisted) retryUnfinishedImages(); restoreScrollIfMatching(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') restoreScrollIfMatching(); });
 addEventListener('focus', () => restoreScrollIfMatching());
 
