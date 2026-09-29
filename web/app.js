@@ -864,7 +864,10 @@ function updatePager() {
   wrap.style.justifyContent = 'center';
   document.getElementById('prevPageBtn').disabled = currentPage <= 1;
   document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
-  document.getElementById('pageLabel').textContent = `${currentPage} / ${totalPages}페이지 · 총 ${lastTotal}개`;
+  // 몇 페이지인지보다 "전체 중 몇 번째를 보고 있는지"가 더 감이 와서 범위로 표시(길어지니 페이지 수는 뺌).
+  const start = (currentPage - 1) * PAGE_SIZE + 1;
+  const end = Math.min(currentPage * PAGE_SIZE, lastTotal);
+  document.getElementById('pageLabel').textContent = `${start}–${end} / ${lastTotal}개`;
 }
 
 async function renderCurrentPage() {
@@ -970,15 +973,19 @@ function restoreScrollIfMatching() {
   // 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로
   // 얼렸다가 복원하는데(bfcache), 이때 스크롤 위치를 0으로 리셋해버리는 iOS/WebKit
   // 버그가 있음. 정해진 시점에만 되돌리는 걸로는 iOS가 그보다 늦게 다시 0으로 되돌리는
-  // 경우를 못 이겨서(실측: 여전히 맨 위로 감), 몇 초 동안 "0으로 튀면 즉시 다시 원위치"
-  // 하는 감시를 걸어 언제 끼어들든 맞받아친다.
+  // 경우를 못 이겨서 몇 초 동안 "0으로 튀면 즉시 다시 원위치"하는 감시를 걸어두는데,
+  // 그 몇 초 사이에 사용자가 직접 스크롤하려고 하면(=화면을 터치) 그것까지 도로
+  // 끌어올려버렸었음(실측). 사용자가 터치하는 순간 감시를 바로 멈춘다.
+  let stop = false;
+  const onTouch = () => { stop = true; };
+  addEventListener('touchstart', onTouch, { passive: true, once: true });
   let attempts = 0;
   const maxAttempts = 40; // 최대 4초(100ms 간격)
   const enforce = () => {
-    if (attempts === 0) alert('스크롤 복원 시작\n목표: ' + target + '\n지금: ' + Math.round(window.scrollY));
     attempts++;
-    if (Math.round(window.scrollY) !== Math.round(target)) window.scrollTo(0, target);
-    if (attempts < maxAttempts) setTimeout(enforce, 100);
+    if (!stop && Math.round(window.scrollY) < 30) window.scrollTo(0, target);
+    if (attempts < maxAttempts && !stop) setTimeout(enforce, 100);
+    else removeEventListener('touchstart', onTouch);
   };
   enforce();
 }
