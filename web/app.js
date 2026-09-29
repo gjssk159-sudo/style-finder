@@ -963,7 +963,10 @@ function restoreScrollIfMatching() {
   if (!saved || saved.params !== qs().toString()) return;
   if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return;
   const target = saved.scrollY;
-  if (!target) return;
+  // pageshow 외에 visibilitychange/focus에도 걸어놨는데, 정상적으로 쓰다가 우연히 이 이벤트들이
+  // 발생한 경우까지 건드리면 안 되니 "지금 이미 맨 위 근처인데 원래는 내려가 있었어야 하는"
+  // 경우(=리셋된 상황)에만 작동한다.
+  if (!target || target < 30 || window.scrollY > 30) return;
   // 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로
   // 얼렸다가 복원하는데(bfcache), 이때 스크롤 위치를 0으로 리셋해버리는 iOS/WebKit
   // 버그가 있음. 정해진 시점에만 되돌리는 걸로는 iOS가 그보다 늦게 다시 0으로 되돌리는
@@ -972,13 +975,18 @@ function restoreScrollIfMatching() {
   let attempts = 0;
   const maxAttempts = 40; // 최대 4초(100ms 간격)
   const enforce = () => {
+    if (attempts === 0) alert('스크롤 복원 시작\n목표: ' + target + '\n지금: ' + Math.round(window.scrollY));
     attempts++;
     if (Math.round(window.scrollY) !== Math.round(target)) window.scrollTo(0, target);
     if (attempts < maxAttempts) setTimeout(enforce, 100);
   };
   enforce();
 }
-addEventListener('pageshow', (e) => { if (e.persisted) restoreScrollIfMatching(); });
+// persisted pageshow만 믿으면 이 기기에서 실제로 그 값이 기대와 다르게 나올 수도 있어서,
+// 화면이 다시 보이거나 포커스를 받는 다른 계기에도 같은 감시를 걸어 놓친 경우를 커버한다.
+addEventListener('pageshow', () => restoreScrollIfMatching());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') restoreScrollIfMatching(); });
+addEventListener('focus', () => restoreScrollIfMatching());
 
 function renderChips() {
   document.getElementById('chips').innerHTML = window.StyleFinderTaxonomy.CATEGORIES
