@@ -860,6 +860,8 @@ function updatePager() {
   const totalPages = Math.max(1, Math.ceil(lastTotal / PAGE_SIZE));
   if (totalPages <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
+  wrap.style.alignItems = 'center';
+  wrap.style.justifyContent = 'center';
   document.getElementById('prevPageBtn').disabled = currentPage <= 1;
   document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
   document.getElementById('pageLabel').textContent = `${currentPage} / ${totalPages}페이지 · 총 ${lastTotal}개`;
@@ -960,13 +962,21 @@ function restoreScrollIfMatching() {
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
   if (!saved || saved.params !== qs().toString()) return;
   if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return;
+  const target = saved.scrollY;
+  if (!target) return;
   // 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로
   // 얼렸다가 복원하는데(bfcache), 이때 스크롤 위치를 0으로 리셋해버리는 iOS/WebKit
-  // 버그가 있음. 한 번만 옮기면 그 뒤에 iOS가 다시 0으로 되돌리는 경우가 있어서,
-  // 여러 시점에 걸쳐 반복해서 강제로 맞춰준다.
-  for (const delay of [0, 50, 100, 200, 400, 800]) {
-    setTimeout(() => window.scrollTo(0, saved.scrollY), delay);
-  }
+  // 버그가 있음. 정해진 시점에만 되돌리는 걸로는 iOS가 그보다 늦게 다시 0으로 되돌리는
+  // 경우를 못 이겨서(실측: 여전히 맨 위로 감), 몇 초 동안 "0으로 튀면 즉시 다시 원위치"
+  // 하는 감시를 걸어 언제 끼어들든 맞받아친다.
+  let attempts = 0;
+  const maxAttempts = 40; // 최대 4초(100ms 간격)
+  const enforce = () => {
+    attempts++;
+    if (Math.round(window.scrollY) !== Math.round(target)) window.scrollTo(0, target);
+    if (attempts < maxAttempts) setTimeout(enforce, 100);
+  };
+  enforce();
 }
 addEventListener('pageshow', (e) => { if (e.persisted) restoreScrollIfMatching(); });
 
