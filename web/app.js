@@ -807,13 +807,36 @@ function buildQuery(offset, count = PAGE_SIZE) {
 }
 
 // 어떤 이미지는 로딩이 성공도 실패도 아닌 채로 계속 멈춰있는 경우가 있어서(브라우저/네트워크 이슈),
-// 일정 시간 안에 안 끝나면 그냥 빈 박스로 넘어가게 강제 타임아웃을 건다.
+// 일정 시간 안에 안 끝나면 그냥 빈 박스로 넘어가게 강제 타임아웃을 건다. 모바일에서 느린
+// 경우가 많아서(실측 제보) 8초는 너무 짧아 15초로 늘림.
+const IMAGE_TIMEOUT_MS = 15000;
+function armOneImage(img) {
+  const t = setTimeout(() => { if (!img.complete) img.remove(); }, IMAGE_TIMEOUT_MS);
+  img.__timeoutId = t;
+  const clear = () => { clearTimeout(t); img.__timeoutId = null; };
+  img.addEventListener('load', clear, { once: true });
+  img.addEventListener('error', clear, { once: true });
+}
 function armImageTimeouts(container) {
   for (const img of container.querySelectorAll('img:not([data-armed])')) {
     img.dataset.armed = '1';
-    const t = setTimeout(() => { if (!img.complete) img.remove(); }, 8000);
-    img.addEventListener('load', () => clearTimeout(t), { once: true });
-    img.addEventListener('error', () => clearTimeout(t), { once: true });
+    armOneImage(img);
+  }
+}
+// 뒤로가기(bfcache)로 나갔다 오면 걸어둔 타이머가 "실제 경과 시간" 기준으로 판정되는데,
+// 얼려있는 동안 8초(지금은 15초)가 지나버리면 멀쩡히 로딩 중이던 이미지까지 지워졌음
+// (실측: 뒤로가기 후 사진 빠짐/느림). 나가기 직전에 아직 안 끝난 타이머는 미리 꺼두고,
+// 돌아왔을 때 그 이미지들만 새로 다시 타이머를 건다 — src는 안 건드려서 이미 진행 중이던
+// 네트워크 요청을 안 끊는다(예전엔 src를 강제로 리셋해서 오히려 로딩을 처음부터 다시
+// 시작시켜버렸는데, 그게 느려지거나 계속 안 끝나는 원인이었을 수 있음).
+addEventListener('pagehide', () => {
+  for (const img of document.querySelectorAll('#grid img')) {
+    if (img.__timeoutId) { clearTimeout(img.__timeoutId); img.__timeoutId = null; }
+  }
+});
+function rearmUnfinishedImages() {
+  for (const img of document.querySelectorAll('#grid img')) {
+    if (!img.complete && !img.__timeoutId) armOneImage(img);
   }
 }
 
@@ -989,24 +1012,9 @@ function restoreScrollIfMatching() {
   };
   enforce();
 }
-// bfcache로 복원되면(persisted) armImageTimeouts()가 걸어둔 8초 타이머가 "실제 경과 시간"
-// 기준으로 판정돼서, 나갔다 오는 사이 8초가 넘어버리면 사실 멀쩡히 뜰 이미지까지 로딩 중이었다는
-// 이유만으로 지워져 있었음(실측: 뒤로가기 후 사진 빠짐). 복원 시점에 아직 안 끝난 이미지는
-// 새로 다시 시도하게 한다.
-function retryUnfinishedImages() {
-  for (const img of document.querySelectorAll('#grid img')) {
-    if (!img.complete) {
-      delete img.dataset.armed;
-      const src = img.src;
-      img.removeAttribute('src');
-      img.src = src;
-    }
-  }
-  armImageTimeouts(document.getElementById('grid'));
-}
 // persisted pageshow만 믿으면 이 기기에서 실제로 그 값이 기대와 다르게 나올 수도 있어서,
 // 화면이 다시 보이거나 포커스를 받는 다른 계기에도 같은 감시를 걸어 놓친 경우를 커버한다.
-addEventListener('pageshow', (e) => { if (e.persisted) retryUnfinishedImages(); restoreScrollIfMatching(); });
+addEventListener('pageshow', (e) => { if (e.persisted) rearmUnfinishedImages(); restoreScrollIfMatching(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') restoreScrollIfMatching(); });
 addEventListener('focus', () => restoreScrollIfMatching());
 
