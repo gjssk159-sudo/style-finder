@@ -703,12 +703,7 @@ function slugify(hostname) {
   return hostname.replace(/^www\./, '').replace(/\.(com|co\.kr|kr|link|net|store|shop)$/i, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 }
 
-async function submitAddFallback(urlInput, instagram, out) {
-  if (!urlInput) {
-    out.className = 'warn';
-    out.textContent = '인스타로 링크 찾는 게 일시적으로 안 됐어요. 다시 시도해보시거나, 쇼핑몰 URL을 직접 입력해주세요.';
-    return;
-  }
+async function submitAddFallback(urlInput, instagram, addToFolder, out) {
   let shopUrl;
   try { shopUrl = new URL(/^https?:\/\//i.test(urlInput) ? urlInput : `https://${urlInput}`).origin; }
   catch { out.className = 'warn'; out.textContent = 'URL 형식이 이상해요.'; return; }
@@ -723,12 +718,14 @@ async function submitAddFallback(urlInput, instagram, out) {
   if (e1) { out.className = 'warn'; out.textContent = e1.message; return; }
   await sb.rpc('claim_brand', { target_id: id });
 
-  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: id });
-  if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
+  if (addToFolder) {
+    const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: id });
+    if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
+    myFolderIds.push(id);
+  }
 
-  myFolderIds.push(id);
   out.className = 'ok';
-  out.textContent = '등록 요청 접수! 자동 판별 후 다음 정기 수집(매일 새벽) 때 반영돼요. (이미 있던 브랜드면 내 폴더에 바로 추가됨)';
+  out.textContent = `등록 요청 접수! 자동 판별 후 다음 정기 수집(매일 새벽) 때 반영돼요.${addToFolder ? ' (이미 있던 브랜드면 내 폴더에 바로 추가됨)' : ''}`;
   await loadAllBrands();
 }
 
@@ -738,29 +735,30 @@ async function submitAdd() {
   if (sharedView) { out.className = 'warn'; out.textContent = '공유된 폴더에는 추가할 수 없어요. 내 폴더로 돌아가서 추가해주세요.'; out.style.display = 'block'; return; }
   const urlInput = document.getElementById('addUrl').value.trim();
   const instagram = document.getElementById('addInstagram').value.trim();
-  if (!urlInput && !instagram) {
-    out.className = 'warn'; out.textContent = '쇼핑몰 URL이나 인스타 아이디 중 하나는 입력해주세요.'; out.style.display = 'block';
+  const addToFolder = document.getElementById('addToMyFolder').checked;
+  if (!urlInput) {
+    out.className = 'warn'; out.textContent = '쇼핑몰 URL을 입력해주세요.'; out.style.display = 'block';
     return;
   }
 
   out.style.display = 'block';
   out.className = '';
-  out.textContent = instagram && !urlInput ? '인스타에서 쇼핑몰 링크 찾는 중…' : '등록 중…';
+  out.textContent = '등록 중…';
 
   let data, error;
   try {
     ({ data, error } = await sb.functions.invoke('register-brand', {
-      body: { url: urlInput || null, instagram: instagram || null },
+      body: { url: urlInput, instagram: instagram || null },
     }));
   } catch (err) {
     error = err;
   }
   // register-brand가 아직 배포 전이거나 호출 자체(네트워크/인증 등)가 실패하면 예전 방식으로 폴백.
-  // 함수 호출은 성공했는데 서버가 ok:false로 응답한 경우(예: 인스타에서 링크를 못 찾음)는
-  // 폴백하지 않고 서버가 만든 정확한 이유를 그대로 보여준다 — 폴백의 뭉뚱그린 메시지로
-  // 덮어써버리면 실제 원인(예: URL 형식 오류 vs 인스타 조회 실패)을 알 수 없게 된다.
+  // 함수 호출은 성공했는데 서버가 ok:false로 응답한 경우(예: URL 형식 오류)는 폴백하지 않고
+  // 서버가 만든 정확한 이유를 그대로 보여준다 — 폴백의 뭉뚱그린 메시지로 덮어써버리면
+  // 실제 원인을 알 수 없게 된다.
   if (error) {
-    return submitAddFallback(urlInput, instagram, out);
+    return submitAddFallback(urlInput, instagram, addToFolder, out);
   }
   if (!data.ok) {
     out.className = 'warn';
@@ -768,19 +766,22 @@ async function submitAdd() {
     return;
   }
 
-  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: data.id });
-  if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
+  if (addToFolder) {
+    const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: data.id });
+    if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
+    myFolderIds.push(data.id);
+  }
 
-  myFolderIds.push(data.id);
   out.className = 'ok';
+  const folderNote = addToFolder ? '' : ' (내 폴더에는 추가 안 함)';
   if (data.alreadyExisted) {
-    out.textContent = '이미 등록된 브랜드였어요. 내 폴더에 바로 추가했어요.';
+    out.textContent = `이미 등록된 브랜드였어요.${addToFolder ? ' 내 폴더에 바로 추가했어요.' : ''}`;
   } else if (data.status === 'ready' && data.dispatched) {
-    out.textContent = `등록 완료! (${data.resolvedFromInstagram ? '인스타에서 링크 찾음 · ' : ''}지금 수집 중이에요, 1~2분 후 검색에 나와요)`;
+    out.textContent = `등록 완료! 지금 수집 중이에요, 1~2분 후 검색에 나와요.${folderNote}`;
   } else if (data.status === 'ready') {
-    out.textContent = '등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.';
+    out.textContent = `등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.${folderNote}`;
   } else {
-    out.textContent = '등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 해요. 조금 걸릴 수 있어요.';
+    out.textContent = `등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 해요. 조금 걸릴 수 있어요.${folderNote}`;
   }
   await loadAllBrands();
 }

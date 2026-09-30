@@ -149,28 +149,6 @@ async function detectPlatform(rawUrl: string): Promise<DetectResult> {
   };
 }
 
-// 인스타그램 공개 프로필 페이지에서 바이오의 외부 링크를 best-effort로 추출.
-// 정식 API가 아니라 페이지 안에 심어진 값을 정규식으로 긁는 방식이라 인스타 쪽이
-// 마크업을 바꾸면 깨질 수 있음 — 실패하면 그냥 null 반환하고 프론트에서 URL을 다시 요청함.
-async function resolveInstagramUrl(handle: string): Promise<string | null> {
-  const clean = handle.replace(/^@/, '').trim();
-  if (!clean) return null;
-  try {
-    const { text } = await fetchText(`https://www.instagram.com/${encodeURIComponent(clean)}/`, {
-      retries: 1,
-      timeout: 6000,
-    });
-    if (!text) return null;
-    const m =
-      text.match(/"external_url":"([^"]+)"/) ||
-      text.match(/<meta property="al:ios:url" content="[^"]*url=([^"&]+)/);
-    if (m) return decodeURIComponent(m[1].replace(/\\u0026/g, '&').replace(/\\\//g, '/'));
-  } catch {
-    /* 인스타 접근 실패 — 프론트에서 URL 직접 요청하도록 함 */
-  }
-  return null;
-}
-
 async function dispatchCollectWorkflow(brandId: string, token: string) {
   const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/collect-single.yml/dispatches`, {
     method: 'POST',
@@ -217,24 +195,12 @@ Deno.serve(async (req: Request) => {
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-  let targetUrl = (body.url || '').trim();
-  let resolvedFromInstagram = false;
-  if (!targetUrl && body.instagram) {
-    const found = await resolveInstagramUrl(body.instagram);
-    if (found) {
-      targetUrl = found;
-      resolvedFromInstagram = true;
-    }
-  }
+  // 인스타 아이디는 브랜드 레코드에 참고용으로만 저장하고, URL을 찾는 용도로는 쓰지 않는다
+  // (인스타그램이 서버 쪽 프로필 조회를 사실상 항상 차단해서 신뢰할 수 없는 걸로 확인됨).
+  const targetUrl = (body.url || '').trim();
   if (!targetUrl) {
     return Response.json(
-      {
-        ok: false,
-        reason: 'no_url',
-        message: body.instagram
-          ? '인스타 프로필에서 쇼핑몰 링크를 못 찾았어요. 쇼핑몰 URL을 직접 입력해주세요.'
-          : 'URL 또는 인스타 아이디 중 하나는 입력해주세요.',
-      },
+      { ok: false, reason: 'no_url', message: '쇼핑몰 URL을 입력해주세요.' },
       { headers: cors },
     );
   }
@@ -252,7 +218,7 @@ Deno.serve(async (req: Request) => {
   const { data: existing } = await sb.from('brands').select('id, name, status, platform').eq('id', id).maybeSingle();
   if (existing) {
     return Response.json(
-      { ok: true, id: existing.id, name: existing.name, status: existing.status, platform: existing.platform, resolvedFromInstagram, dispatched: false, alreadyExisted: true },
+      { ok: true, id: existing.id, name: existing.name, status: existing.status, platform: existing.platform, dispatched: false, alreadyExisted: true },
       { headers: cors },
     );
   }
@@ -299,7 +265,7 @@ Deno.serve(async (req: Request) => {
   }
 
   return Response.json(
-    { ok: true, id, name: displayName, status: result.status, platform: result.platform, resolvedFromInstagram, dispatched, alreadyExisted: false },
+    { ok: true, id, name: displayName, status: result.status, platform: result.platform, dispatched, alreadyExisted: false },
     { headers: cors },
   );
 });
