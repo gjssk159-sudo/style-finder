@@ -694,11 +694,13 @@ async function toggleFolder(brandId, add) {
   updateFolderNavLabel();
 }
 
-// ---------------- 브랜드 등록 (실시간 판별 없이 "등록 요청"만 접수 — 처리는 백엔드에서) ----------------
-function slugify(hostname) {
-  return hostname.replace(/^www\./, '').replace(/\.(com|co\.kr|kr|link|net|store|shop)$/i, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
-}
-
+// ---------------- 브랜드 등록 ----------------
+// 예전엔 "등록 요청 접수"만 하고 매일 새벽 정기 수집(cron)이 판별+수집을 다 처리해서
+// 등록 시점에 따라 최대 24시간 가까이 기다려야 검색에 나왔음. 지금은 Edge Function
+// (register-brand)이 즉시 플랫폼을 판별해서 브랜드 테이블에 반영하고, 판별 성공하면
+// 그 브랜드 하나만 수집하는 GitHub Actions를 바로 트리거해서 1~2분 안에 끝나게 한다.
+// URL 대신 인스타 아이디만 입력해도, 서버(Edge Function)가 공개 프로필의 바이오 링크를
+// best-effort로 찾아서 시도한다(항상 되는 건 아니라 실패하면 URL을 다시 요청함).
 async function submitAdd() {
   const out = document.getElementById('addResult');
   if (!currentUser) { out.className = 'warn'; out.textContent = '로그인 먼저 해주세요.'; out.style.display = 'block'; return; }
@@ -706,32 +708,38 @@ async function submitAdd() {
   const urlInput = document.getElementById('addUrl').value.trim();
   const name = document.getElementById('addName').value.trim();
   const instagram = document.getElementById('addInstagram').value.trim();
-  if (!urlInput) return;
+  if (!urlInput && !instagram) {
+    out.className = 'warn'; out.textContent = '쇼핑몰 URL이나 인스타 아이디 중 하나는 입력해주세요.'; out.style.display = 'block';
+    return;
+  }
 
-  let shopUrl;
-  try { shopUrl = new URL(/^https?:\/\//i.test(urlInput) ? urlInput : `https://${urlInput}`).origin; }
-  catch { out.className = 'warn'; out.textContent = 'URL 형식이 이상해요.'; out.style.display = 'block'; return; }
-
-  const id = slugify(new URL(shopUrl).hostname);
   out.style.display = 'block';
   out.className = '';
-  out.textContent = '등록 중…';
+  out.textContent = instagram && !urlInput ? '인스타에서 쇼핑몰 링크 찾는 중…' : '등록 중…';
 
-  const { error: e1 } = await sb.from('brands').upsert(
-    { id, name: name || id, name_en: name || id, type: 'brand', instagram: instagram || null, shop_url: shopUrl, platform: 'unknown', status: 'pending', added_by: currentUser.id },
-    { onConflict: 'id', ignoreDuplicates: true }
-  );
-  if (e1) { out.className = 'warn'; out.textContent = e1.message; return; }
-  // ignoreDuplicates라서 이미 있던 브랜드면 위 upsert가 added_by를 못 채움 —
-  // 아직 등록자가 없는 브랜드면 이번 등록으로 내가 등록자로 기록되게 별도로 시도.
-  await sb.rpc('claim_brand', { target_id: id });
+  const { data, error } = await sb.functions.invoke('register-brand', {
+    body: { url: urlInput || null, instagram: instagram || null, name: name || null },
+  });
+  if (error || !data?.ok) {
+    out.className = 'warn';
+    out.textContent = data?.message || error?.message || '등록에 실패했어요. 잠시 후 다시 시도해주세요.';
+    return;
+  }
 
-  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: id });
+  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: data.id });
   if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
 
-  myFolderIds.push(id);
+  myFolderIds.push(data.id);
   out.className = 'ok';
-  out.textContent = '등록 요청 접수! 자동 판별 후 곧 검색에 반영돼요. (이미 있던 브랜드면 내 폴더에 바로 추가됨)';
+  if (data.alreadyExisted) {
+    out.textContent = '이미 등록된 브랜드였어요. 내 폴더에 바로 추가했어요.';
+  } else if (data.status === 'ready' && data.dispatched) {
+    out.textContent = `등록 완료! (${data.resolvedFromInstagram ? '인스타에서 링크 찾음 · ' : ''}지금 수집 중이에요, 1~2분 후 검색에 나와요)`;
+  } else if (data.status === 'ready') {
+    out.textContent = '등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.';
+  } else {
+    out.textContent = '등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 해요. 조금 걸릴 수 있어요.';
+  }
   await loadAllBrands();
 }
 

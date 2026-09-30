@@ -1,0 +1,5 @@
+# Supabase CLI 설정. 이 프로젝트는 로컬 개발 스택(로컬 DB/인증 등)은 안 쓰고, Edge Function
+# 배포용으로만 CLI를 쓴다 — 그래서 기본 생성되는 전체 옵션 대신 최소한만 남겨둠.
+# 배포: npx supabase functions deploy register-brand --project-ref fipjvgglzlvksepdjxjv
+# 시크릿: npx supabase secrets set GH_DISPATCH_TOKEN=... --project-ref fipjvgglzlvksepdjxjv
+project_id = "style-finder"
