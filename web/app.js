@@ -706,7 +706,7 @@ function slugify(hostname) {
 async function submitAddFallback(urlInput, name, instagram, out) {
   if (!urlInput) {
     out.className = 'warn';
-    out.textContent = '즉시 등록 기능이 아직 준비 전이라, 이 경우엔 쇼핑몰 URL이 필요해요.';
+    out.textContent = '인스타로 링크 찾는 게 일시적으로 안 됐어요. 다시 시도해보시거나, 쇼핑몰 URL을 직접 입력해주세요.';
     return;
   }
   let shopUrl;
