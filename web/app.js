@@ -754,9 +754,17 @@ async function submitAdd() {
   } catch (err) {
     error = err;
   }
-  // register-brand가 아직 배포 전이면 함수 자체가 없어서 호출이 실패함 — 이땐 예전 방식으로 폴백.
-  if (error || !data?.ok) {
+  // register-brand가 아직 배포 전이거나 호출 자체(네트워크/인증 등)가 실패하면 예전 방식으로 폴백.
+  // 함수 호출은 성공했는데 서버가 ok:false로 응답한 경우(예: 인스타에서 링크를 못 찾음)는
+  // 폴백하지 않고 서버가 만든 정확한 이유를 그대로 보여준다 — 폴백의 뭉뚱그린 메시지로
+  // 덮어써버리면 실제 원인(예: URL 형식 오류 vs 인스타 조회 실패)을 알 수 없게 된다.
+  if (error) {
     return submitAddFallback(urlInput, name, instagram, out);
+  }
+  if (!data.ok) {
+    out.className = 'warn';
+    out.textContent = data.message || '등록에 실패했어요. 다시 시도해주세요.';
+    return;
   }
 
   const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: data.id });
