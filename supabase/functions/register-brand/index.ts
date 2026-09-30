@@ -185,9 +185,12 @@ async function dispatchCollectWorkflow(brandId: string, token: string) {
 }
 
 Deno.serve(async (req: Request) => {
+  // supabase-js의 functions.invoke()는 apikey/x-client-info 헤더도 같이 보내는데,
+  // 여기 허용 목록에 없으면 브라우저가 CORS 위반으로 보고 응답 자체를 막아버림
+  // (curl은 CORS를 안 따지니 정상 응답이 와서 처음엔 원인을 못 봤음 — 실측 확인됨).
   const cors = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
