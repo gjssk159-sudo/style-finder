@@ -695,12 +695,41 @@ async function toggleFolder(brandId, add) {
 }
 
 // ---------------- 브랜드 등록 ----------------
-// 예전엔 "등록 요청 접수"만 하고 매일 새벽 정기 수집(cron)이 판별+수집을 다 처리해서
-// 등록 시점에 따라 최대 24시간 가까이 기다려야 검색에 나왔음. 지금은 Edge Function
-// (register-brand)이 즉시 플랫폼을 판별해서 브랜드 테이블에 반영하고, 판별 성공하면
-// 그 브랜드 하나만 수집하는 GitHub Actions를 바로 트리거해서 1~2분 안에 끝나게 한다.
-// URL 대신 인스타 아이디만 입력해도, 서버(Edge Function)가 공개 프로필의 바이오 링크를
-// best-effort로 찾아서 시도한다(항상 되는 건 아니라 실패하면 URL을 다시 요청함).
+// Edge Function(register-brand)이 배포되면 즉시 판별 + 1~2분 안에 자동 수집까지 되지만,
+// 아직 배포 전이거나 일시적으로 호출이 실패하는 경우에도 등록 자체는 항상 되어야 하므로
+// (예전 방식: pending으로 접수만 해두면 매일 새벽 정기 수집이 판별+수집을 처리) 그쪽으로
+// 자동 폴백한다. 그래서 이 함수 배포를 당장 안 해도 사이트는 정상 동작한다.
+function slugify(hostname) {
+  return hostname.replace(/^www\./, '').replace(/\.(com|co\.kr|kr|link|net|store|shop)$/i, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+}
+
+async function submitAddFallback(urlInput, name, instagram, out) {
+  if (!urlInput) {
+    out.className = 'warn';
+    out.textContent = '즉시 등록 기능이 아직 준비 전이라, 이 경우엔 쇼핑몰 URL이 필요해요.';
+    return;
+  }
+  let shopUrl;
+  try { shopUrl = new URL(/^https?:\/\//i.test(urlInput) ? urlInput : `https://${urlInput}`).origin; }
+  catch { out.className = 'warn'; out.textContent = 'URL 형식이 이상해요.'; return; }
+
+  const id = slugify(new URL(shopUrl).hostname);
+  const { error: e1 } = await sb.from('brands').upsert(
+    { id, name: name || id, name_en: name || id, type: 'brand', instagram: instagram || null, shop_url: shopUrl, platform: 'unknown', status: 'pending', added_by: currentUser.id },
+    { onConflict: 'id', ignoreDuplicates: true }
+  );
+  if (e1) { out.className = 'warn'; out.textContent = e1.message; return; }
+  await sb.rpc('claim_brand', { target_id: id });
+
+  const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: id });
+  if (e2 && !String(e2.message).includes('duplicate')) { out.className = 'warn'; out.textContent = e2.message; return; }
+
+  myFolderIds.push(id);
+  out.className = 'ok';
+  out.textContent = '등록 요청 접수! 자동 판별 후 다음 정기 수집(매일 새벽) 때 반영돼요. (이미 있던 브랜드면 내 폴더에 바로 추가됨)';
+  await loadAllBrands();
+}
+
 async function submitAdd() {
   const out = document.getElementById('addResult');
   if (!currentUser) { out.className = 'warn'; out.textContent = '로그인 먼저 해주세요.'; out.style.display = 'block'; return; }
@@ -717,13 +746,17 @@ async function submitAdd() {
   out.className = '';
   out.textContent = instagram && !urlInput ? '인스타에서 쇼핑몰 링크 찾는 중…' : '등록 중…';
 
-  const { data, error } = await sb.functions.invoke('register-brand', {
-    body: { url: urlInput || null, instagram: instagram || null, name: name || null },
-  });
+  let data, error;
+  try {
+    ({ data, error } = await sb.functions.invoke('register-brand', {
+      body: { url: urlInput || null, instagram: instagram || null, name: name || null },
+    }));
+  } catch (err) {
+    error = err;
+  }
+  // register-brand가 아직 배포 전이면 함수 자체가 없어서 호출이 실패함 — 이땐 예전 방식으로 폴백.
   if (error || !data?.ok) {
-    out.className = 'warn';
-    out.textContent = data?.message || error?.message || '등록에 실패했어요. 잠시 후 다시 시도해주세요.';
-    return;
+    return submitAddFallback(urlInput, name, instagram, out);
   }
 
   const { error: e2 } = await sb.from('user_brands').insert({ user_id: currentUser.id, folder_id: currentFolderId, brand_id: data.id });
