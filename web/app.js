@@ -703,7 +703,7 @@ function slugify(hostname) {
   return hostname.replace(/^www\./, '').replace(/\.(com|co\.kr|kr|link|net|store|shop)$/i, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 }
 
-async function submitAddFallback(urlInput, instagram, addToFolder, out) {
+async function submitAddFallback(urlInput, addToFolder, out) {
   let shopUrl;
   try { shopUrl = new URL(/^https?:\/\//i.test(urlInput) ? urlInput : `https://${urlInput}`).origin; }
   catch { out.className = 'warn'; out.textContent = 'URL 형식이 이상해요.'; return; }
@@ -712,7 +712,7 @@ async function submitAddFallback(urlInput, instagram, addToFolder, out) {
   // 자유 입력 필드로 두면 장난스럽거나 부적절한 이름을 등록할 수 있어서.
   const id = slugify(new URL(shopUrl).hostname);
   const { error: e1 } = await sb.from('brands').upsert(
-    { id, name: id, name_en: id, type: 'brand', instagram: instagram || null, shop_url: shopUrl, platform: 'unknown', status: 'pending', added_by: currentUser.id },
+    { id, name: id, name_en: id, type: 'brand', shop_url: shopUrl, platform: 'unknown', status: 'pending', added_by: currentUser.id },
     { onConflict: 'id', ignoreDuplicates: true }
   );
   if (e1) { out.className = 'warn'; out.textContent = e1.message; return; }
@@ -734,7 +734,6 @@ async function submitAdd() {
   if (!currentUser) { out.className = 'warn'; out.textContent = '로그인 먼저 해주세요.'; out.style.display = 'block'; return; }
   if (sharedView) { out.className = 'warn'; out.textContent = '공유된 폴더에는 추가할 수 없어요. 내 폴더로 돌아가서 추가해주세요.'; out.style.display = 'block'; return; }
   const urlInput = document.getElementById('addUrl').value.trim();
-  const instagram = document.getElementById('addInstagram').value.trim();
   const addToFolder = document.getElementById('addToMyFolder').checked;
   if (!urlInput) {
     out.className = 'warn'; out.textContent = '쇼핑몰 URL을 입력해주세요.'; out.style.display = 'block';
@@ -748,7 +747,7 @@ async function submitAdd() {
   let data, error;
   try {
     ({ data, error } = await sb.functions.invoke('register-brand', {
-      body: { url: urlInput, instagram: instagram || null },
+      body: { url: urlInput },
     }));
   } catch (err) {
     error = err;
@@ -758,7 +757,7 @@ async function submitAdd() {
   // 서버가 만든 정확한 이유를 그대로 보여준다 — 폴백의 뭉뚱그린 메시지로 덮어써버리면
   // 실제 원인을 알 수 없게 된다.
   if (error) {
-    return submitAddFallback(urlInput, instagram, addToFolder, out);
+    return submitAddFallback(urlInput, addToFolder, out);
   }
   if (!data.ok) {
     out.className = 'warn';

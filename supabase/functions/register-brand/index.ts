@@ -1,7 +1,7 @@
 // 브랜드 등록 즉시 처리용 Edge Function.
 // 예전엔 등록 -> pending 상태로만 저장 -> 매일 새벽 정기 수집(cron)이 판별+수집까지 한 번에
 // 처리해서, 등록 시점에 따라 최대 24시간 가까이 기다려야 검색에 나왔음. 이 함수는:
-//   1) URL(또는 인스타 핸들로 best-effort 찾은 URL)로 플랫폼을 즉시 판별
+//   1) 입력받은 쇼핑몰 URL로 플랫폼을 즉시 판별
 //   2) brands 테이블에 바로 반영 (ready/needs_review)
 //   3) ready면 이 브랜드 하나만 수집하는 GitHub Actions(collect-single.yml)를 바로 트리거
 // 를 몇 초~몇십 초 안에 끝내서, 실제 상품은 그 GitHub Actions가 끝나는 1~2분 뒤에 반영된다.
@@ -174,7 +174,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: cors });
 
-  let body: { url?: string; instagram?: string };
+  let body: { url?: string };
   try {
     body = await req.json();
   } catch {
@@ -195,8 +195,6 @@ Deno.serve(async (req: Request) => {
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-  // 인스타 아이디는 브랜드 레코드에 참고용으로만 저장하고, URL을 찾는 용도로는 쓰지 않는다
-  // (인스타그램이 서버 쪽 프로필 조회를 사실상 항상 차단해서 신뢰할 수 없는 걸로 확인됨).
   const targetUrl = (body.url || '').trim();
   if (!targetUrl) {
     return Response.json(
@@ -237,7 +235,6 @@ Deno.serve(async (req: Request) => {
     name: displayName,
     name_en: displayName,
     type: 'brand',
-    instagram: body.instagram || null,
     shop_url: result.shopUrl,
     platform: result.platform,
     discovery: result.discovery || {},
