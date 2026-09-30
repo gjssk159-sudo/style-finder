@@ -196,7 +196,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: cors });
 
-  let body: { url?: string; instagram?: string; name?: string };
+  let body: { url?: string; instagram?: string };
   try {
     body = await req.json();
   } catch {
@@ -262,7 +262,9 @@ Deno.serve(async (req: Request) => {
     return Response.json({ ok: false, reason: 'invalid_url', message: 'URL 형식이 올바르지 않아요.' }, { headers: cors });
   }
 
-  const displayName = (body.name || '').trim() || id;
+  // 브랜드 표시 이름은 클라이언트 입력을 받지 않고 URL에서 자동으로 뽑는다 — 자유 입력을
+  // 허용하면 장난스럽거나 부적절한 이름으로 등록하는 걸 막을 수 없어서.
+  const displayName = id;
 
   const { error: insertErr } = await sb.from('brands').insert({
     id,
