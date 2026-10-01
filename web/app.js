@@ -861,6 +861,7 @@ function buildQuery(offset, count = PAGE_SIZE) {
 // 경우가 많아서(실측 제보) 8초는 너무 짧아 15초로 늘림.
 const IMAGE_TIMEOUT_MS = 15000;
 function armOneImage(img) {
+  img.dataset.armed = '1'; // 실제로 카운트다운이 시작된 이미지만 표시 (rearmUnfinishedImages 판단용)
   const t = setTimeout(() => {
     if (img.complete) return;
     // 15초 안에 안 끝나면 바로 지우던 걸, 한 번은 재시도하도록 바꿈 — 뒤로가기를 반복할
@@ -882,10 +883,29 @@ function armOneImage(img) {
   img.addEventListener('load', clear, { once: true });
   img.addEventListener('error', clear, { once: true });
 }
+// loading="lazy" 때문에 화면 밖 이미지는 실제로는 로딩을 시작도 안 했는데, 타이머를
+// 렌더링 즉시 걸어버리면 스크롤해서 그 이미지에 도달하기 전에 "멈췄다"고 오판해서
+// 지워버릴 수 있다. IntersectionObserver로 실제 뷰포트 근처에 들어온(=브라우저가 lazy
+// 로딩을 시작할 즈음) 이미지만 그때부터 타이머를 걸도록 분리.
+const imageViewportObserver = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      imageViewportObserver.unobserve(entry.target);
+      if (!entry.target.complete) armOneImage(entry.target);
+    }
+  },
+  { rootMargin: '200px' },
+);
 function armImageTimeouts(container) {
-  for (const img of container.querySelectorAll('img:not([data-armed])')) {
-    img.dataset.armed = '1';
-    armOneImage(img);
+  // 페이지를 넘기면 이전 그리드의 이미지들은 DOM에서 사라지는데, 아직 뷰포트에 도달 못 해서
+  // observe 중이던 것들이 unobserve 없이 계속 쌓이면 페이지를 넘길수록 감시 대상이 늘어나며
+  // 점점 느려질 수 있어서, 매번 그리드를 새로 채우기 전에 관찰을 전부 리셋한다.
+  imageViewportObserver.disconnect();
+  for (const img of container.querySelectorAll('img:not([data-watched])')) {
+    img.dataset.watched = '1';
+    if (img.complete) continue;
+    imageViewportObserver.observe(img);
   }
 }
 // 뒤로가기(bfcache)로 나갔다 오면 걸어둔 타이머가 "실제 경과 시간" 기준으로 판정되는데,
@@ -900,8 +920,11 @@ addEventListener('pagehide', () => {
   }
 });
 function rearmUnfinishedImages() {
+  // dataset.armed가 없는 이미지는 아직 뷰포트에 도달 못 해서 observe만 되고 있는
+  // 상태라 실제로 로딩을 시작도 안 했을 수 있다 — 그런 건 건드리지 않고 그대로
+  // IntersectionObserver에 맡겨서, 스크롤해서 도달할 때 자연스럽게 타이머가 걸리게 둔다.
   for (const img of document.querySelectorAll('#grid img')) {
-    if (!img.complete && !img.__timeoutId) armOneImage(img);
+    if (!img.complete && img.dataset.armed && !img.__timeoutId) armOneImage(img);
   }
 }
 
@@ -925,7 +948,7 @@ function cardsHtml(data) {
       const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
       return `<a class="card" href="${url}" ${linkAttrs}>
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
-          ${g.image ? `<img src="${g.image}" alt="" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
+          ${g.image ? `<img src="${g.image}" alt="" loading="lazy" decoding="async" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
         </div>
         <div class="body">
