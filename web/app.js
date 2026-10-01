@@ -861,7 +861,22 @@ function buildQuery(offset, count = PAGE_SIZE) {
 // 경우가 많아서(실측 제보) 8초는 너무 짧아 15초로 늘림.
 const IMAGE_TIMEOUT_MS = 15000;
 function armOneImage(img) {
-  const t = setTimeout(() => { if (!img.complete) img.remove(); }, IMAGE_TIMEOUT_MS);
+  const t = setTimeout(() => {
+    if (img.complete) return;
+    // 15초 안에 안 끝나면 바로 지우던 걸, 한 번은 재시도하도록 바꿈 — 뒤로가기를 반복할
+    // 때마다 "그 순간 하필 느렸던" 이미지가 하나씩 영구히 사라져서, 계속 둘러볼수록
+    // 흰 박스가 점점 늘어나는 문제였음(실측 제보). src는 그대로 두고 속성만 지웠다
+    // 붙여서 재시도 — URL 자체를 바꾸면 외부 쇼핑몰 CDN이 쿼리스트링에 민감할 수 있어서 피함.
+    if (!img.dataset.retried) {
+      img.dataset.retried = '1';
+      const src = img.src;
+      img.removeAttribute('src');
+      img.src = src;
+      armOneImage(img);
+      return;
+    }
+    img.remove();
+  }, IMAGE_TIMEOUT_MS);
   img.__timeoutId = t;
   const clear = () => { clearTimeout(t); img.__timeoutId = null; };
   img.addEventListener('load', clear, { once: true });
@@ -1094,9 +1109,14 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
   if (initial.get('color')) document.getElementById('color').value = initial.get('color');
   if (initial.get('size')) document.getElementById('size').value = initial.get('size');
-  if (initial.get('brand')) {
-    document.getElementById('brand').value = initial.get('brand');
-    document.getElementById('brandInput').value = initial.get('brand');
+  // 이 시점엔 #brand select에 아직 <option>이 하나도 없어서(브랜드 목록은 뒤에서
+  // loadAllBrands()/renderBrandFilter()가 채움) sel.value 대입이 조용히 무시된다.
+  // renderBrandFilter()는 그 비어버린 값을 "현재 선택값"으로 보고 그대로 유지해버리므로,
+  // URL의 brand가 옵션이 채워진 뒤에 다시 한번 적용돼야 한다 (아래 initialBrand 참고).
+  const initialBrand = initial.get('brand');
+  if (initialBrand) {
+    document.getElementById('brand').value = initialBrand;
+    document.getElementById('brandInput').value = initialBrand;
   }
   if (initial.get('sort')) document.getElementById('sort').value = initial.get('sort');
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
@@ -1126,6 +1146,12 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   } else if (currentUser) {
     await loadMyFolders();
     renderBrandFilter(); // loadAllBrands() 시점엔 아직 myFolderIds가 비어있어서 옵션이 없었으므로 다시 채움
+  }
+  // 위 두 분기 모두 renderBrandFilter()를 거친 뒤라 이제 #brand에 실제 <option>들이 채워져
+  // 있으므로, 맨 위에서 실패했던 URL의 brand 값을 여기서 다시 적용해야 제대로 선택된다.
+  if (initialBrand) {
+    document.getElementById('brand').value = initialBrand;
+    document.getElementById('brandInput').value = initialBrand;
   }
   renderFolderTabs();
   updateFolderNavLabel();
