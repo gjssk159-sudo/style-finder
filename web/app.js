@@ -712,7 +712,7 @@ async function submitAddFallback(urlInput, addToFolder, out) {
   // 자유 입력 필드로 두면 장난스럽거나 부적절한 이름을 등록할 수 있어서.
   const id = slugify(new URL(shopUrl).hostname);
   const { error: e1 } = await sb.from('brands').upsert(
-    { id, name: id, name_en: id, type: 'brand', shop_url: shopUrl, platform: 'unknown', status: 'pending', added_by: currentUser.id },
+    { id, name: id.replace(/-/g, ' ').toUpperCase(), name_en: id.replace(/-/g, ' ').toUpperCase(), type: 'brand', shop_url: shopUrl, platform: 'unknown', status: 'pending', added_by: currentUser.id },
     { onConflict: 'id', ignoreDuplicates: true }
   );
   if (e1) { out.className = 'warn'; out.textContent = e1.message; return; }

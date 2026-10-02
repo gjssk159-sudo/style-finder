@@ -5,8 +5,8 @@
   "sources": [
     {
       "id": "0tape",
-      "name": "0TaPe",
-      "nameEn": "0TaPe",
+      "name": "0TAPE",
+      "nameEn": "0TAPE",
       "type": "brand",
       "instagram": "0tape",
       "shopUrl": "https://www.0tape.kr",
@@ -35,7 +35,7 @@
     },
     {
       "id": "999humanity",
-      "name": "999휴머니티",
+      "name": "999HUMANITY",
       "nameEn": "999HUMANITY",
       "type": "brand",
       "instagram": "999humanity",
@@ -46,7 +46,10 @@
         "method": "cafe24_sitemap"
       },
       "status": "ready",
-      "notes": "sitemap.xml에 상품 URL 약 570개. /product/{slug}/{id}/ 패턴."
+      "notes": "sitemap.xml에 상품 URL 약 570개. /product/{slug}/{id}/ 패턴.",
+      "aliases": [
+        "999휴머니티"
+      ]
     },
     {
       "id": "aaoa",
@@ -139,8 +142,8 @@
     },
     {
       "id": "bluesf",
-      "name": "Bluē sunflower",
-      "nameEn": "Bluē sunflower",
+      "name": "BLUĒ SUNFLOWER",
+      "nameEn": "BLUĒ SUNFLOWER",
       "type": "brand",
       "instagram": "bluesfofficial",
       "shopUrl": "https://bluesf.kr",
@@ -241,7 +244,7 @@
     },
     {
       "id": "coyseio",
-      "name": "코이세이오",
+      "name": "COYSEIO",
       "nameEn": "COYSEIO",
       "type": "brand",
       "instagram": "hi_coyseio",
@@ -252,7 +255,10 @@
         "method": "cafe24_sitemap"
       },
       "status": "ready",
-      "notes": "Cafe24 (구 smarturbanuseful). 여성 스트리트웨어."
+      "notes": "Cafe24 (구 smarturbanuseful). 여성 스트리트웨어.",
+      "aliases": [
+        "코이세이오"
+      ]
     },
     {
       "id": "curatedparade",
@@ -285,8 +291,8 @@
     },
     {
       "id": "ee-etiquettevide",
-      "name": "ÉÉ by NOUVMARÉE",
-      "nameEn": "ÉÉ by NOUVMARÉE",
+      "name": "ÉÉ BY NOUVMARÉE",
+      "nameEn": "ÉÉ BY NOUVMARÉE",
       "type": "brand",
       "instagram": "ee_etiquettevide",
       "shopUrl": "https://www.ee-etiquettevide.com",
@@ -480,8 +486,8 @@
     },
     {
       "id": "jabberwocky",
-      "name": "jabbérwocky",
-      "nameEn": "jabbérwocky",
+      "name": "JABBÉRWOCKY",
+      "nameEn": "JABBÉRWOCKY",
       "type": "brand",
       "instagram": "jabberwockyconversation",
       "shopUrl": "https://www.jabberwocky.kr",
@@ -542,8 +548,8 @@
     },
     {
       "id": "krackerhouse",
-      "name": "크래커하우스",
-      "nameEn": "Krackerhouse",
+      "name": "KRACKERHOUSE",
+      "nameEn": "KRACKERHOUSE",
       "type": "brand",
       "shopUrl": "https://krackerhouse.com",
       "platform": "cafe24",
@@ -552,7 +558,10 @@
         "method": "cafe24_sitemap"
       },
       "status": "ready",
-      "notes": "자동 판별됨 (cafe24_sitemap)."
+      "notes": "자동 판별됨 (cafe24_sitemap).",
+      "aliases": [
+        "크래커하우스"
+      ]
     },
     {
       "id": "label-archive",
@@ -657,8 +666,8 @@
     },
     {
       "id": "mudule",
-      "name": "müdule",
-      "nameEn": "müdule",
+      "name": "MÜDULE",
+      "nameEn": "MÜDULE",
       "type": "brand",
       "instagram": "mudule.official",
       "shopUrl": "https://www.mudule.com",
@@ -872,8 +881,8 @@
     },
     {
       "id": "safarispot",
-      "name": "사파리스팟",
-      "nameEn": "Safarispot",
+      "name": "SAFARISPOT",
+      "nameEn": "SAFARISPOT",
       "type": "brand",
       "instagram": "safarispot",
       "shopUrl": "https://sssafariii.kr",
@@ -883,12 +892,15 @@
         "method": "cafe24_sitemap"
       },
       "status": "ready",
-      "notes": "자사몰 sssafariii.kr (Cafe24). 60%(sixtypercent)에도 입점."
+      "notes": "자사몰 sssafariii.kr (Cafe24). 60%(sixtypercent)에도 입점.",
+      "aliases": [
+        "사파리스팟"
+      ]
     },
     {
       "id": "sansangear",
-      "name": "산산기어",
-      "nameEn": "San San Gear",
+      "name": "SAN SAN GEAR",
+      "nameEn": "SAN SAN GEAR",
       "type": "brand",
       "instagram": "sansan_gear",
       "shopUrl": "https://sansangear.com",
@@ -898,7 +910,10 @@
         "method": "shopify_products_json"
       },
       "status": "ready",
-      "notes": "products.json 확인 (상품 약 31개). vendor/tags/variants 전부 정형 데이터."
+      "notes": "products.json 확인 (상품 약 31개). vendor/tags/variants 전부 정형 데이터.",
+      "aliases": [
+        "산산기어"
+      ]
     },
     {
       "id": "saros",
@@ -916,8 +931,8 @@
     },
     {
       "id": "serus",
-      "name": "세루스",
-      "nameEn": "세루스",
+      "name": "SERUS",
+      "nameEn": "SERUS",
       "type": "brand",
       "instagram": null,
       "shopUrl": "https://serus.co.kr",
@@ -926,7 +941,10 @@
         "method": "tbd"
       },
       "status": "ready",
-      "notes": "Sixshop 헤드리스 브라우저 어댑터로 수집 가능해짐."
+      "notes": "Sixshop 헤드리스 브라우저 어댑터로 수집 가능해짐.",
+      "aliases": [
+        "세루스"
+      ]
     },
     {
       "id": "smartstore-naver",
@@ -944,8 +962,8 @@
     },
     {
       "id": "solarljos-service",
-      "name": "sólarljós",
-      "nameEn": "sólarljós",
+      "name": "SÓLARLJÓS",
+      "nameEn": "SÓLARLJÓS",
       "type": "brand",
       "instagram": "solarljos.service",
       "shopUrl": "https://solarljos-service.com",
@@ -975,7 +993,7 @@
     {
       "id": "store-hyeinseo",
       "name": "HYEIN SEO (구 URL, 중복)",
-      "nameEn": "HYEIN SEO (duplicate, use hyeinseo)",
+      "nameEn": "HYEIN SEO (구 URL, 중복)",
       "type": "brand",
       "instagram": "hyeinantwerp",
       "shopUrl": "https://store.hyeinseo.com",
@@ -1077,8 +1095,8 @@
     },
     {
       "id": "thecolorcolour",
-      "name": "colorcolour",
-      "nameEn": "colorcolour",
+      "name": "COLORCOLOUR",
+      "nameEn": "COLORCOLOUR",
       "type": "brand",
       "instagram": "thecolorcolour",
       "shopUrl": "https://thecolorcolour.com",
@@ -1152,7 +1170,7 @@
     },
     {
       "id": "xlim",
-      "name": "엑슬림",
+      "name": "XLIM",
       "nameEn": "XLIM",
       "type": "brand",
       "instagram": null,
@@ -1163,7 +1181,10 @@
         "method": "cafe24_categories"
       },
       "status": "ready",
-      "notes": "Cafe24 (echosting). sitemap 없어서 카테고리 크롤링. EP.N(에피소드) 단위 출시. 인스타 핸들 확인 필요."
+      "notes": "Cafe24 (echosting). sitemap 없어서 카테고리 크롤링. EP.N(에피소드) 단위 출시. 인스타 핸들 확인 필요.",
+      "aliases": [
+        "엑슬림"
+      ]
     },
     {
       "id": "yinandyang",

@@ -35,7 +35,7 @@ function load() {
     if (s.type !== 'brand') continue; // 편집샵 자신의 이름은 상품 브랜드가 아니므로 제외
     const canon = normKey(s.name);
     if (!canon) continue;
-    for (const alias of [s.name, s.nameEn, s.id]) {
+    for (const alias of [s.name, s.nameEn, s.id, ...(s.aliases || [])]) {
       const k = normKey(alias);
       if (k) aliasMap.set(k, canon);
     }
@@ -49,7 +49,8 @@ export function resolveBrand(raw) {
   load();
   const norm = normKey(raw);
   const canon = aliasMap.get(norm) || norm;
-  const display = displayMap.get(canon) || String(raw || '').trim();
+  // 화면 표기는 항상 영문 대문자로 통일
+  const display = (displayMap.get(canon) || String(raw || '').trim()).toUpperCase();
   const id = idMap.get(canon) || null;
   return { key: canon, display, id };
 }
