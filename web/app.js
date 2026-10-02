@@ -777,6 +777,8 @@ async function submitAdd() {
     out.textContent = `이미 등록된 브랜드였어요.${addToFolder ? ' 내 폴더에 바로 추가했어요.' : ''}`;
   } else if (data.status === 'ready' && data.dispatched) {
     out.textContent = `등록 완료! 지금 수집 중이에요, 1~2분 후 검색에 나와요.${folderNote}`;
+  } else if (data.status === 'pending' && data.dispatched) {
+    out.textContent = `등록 완료! 쇼핑몰 종류를 확인하면서 상품을 수집 중이에요, 2~3분 후 검색에 나와요.${folderNote}`;
   } else if (data.status === 'ready') {
     out.textContent = `등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.${folderNote}`;
   } else {

@@ -25,13 +25,14 @@ jobs:
         run: npm ci
       - name: Playwright 크로미움 설치
         run: npx playwright install --with-deps chromium
-      - name: Supabase에서 브랜드 목록 동기화 (방금 등록된 브랜드 포함)
+      - name: 브랜드 재판별 + Supabase에서 브랜드 목록 동기화 (방금 등록된 브랜드 포함)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           echo "SUPABASE_URL=$SUPABASE_URL" >> .env
           echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> .env
+          node src/process-pending.js --id=${{ github.event.inputs.brand_id }}
           node src/sync-brands-from-supabase.js
       - name: 이 브랜드만 수집
         run: node src/run.js --source=${{ github.event.inputs.brand_id }}

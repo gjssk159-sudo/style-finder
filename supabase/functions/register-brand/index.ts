@@ -230,6 +230,10 @@ Deno.serve(async (req: Request) => {
   // 허용하면 장난스럽거나 부적절한 이름으로 등록하는 걸 막을 수 없어서.
   const displayName = id.replace(/-/g, ' ').toUpperCase();
 
+  // 이 서버(Supabase Edge) IP가 쇼핑몰에 막혀서 판별을 못 한 경우일 수 있으니, 단정하지 않고
+  // pending으로 두고 GitHub Actions(다른 IP)에서 다시 판별+수집하게 넘긴다.
+  const retryOnRunner = result.status === 'needs_review' && result.platform === 'unknown';
+
   const { error: insertErr } = await sb.from('brands').insert({
     id,
     name: displayName,
@@ -238,7 +242,7 @@ Deno.serve(async (req: Request) => {
     shop_url: result.shopUrl,
     platform: result.platform,
     discovery: result.discovery || {},
-    status: result.status,
+    status: retryOnRunner ? 'pending' : result.status,
     notes:
       result.status === 'ready'
         ? `자동 판별됨 (${(result.discovery as any)?.method}).`
@@ -250,7 +254,7 @@ Deno.serve(async (req: Request) => {
   }
 
   let dispatched = false;
-  if (result.status === 'ready') {
+  if (result.status === 'ready' || retryOnRunner) {
     const ghToken = Deno.env.get('GH_DISPATCH_TOKEN');
     if (ghToken) {
       try {
@@ -262,7 +266,7 @@ Deno.serve(async (req: Request) => {
   }
 
   return Response.json(
-    { ok: true, id, name: displayName, status: result.status, platform: result.platform, dispatched, alreadyExisted: false },
+    { ok: true, id, name: displayName, status: retryOnRunner ? 'pending' : result.status, platform: result.platform, dispatched, alreadyExisted: false },
     { headers: cors },
   );
 });

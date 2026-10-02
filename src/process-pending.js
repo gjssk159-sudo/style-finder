@@ -8,7 +8,12 @@ import { getSupabaseAdmin } from './lib/supabase.js';
 
 const sb = getSupabaseAdmin();
 
-const { data: pending, error } = await sb.from('brands').select('id, shop_url').eq('status', 'pending');
+// --id=<brand_id> 를 주면 그 브랜드만(pending 뿐 아니라 needs_review도) 다시 판별한다.
+// 등록 시 Supabase Edge Function의 서버 IP가 쇼핑몰에 막혀 판별에 실패한 경우를,
+// GitHub Actions 쪽에서 다시 시도하기 위함.
+const idArg = process.argv.find((a) => a.startsWith('--id='))?.slice(5);
+const q = sb.from('brands').select('id, shop_url');
+const { data: pending, error } = await (idArg ? q.eq('id', idArg).in('status', ['pending', 'needs_review']) : q.eq('status', 'pending'));
 if (error) throw error;
 
 if (!pending.length) {
