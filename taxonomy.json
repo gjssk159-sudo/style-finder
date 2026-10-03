@@ -9,7 +9,8 @@
     {"id":"shoes","label":"SHOES","aliases":["shoes","신발"],"children":["sneakers","dress_shoes","boots","sandals","shoes"]},
     {"id":"bag","label":"BAG","aliases":["bag","가방"],"children":["backpack","crossbody","shoulder_bag","tote","waist_bag","pouch","bag"]},
     {"id":"cap","label":"CAP","aliases":["cap","모자"],"children":["cap","beanie","bucket_hat","beret_hunting","hat"]},
-    {"id":"acc","label":"ACC","aliases":["acc","패션소품","액세서리","소품"],"children":["socks","muffler","glove","belt","jewelry","eyewear","wallet","acc"]}
+    {"id":"acc","label":"ACC","aliases":["acc","패션소품","액세서리","소품"],"children":["socks","muffler","glove","belt","jewelry","eyewear","wallet","acc"]},
+    {"id":"etc","label":"ETC","aliases":["etc","기타"],"children":["etc"]}
   ],
   "categories": [
     { "id": "hoodie", "label": "후드 티셔츠", "keywords": ["후드티","후디","후드 티","hoodie","hoody","hooded sweat","hoodie sweat","pullover hood","pullover hoodie"], "exclude": ["집업","zip hood","zip hoodie","zip hooded","zip hoody","zip-up hood","zip-up hoodie","zip-up hooded","zip-up hoody","zip up hood","zip up hoodie","zip up hooded","zip up hoody","zipup hood","zipup hoodie","zipup hooded","zipup hoody","hood zip","hoodie zip","hooded zip","hoody zip","hood zip-up","hoodie zip-up","hooded zip-up","hoody zip-up","hood zip up","hoodie zip up","hooded zip up","hoody zip up","hood zipup","hoodie zipup","hooded zipup","hoody zipup"], "queryAliases": ["top","상의","후드"] },
@@ -79,6 +80,6 @@
     { "id": "eyewear", "label": "선글라스/안경", "keywords": ["sunglasses","선글라스","glasses","안경","eyewear","아이웨어"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
     { "id": "wallet", "label": "지갑/카드지갑", "keywords": ["wallet","지갑","card holder","card case","카드지갑","카드 지갑","카드홀더","카드 홀더","coin purse","동전지갑"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
     { "id": "acc", "label": "기타 소품", "keywords": ["액세서리","accessory","keyring","keychain","키링","key ring","clip","클립","hair","헤어","pin badge","뱃지"], "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "etc", "label": "기타", "keywords": [] }
+    { "id": "etc", "label": "기타", "keywords": [], "queryAliases": ["etc","기타"] }
   ]
 }

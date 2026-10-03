@@ -540,19 +540,45 @@ function sizeVariants(label) {
 
 let sizeOptions = []; // 지금 폴더에 실제로 존재하는 사이즈 표시 라벨(정렬됨)
 
+// 부팅 중 renderBrandFilter()가 여러 번 불리는데 그때마다 전 상품 사이즈를 처음부터 다시 받아서
+// (수천 행 × 수십 번 요청) 사진 로딩과 네트워크를 다퉜음 → 같은 폴더면 한 번만, 결과는 localStorage에도 캐시.
+let sizeLoadKey = '';
+let sizeLoadPromise = null;
+const SIZE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+function sizeCacheKey() { return 'sf_sizes:' + [...myFolderIds].sort().join(','); }
 async function loadSizeOptions() {
   if ((!currentUser && !sharedView) || !myFolderIds.length) {
     sizeOptions = [];
     renderSizeFilter();
     return;
   }
+  const key = sizeCacheKey();
+  if (key === sizeLoadKey && sizeLoadPromise) return sizeLoadPromise;
+  sizeLoadKey = key;
+  sizeLoadPromise = loadSizeOptionsUncached(key);
+  return sizeLoadPromise;
+}
+async function loadSizeOptionsUncached(key) {
+  try {
+    const c = JSON.parse(localStorage.getItem(key) || 'null');
+    if (c && Date.now() - c.at < SIZE_CACHE_TTL_MS && Array.isArray(c.options)) {
+      sizeOptions = c.options;
+      renderSizeFilter();
+      return;
+    }
+  } catch {}
   // select는 기본 1000행 제한이 있어서, 폴더 상품이 그보다 많으면 뒤쪽 사이즈를 놓치므로 끝까지 페이지네이션.
-  const rows = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await sb.from('product_group').select('sizes').in('brand_id', myFolderIds).range(from, from + 999);
-    if (error) { console.error(error); return; }
-    rows.push(...data);
-    if (data.length < 1000) break;
+  // 첫 페이지에서 총 개수를 알아내고, 나머지 페이지는 동시에 받는다(예전엔 7~13번을 줄줄이 기다렸음).
+  const fetchPage = (from) => sb.from('product_group').select('sizes', { count: from === 0 ? 'exact' : undefined }).in('brand_id', myFolderIds).range(from, from + 999);
+  const first = await fetchPage(0);
+  if (first.error) { console.error(first.error); sizeLoadKey = ''; return; } // 실패하면 다음에 다시 시도
+  const rows = [...first.data];
+  const total = first.count || first.data.length;
+  const pending = [];
+  for (let from = 1000; from < total; from += 1000) pending.push(fetchPage(from));
+  for (const r of await Promise.all(pending)) {
+    if (r.error) { console.error(r.error); sizeLoadKey = ''; return; }
+    rows.push(...r.data);
   }
   const normalized = new Set();
   const others = new Set();
@@ -575,6 +601,7 @@ async function loadSizeOptions() {
     return a.localeCompare(b);
   });
   sizeOptions = [...clothing, ...rest];
+  try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), options: sizeOptions })); } catch {}
   renderSizeFilter();
 }
 
@@ -941,9 +968,49 @@ function rearmUnfinishedImages() {
 // 화면에서 바로 이동하게 해서 빠르고 뒤로가기도 평범하게 동작하도록 함.
 const OPEN_IN_PLACE = matchMedia('(display-mode: standalone)').matches || matchMedia('(max-width: 820px)').matches;
 
+// 상품 사진 원본은 장당 500KB~2MB(한 페이지에 수십 MB)라 모바일에서 20초씩 걸렸음 → 이미지 CDN(Photon,
+// WordPress.com)으로 폭 480 리사이즈본을 받는다(장당 평균 ~26KB). 같은 이미지는 항상 같은 호스트(i0~i2)로
+// 가서 브라우저 캐시가 맞고, 호스트를 나눠 동시 다운로드도 늘림. CDN이 못 가져오는 이미지는 onerror에서 원본으로 폴백.
+const THUMB_W = 480;
+function thumbUrl(u) {
+  try {
+    const x = new URL(u);
+    if (!/^https?:$/.test(x.protocol)) return u;
+    let h = 0;
+    for (let i = 0; i < u.length; i++) h = (h * 31 + u.charCodeAt(i)) >>> 0;
+    return `https://i${h % 3}.wp.com/${x.host}${x.pathname}${x.search}${x.search ? '&' : '?'}w=${THUMB_W}&quality=75&strip=all`;
+  } catch { return u; }
+}
+function imgFallback(img) {
+  if (!img.dataset.fb && img.dataset.orig) { img.dataset.fb = '1'; img.src = img.dataset.orig; }
+  else img.remove();
+}
+
+// 카드를 누르면 해당 쇼핑몰로 바로 이동하니, 렌더한 카드들의 쇼핑몰 주소는 DNS/TLS 연결을 미리 해둔다
+// (처음 몇 장은 preconnect, 나머지는 dns-prefetch). 쇼핑몰 페이지 자체 속도는 우리가 못 바꾸지만 연결 지연은 줄일 수 있음.
+function hintShopOrigins(data) {
+  const seen = new Set();
+  data.forEach((g, i) => {
+    const u = g.offer && g.offer[0] && g.offer[0].url;
+    if (!u) return;
+    let origin;
+    try { origin = new URL(u).origin; } catch { return; }
+    if (origin === location.origin || seen.has(origin)) return;
+    seen.add(origin);
+    if (seen.size > 24) return;
+    const id = 'hint-' + origin;
+    if (document.getElementById(id)) return;
+    const l = document.createElement('link');
+    l.id = id;
+    l.rel = i < 8 ? 'preconnect' : 'dns-prefetch';
+    l.href = origin;
+    document.head.appendChild(l);
+  });
+}
+
 function cardsHtml(data) {
   return data
-    .map((g) => {
+    .map((g, idx) => {
       const price = g.min_price === g.max_price ? won(g.min_price) : won(g.min_price) + ' ~ ' + won(g.max_price);
       const url = (g.offer && g.offer[0] && g.offer[0].url) || '#';
       const tags = (g.categories || [])
@@ -955,7 +1022,7 @@ function cardsHtml(data) {
       const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
       return `<a class="card" href="${url}" ${linkAttrs}>
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
-          ${g.image ? `<img src="${g.image}" alt="" loading="lazy" decoding="async" onerror="this.remove()" onload="if(this.naturalWidth<200)this.remove()">` : ''}
+          ${g.image ? `<img src="${thumbUrl(g.image)}" data-orig="${g.image}" alt="" loading="${idx < 6 ? 'eager' : 'lazy'}"${idx < 4 ? ' fetchpriority="high"' : ''} decoding="async" onerror="imgFallback(this)" onload="if(this.naturalWidth<200)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
         </div>
         <div class="body">
@@ -1027,6 +1094,7 @@ async function renderCurrentPage() {
 
   if (!data.length) { grid.innerHTML = '<div class="empty"><span class="empty-icon">🔎</span>결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
   grid.innerHTML = cardsHtml(data);
+  hintShopOrigins(data);
   armImageTimeouts(grid);
   updatePager();
   saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
@@ -1137,7 +1205,7 @@ function renderChips() {
     .map((g) => `<span class="chip ${ag && ag.id === g.id ? 'on' : ''}" onclick="pickCategory('${g.id}')">${g.label}</span>`)
     .join('');
   const sub = document.getElementById('subChips');
-  if (!ag) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
+  if (!ag || ag.children.length <= 1) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
   sub.style.display = 'flex';
   sub.innerHTML =
     `<span class="chip sub ${catSel === ag.id ? 'on' : ''}" onclick="pickCategory('${ag.id}', true)">전체</span>` +

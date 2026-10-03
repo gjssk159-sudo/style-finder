@@ -103,3 +103,9 @@ jobs:
           echo "SUPABASE_URL=$SUPABASE_URL" >> .env
           echo "SUPABASE_SERVICE_KEY=$SUPABASE_SERVICE_KEY" >> .env
           node src/load-supabase.js
+      - name: 썸네일 캐시 워밍 (이번에 갱신된 상품)
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node src/warm-thumbs.js --since-days=2

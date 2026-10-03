@@ -1,4 +1,4 @@
-const CACHE = "style-finder-v2";
+const CACHE = "style-finder-v3";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(self.skipWaiting());
@@ -20,6 +20,10 @@ self.addEventListener("fetch", (e) => {
   if (url.hostname.includes("supabase")) return;
 
   const sameOrigin = url.origin === self.location.origin;
+
+  // 외부 쇼핑몰/이미지 CDN 사진은 서비스워커가 가로채 캐시하지 않는다 — no-cors 이미지는 Cache Storage에서
+  // 장당 수 MB로 계산돼 금방 용량이 차고, 가로채는 것 자체도 느려져서 브라우저 기본 캐시에 맡김.
+  if (!sameOrigin && e.request.destination === "image") return;
 
   // 앱 코드(HTML/JS/JSON)는 캐시 우선이면 배포해도 "한 번 늦게" 반영되는 게 계속 헷갈림을
   // 일으켰음(실측: Vercel 캐시까지 고쳤는데도 폰에서 계속 옛 코드가 뜸) -> 네트워크 우선으로
