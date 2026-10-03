@@ -38,7 +38,6 @@ let currentUser = null;
 let myFolderIds = []; // 현재 보고 있는 폴더(내 폴더 또는 공유받은 폴더)에 있는 brand_id 목록
 let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
 let catSel = ''; // 상위(TOP/OUTER...) 또는 하위 카테고리 칩 선택 — 그룹 id 또는 카테고리 id
-let currentGender = ''; // '' | 'women' | 'men' | 'unisex' — 원본에 성별 표기가 있는 상품만 걸러짐(대부분은 미상)
 let myFolders = [];        // 로그인한 사람의 폴더 목록 [{id,name,share_id}] (최대 3개)
 let currentFolderId = null; // 지금 검색에 쓰이는 폴더 id
 let sharedView = null;      // 공유 링크로 남의 폴더를 보는 중이면 {id,name,share_id,user_id}
@@ -145,14 +144,6 @@ function askAlert(message) {
     dlg.addEventListener('cancel', onOk);
     dlg.showModal();
   });
-}
-
-function setGender(g) {
-  currentGender = g;
-  for (const btn of document.querySelectorAll('#genderTabs .gtab')) {
-    btn.classList.toggle('active', btn.dataset.gender === g);
-  }
-  go();
 }
 
 const won = (n) => (n == null ? '' : '₩' + n.toLocaleString('ko-KR'));
@@ -834,7 +825,6 @@ function qs() {
   if (priceMin) p.set('priceMin', priceMin);
   if (priceMax) p.set('priceMax', priceMax);
   if (inStock) p.set('inStock', '1');
-  if (currentGender) p.set('gender', currentGender);
   if (catSel) p.set('cat', catSel);
   if (sharedView) p.set('share', sharedView.share_id);
   if (currentPage > 1) p.set('p', currentPage);
@@ -871,7 +861,6 @@ function buildQuery(offset, count = PAGE_SIZE) {
 
   if (categories.length) query = query.overlaps('categories', categories);
   if (colors.length) query = query.overlaps('colors', colors);
-  if (currentGender) query = query.eq('gender', currentGender);
   if (size) query = query.overlaps('sizes', sizeVariants(size));
   if (brand) query = query.eq('brand', brand);
   if (priceMin) query = query.gte('max_price', Number(priceMin));
@@ -1254,12 +1243,6 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
   if (initial.get('priceMax')) document.getElementById('priceMax').value = initial.get('priceMax');
   if (initial.get('inStock')) document.getElementById('inStock').checked = true;
-  if (initial.get('gender')) {
-    currentGender = initial.get('gender');
-    for (const btn of document.querySelectorAll('#genderTabs .gtab')) {
-      btn.classList.toggle('active', btn.dataset.gender === currentGender);
-    }
-  }
   catSel = initial.get('cat') || '';
   if (initial.get('p')) currentPage = Math.max(1, parseInt(initial.get('p'), 10) || 1);
 

@@ -39,10 +39,6 @@
   .nav-links button:hover { border-color: var(--ink); background: var(--faint); }
   .nav-links button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
   .nav-links button.primary:hover { opacity: .85; background: var(--ink); }
-  .gender-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
-  .gtab { background: var(--faint); border: 1px solid transparent; padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 500; color: var(--sub); cursor: pointer; transition: color .15s, background .15s, border-color .15s; }
-  .gtab.active { color: #fff; background: var(--ink); font-weight: 600; }
-  .gtab:hover:not(.active) { color: var(--ink); border-color: var(--line); }
   #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 10px; }
   #authArea button { padding: 8px 15px; font-size: 12.5px; border-radius: 20px; }
   .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; cursor: default; }
@@ -142,8 +138,6 @@
     .logo { font-size: 19px; }
     .nav-links { flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
     .nav-links button { padding: 7px 12px; font-size: 12px; }
-    .gender-tabs { margin-bottom: 12px; }
-    .gtab { padding: 6px 12px; font-size: 12px; }
     .row { gap: 8px; }
     .search-wrap { flex-basis: 100%; }
     input[type=text]#q { font-size: 16px; } /* 16px 미만이면 iOS에서 포커스 시 자동 확대됨 */
@@ -171,11 +165,6 @@
       <button onclick="aboutDialog.showModal()">이용 안내</button>
       <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
       <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">+ 브랜드 등록</button>
-    </div>
-    <div class="gender-tabs" id="genderTabs">
-      <button class="gtab active" data-gender="" onclick="setGender('')">전체</button>
-      <button class="gtab" data-gender="women" onclick="setGender('women')">여성</button>
-      <button class="gtab" data-gender="men" onclick="setGender('men')">남성</button>
     </div>
     <div class="row">
       <div class="search-wrap">
