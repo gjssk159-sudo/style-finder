@@ -61,10 +61,30 @@ const FILLER_PHRASES = [
 ];
 
 let CATEGORIES = [];
+let GROUPS = [];
 async function loadTaxonomy() {
   const res = await fetch('./taxonomy.json');
   const data = await res.json();
   CATEGORIES = data.categories;
+  GROUPS = data.groups || [];
+}
+
+// 상위(그룹 id) 또는 하위(카테고리 id) 선택 → 검색에 쓸 카테고리 id 목록
+function expandSelection(sel) {
+  if (!sel) return [];
+  const g = GROUPS.find((x) => x.id === sel);
+  if (g) return g.children.slice();
+  return CATEGORIES.some((c) => c.id === sel) ? [sel] : [];
+}
+
+function labelOf(id) {
+  const c = CATEGORIES.find((x) => x.id === id);
+  return c ? c.label : id;
+}
+
+// 검색어에서 카테고리 단어만 빼고 나머지(브랜드/색상/상품명)는 그대로 — 칩으로 카테고리를 고를 때 사용
+function stripCategoryTokens(raw) {
+  return (raw || '').split(/s+/).filter((tok) => tok && !resolveCategoryToken(tok).length).join(' ');
 }
 
 function stripFillers(raw) {
@@ -118,4 +138,4 @@ function parseQuery(raw) {
   return { categories, colors, keywords };
 }
 
-window.StyleFinderTaxonomy = { loadTaxonomy, parseQuery, get CATEGORIES() { return CATEGORIES; }, COLOR_LABELS };
+window.StyleFinderTaxonomy = { loadTaxonomy, parseQuery, expandSelection, labelOf, stripCategoryTokens, get CATEGORIES() { return CATEGORIES; }, get GROUPS() { return GROUPS; }, COLOR_LABELS };

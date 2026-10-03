@@ -70,6 +70,11 @@
   .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 16px; max-width: 1320px; }
   .chip { padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 11.5px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s, box-shadow .12s; }
   .chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: var(--hover-shadow); }
+  .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip.sub { background: var(--faint); border-color: transparent; color: var(--sub); }
+  .chip.sub:hover { background: var(--ink); color: #fff; }
+  .chip.sub.on { background: var(--ink); color: #fff; }
+  .subchips { margin-top: 8px; }
   main { padding: 26px 32px 60px; }
   .meta-row { max-width: 1320px; margin: 0 auto 20px; }
   .meta { display: inline-flex; align-items: center; gap: 6px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; background: #fff; border: 1px solid var(--line); padding: 7px 15px; border-radius: 999px; box-shadow: var(--card-shadow); }
@@ -196,6 +201,7 @@
       <button onclick="go()">검색</button>
     </div>
     <div class="chips" id="chips"></div>
+    <div class="chips subchips" id="subChips" style="display:none"></div>
   </div>
 </header>
 <main><div class="shared-banner-bar" id="sharedBanner" style="display:none"></div><div class="meta-row"><div class="meta" id="meta"></div></div><div class="grid" id="grid"></div>

@@ -37,6 +37,7 @@ const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANO
 let currentUser = null;
 let myFolderIds = []; // 현재 보고 있는 폴더(내 폴더 또는 공유받은 폴더)에 있는 brand_id 목록
 let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
+let catSel = ''; // 상위(TOP/OUTER...) 또는 하위 카테고리 칩 선택 — 그룹 id 또는 카테고리 id
 let currentGender = ''; // '' | 'women' | 'men' | 'unisex' — 원본에 성별 표기가 있는 상품만 걸러짐(대부분은 미상)
 let myFolders = [];        // 로그인한 사람의 폴더 목록 [{id,name,share_id}] (최대 3개)
 let currentFolderId = null; // 지금 검색에 쓰이는 폴더 id
@@ -807,6 +808,7 @@ function qs() {
   if (priceMax) p.set('priceMax', priceMax);
   if (inStock) p.set('inStock', '1');
   if (currentGender) p.set('gender', currentGender);
+  if (catSel) p.set('cat', catSel);
   if (sharedView) p.set('share', sharedView.share_id);
   if (currentPage > 1) p.set('p', currentPage);
   return p;
@@ -814,7 +816,10 @@ function qs() {
 
 function buildQuery(offset, count = PAGE_SIZE) {
   const raw = document.getElementById('q').value;
-  const { categories, colors: colorsFromQuery, keywords } = window.StyleFinderTaxonomy.parseQuery(raw);
+  const { categories: queryCategories, colors: colorsFromQuery, keywords } = window.StyleFinderTaxonomy.parseQuery(raw);
+  // 칩으로 고른 카테고리가 있으면 그걸 우선(검색창에 카테고리 단어를 직접 치면 go()에서 칩 선택이 풀림)
+  const chipCategories = window.StyleFinderTaxonomy.expandSelection(catSel);
+  const categories = chipCategories.length ? chipCategories : queryCategories;
   const color = document.getElementById('color').value;
   const colors = [...new Set([...(color ? [color] : []), ...colorsFromQuery])];
   const size = document.getElementById('size').value;
@@ -944,7 +949,7 @@ function cardsHtml(data) {
       const tags = (g.categories || [])
         .map((c) => {
           const { bg, fg } = tagColor(c);
-          return `<span class="tag" style="background:${bg};color:${fg}">${c}</span>`;
+          return `<span class="tag" style="background:${bg};color:${fg}">${window.StyleFinderTaxonomy.labelOf(c)}</span>`;
         })
         .join('');
       const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
@@ -1011,7 +1016,11 @@ async function renderCurrentPage() {
 
   lastTotal = count || 0;
   const parts = [`${lastTotal}개`];
-  if (categories.length) parts.push('카테고리: ' + categories.join(', '));
+  if (categories.length) {
+    const T = window.StyleFinderTaxonomy;
+    const g = T.GROUPS.find((x) => x.id === catSel);
+    parts.push('카테고리: ' + (g ? g.label : categories.map((c) => T.labelOf(c)).join(', ')));
+  }
   if (colors.length) parts.push('색상: ' + colors.join(', '));
   if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
   meta.textContent = parts.join('  ·  ');
@@ -1023,7 +1032,14 @@ async function renderCurrentPage() {
   saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
+// 검색창에 카테고리 단어(예: "후드티", "바지")를 직접 치면 칩 선택은 풀고 검색창 쪽을 따른다.
+function syncCatWithQuery() {
+  if (catSel && window.StyleFinderTaxonomy.parseQuery(document.getElementById('q').value).categories.length) catSel = '';
+}
+
 async function go() {
+  syncCatWithQuery();
+  renderChips();
   currentPage = 1;
   await renderCurrentPage();
 }
@@ -1108,10 +1124,33 @@ addEventListener('pageshow', (e) => { if (e.persisted) rearmUnfinishedImages(); 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') restoreScrollIfMatching(); });
 addEventListener('focus', () => restoreScrollIfMatching());
 
+function activeGroup() {
+  const T = window.StyleFinderTaxonomy;
+  return T.GROUPS.find((g) => g.id === catSel || g.children.includes(catSel)) || null;
+}
+
+// 상위 카테고리(TOP/OUTER/BOTTOM...) 칩 + 하나를 누르면 그 아래 하위 카테고리 칩이 쭉 펼쳐짐
 function renderChips() {
-  document.getElementById('chips').innerHTML = window.StyleFinderTaxonomy.CATEGORIES
-    .map((c) => `<span class="chip" onclick="document.getElementById('q').value='${c.label}';go()">${c.label}</span>`)
+  const T = window.StyleFinderTaxonomy;
+  const ag = activeGroup();
+  document.getElementById('chips').innerHTML = T.GROUPS
+    .map((g) => `<span class="chip ${ag && ag.id === g.id ? 'on' : ''}" onclick="pickCategory('${g.id}')">${g.label}</span>`)
     .join('');
+  const sub = document.getElementById('subChips');
+  if (!ag) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
+  sub.style.display = 'flex';
+  sub.innerHTML =
+    `<span class="chip sub ${catSel === ag.id ? 'on' : ''}" onclick="pickCategory('${ag.id}', true)">전체</span>` +
+    ag.children.map((id) => `<span class="chip sub ${catSel === id ? 'on' : ''}" onclick="pickCategory('${id}', true)">${T.labelOf(id)}</span>`).join('');
+}
+
+function pickCategory(sel, fromSub) {
+  // 이미 선택된 상위 칩을 다시 누르면 해제
+  catSel = !fromSub && catSel === sel ? '' : sel;
+  const q = document.getElementById('q');
+  q.value = window.StyleFinderTaxonomy.stripCategoryTokens(q.value);
+  renderChips();
+  go();
 }
 
 async function loadFacetSelectors() {
@@ -1153,6 +1192,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
       btn.classList.toggle('active', btn.dataset.gender === currentGender);
     }
   }
+  catSel = initial.get('cat') || '';
   if (initial.get('p')) currentPage = Math.max(1, parseInt(initial.get('p'), 10) || 1);
 
   // 서로 독립적인 초기 요청들(사전 로드, 브랜드 목록, 로그인 세션)을 동시에 보내서
