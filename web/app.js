@@ -1190,7 +1190,7 @@ function activeGroup() {
 function renderChips() {
   const T = window.StyleFinderTaxonomy;
   const ag = activeGroup();
-  document.getElementById('chips').innerHTML = T.GROUPS
+  document.getElementById('chips').innerHTML = `<span class="chip ${catSel ? '' : 'on'}" onclick="pickCategory('', true)">ALL</span>` + T.GROUPS
     .map((g) => `<span class="chip ${ag && ag.id === g.id ? 'on' : ''}" onclick="pickCategory('${g.id}')">${g.label}</span>`)
     .join('');
   const sub = document.getElementById('subChips');
