@@ -86,14 +86,30 @@ export function normalizeTitle(raw) {
 export function groupItems(items) {
   const groups = new Map();
 
-  for (const it of items) {
+  // 같은 쇼핑몰이 같은 상품을 색상/핏별로 따로 올려둔 경우("Chino Pants - Navy(1)", "(2)", "Khaki Beige(1)"...)
+  // 예전엔 전부 한 카드로 합쳤는데, 카드 링크는 첫 번째 것만 가리켜서 나머지는 앱에서 접근할 방법이 없었다
+  // (실측: 전체 20,748개 중 12,452개 카드만 보임 — 쇼핑몰에 있는 상품이 "덜 등록"된 것처럼 보임).
+  // 그래서 같은 소스 안에서는 합치지 않고 상품 하나당 카드 하나로 두고, 서로 다른 소스(편집샵 vs 브랜드 공식몰)에
+  // 같은 상품이 있을 때만 합친다. 합치는 쪽을 결정적으로 만들기 위해 (소스, 외부id) 순으로 정렬해서 처리.
+  const ordered = [...items].sort(
+    (a, b) =>
+      String(a.source_id).localeCompare(String(b.source_id)) ||
+      String(a.external_id).localeCompare(String(b.external_id), undefined, { numeric: true }),
+  );
+
+  for (const it of ordered) {
     const rawBrand = (it.brand || it.source_id || 'UNKNOWN').trim();
     const { key: brandKey, display: brand, id: resolvedId } = resolveBrand(rawBrand);
     // 편집샵에서만 파는, 자체 등록 안 된 브랜드는 resolveBrand가 id를 못 찾음 ->
     // 그대로 버리면 검색에서 사라지므로 수집한 소스(편집샵) id로 대신 걸어서 그 폴더에서라도 보이게 함.
     const brandId = resolvedId || it.source_id || null;
-    const norm = normalizeTitle(it.title) || normalizeTitle(it.external_id);
-    const key = brandKey + ' || ' + norm;
+    let norm = normalizeTitle(it.title) || normalizeTitle(it.external_id);
+    let key = brandKey + ' || ' + norm;
+    // 이미 같은 소스의 상품이 이 그룹에 있으면 별도 카드로 (title_norm 뒤에 외부id를 붙여 유일하게).
+    if (groups.get(key)?.offers.some((o) => o.source_id === it.source_id)) {
+      norm = `${norm} #${it.external_id}`;
+      key = brandKey + ' || ' + norm;
+    }
     const colors = extractColors(it.title);
 
     if (!groups.has(key)) {
