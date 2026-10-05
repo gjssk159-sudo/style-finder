@@ -247,6 +247,11 @@ async function signOut() {
   await sb.auth.signOut();
 }
 
+// 로그인한 사람이 실제로 바뀌었는지 보려고 마지막으로 처리한 user id를 기억한다(undefined = 아직 모름).
+// supabase-js는 앱을 백그라운드에 뒀다 다시 열 때마다(토큰 갱신 / 탭 복귀) 같은 사람의 SIGNED_IN·TOKEN_REFRESHED
+// 이벤트를 또 보내는데, 예전엔 그때마다 폴더·브랜드를 다시 받고 go()로 1페이지부터 다시 그려서
+// "유튜브 보다 오면 1페이지로 돌아가 있고 사진이 다시 흰색으로 로딩"되는 증상이 났다.
+let lastAuthUserId;
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'PASSWORD_RECOVERY') {
     const newPassword = prompt('새 비밀번호를 입력해주세요 (6자 이상)');
@@ -255,7 +260,12 @@ sb.auth.onAuthStateChange(async (event, session) => {
       alert(error ? '오류: ' + error.message : '비밀번호가 변경됐어요.');
     }
   }
+  const newId = session?.user?.id || null;
   currentUser = session?.user || null;
+  // 첫 세션 감지는 부팅 흐름이 알아서 처리하고, 같은 사람의 재알림은 화면을 건드릴 이유가 없다.
+  if (event === 'INITIAL_SESSION') { lastAuthUserId = newId; return; }
+  if (newId === lastAuthUserId) return;
+  lastAuthUserId = newId;
   renderAuthArea();
   if (!sharedView) {
     if (currentUser) {
@@ -1119,7 +1129,7 @@ async function goToPage(page) {
 // 항상 잘 되는데 sessionStorage 기반 스크롤 복원만 계속 실패). 너무 오래된 상태까지 복원되는 걸
 // 막기 위해 타임스탬프를 같이 저장하고 30분 넘으면 무시한다.
 const SCROLL_STATE_KEY = 'sf_scroll_state';
-const SCROLL_STATE_MAX_AGE_MS = 30 * 60 * 1000;
+const SCROLL_STATE_MAX_AGE_MS = 60 * 60 * 1000;
 
 // 페이지 단위로 바뀌면서 "몇 개를 불러왔었는지"는 이제 URL의 p로 충분히 복원되니, 여기선
 // 그 페이지 안에서 스크롤로 어디까지 내려가 있었는지만 기억하면 된다(상품을 눌러서 나갔다가
@@ -1146,9 +1156,18 @@ addEventListener('scroll', () => {
 }, { passive: true });
 
 // 지금 조건(qs())과 저장해둔 조건이 같을 때만, 저장해둔 스크롤 위치로 옮긴다.
-function restoreScrollIfMatching() {
+function readSavedState() {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
+  if (!saved || typeof saved.params !== 'string') return null;
+  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return null;
+  return saved;
+}
+
+// savedOverride: 부팅할 때는 첫 렌더가 saveScrollState()로 저장값을 (스크롤 0으로) 덮어쓰기 때문에,
+// 렌더 전에 읽어둔 값을 넘겨받아 쓴다.
+function restoreScrollIfMatching(savedOverride) {
+  const saved = savedOverride || readSavedState();
   if (!saved || saved.params !== qs().toString()) return;
   if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return;
   const target = saved.scrollY;
@@ -1226,7 +1245,15 @@ for (const id of ['color', 'size', 'brand', 'sort', 'inStock']) document.getElem
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
 (async () => {
-  const initial = new URLSearchParams(location.search);
+  let initial = new URLSearchParams(location.search);
+  // 다른 앱(유튜브 등)을 쓰다 오면 OS가 이 앱을 메모리에서 내렸다가 다시 띄우는데, 홈 화면 앱은 마지막 주소가 아니라
+  // 항상 처음 주소(?없음)로 열려서 3페이지에서 보던 게 1페이지로 돌아가 있었다. 주소에 아무 조건도 없으면
+  // 직전에 저장해둔 상태(검색 조건·페이지·스크롤)를 이어서 연다. 첫 렌더가 저장값을 덮어쓰기 전에 미리 읽어둠.
+  const savedAtBoot = readSavedState();
+  if (![...initial.keys()].length && savedAtBoot && savedAtBoot.params) {
+    initial = new URLSearchParams(savedAtBoot.params);
+    history.replaceState(0, '', '?' + savedAtBoot.params);
+  }
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
   if (initial.get('color')) document.getElementById('color').value = initial.get('color');
   if (initial.get('size')) document.getElementById('size').value = initial.get('size');
@@ -1254,6 +1281,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
     sb.auth.getSession(),
   ]);
   currentUser = sessionResult.data.session?.user || null;
+  if (lastAuthUserId === undefined) lastAuthUserId = currentUser?.id || null;
   renderAuthArea();
 
   const shareParam = initial.get('share');
@@ -1276,6 +1304,6 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   // renderCurrentPage()로 바로 그 페이지를 그린다. 스크롤 위치는 pageshow(bfcache 복원)에서
   // 따로 처리하지만, 이건 일반 로드(새로고침 등)에도 적용되게 여기서도 한 번 시도한다.
   await renderCurrentPage();
-  restoreScrollIfMatching();
+  restoreScrollIfMatching(savedAtBoot);
   bootComplete = true;
 })();
