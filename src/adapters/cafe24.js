@@ -294,7 +294,18 @@ function parseProductPage(html, url, source) {
   // heritagefloss: 원사이즈 상품(구식 Product 스키마)은 대표(첫) 이미지 슬롯이 사이트 쪽에서 깨져서
   // 50~200px짜리 "이미지 없음" 자리표시자만 내려줌(실측 확인됨) — 실제 사진은 두 번째(extra
   // 갤러리)부터. ProductGroup 변형에서 온 경우는 이미 fresh한 단일 이미지라 그대로 둔다.
-  if (source.id === 'heritagefloss' && !ldFromVariant && images.length > 1) images = images.slice(1);
+  // 그런데 ProductGroup 쪽도 마찬가지로 옛 상품(202402 등)의 대표 이미지가 50×50~209×209 자리표시자라서
+  // 앱에서 사진이 통째로 흰색으로 나왔다(실측: 헤리티지플로스 상품 대부분). 구조화 데이터 대신 상품 페이지의
+  // 실제 대표 이미지(.big-img)와 갤러리(.product-images ul)를 쓴다 — 이쪽은 전부 진짜 사진.
+  if (source.id === 'heritagefloss') {
+    const real = $('.product-images .big-img img, .product-images ul img')
+      .map((_, el) => $(el).attr('src'))
+      .get()
+      .map(fixUrl)
+      .filter(Boolean);
+    if (real.length) images = [...new Set(real)].slice(0, 8);
+    else if (!ldFromVariant && images.length > 1) images = images.slice(1);
+  }
 
   // --- price ---
   const offers = Array.isArray(ld?.offers) ? ld.offers[0] : ld?.offers;
