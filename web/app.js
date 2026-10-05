@@ -1021,7 +1021,7 @@ function cardsHtml(data) {
       const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
       return `<a class="card" href="${url}" ${linkAttrs}>
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
-          ${g.image ? `<img src="${thumbUrl(g.image)}" data-orig="${g.image}" alt="" loading="${idx < 6 ? 'eager' : 'lazy'}"${idx < 4 ? ' fetchpriority="high"' : ''} decoding="async" onerror="imgFallback(this)" onload="if(this.naturalWidth<200)this.remove()">` : ''}
+          ${/^https?:/i.test(g.image || '') ? `<img src="${thumbUrl(g.image)}" data-orig="${g.image}" alt="" loading="${idx < 6 ? 'eager' : 'lazy'}"${idx < 4 ? ' fetchpriority="high"' : ''} decoding="async" onerror="imgFallback(this)" onload="if(this.naturalWidth<200)this.remove()">` : ''}
           ${g.in_stock ? '' : '<span class="badge">품절</span>'}
         </div>
         <div class="body">

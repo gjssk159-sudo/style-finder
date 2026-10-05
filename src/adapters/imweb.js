@@ -115,7 +115,11 @@ async function extractCards(page) {
       const entry = byIdx.get(idx) || { href, text: '', img: null, soldOut: false };
       const text = a.innerText || '';
       if (text.length > entry.text.length) entry.text = text;
-      const img = a.querySelector('img')?.getAttribute('src');
+      // 지연 로딩 자리표시자("/placeholder_image.cm?...", data: URI)는 진짜 사진이 아니라서 건너뛰고 다음 img를 쓴다
+      // (실측: bluesf — 상품 20% 가량이 자리표시자 주소로 저장돼 앱에서 사진이 안 나왔음).
+      const img = [...a.querySelectorAll('img')]
+        .map((i) => i.getAttribute('src') || '')
+        .find((src) => src && !/placeholder|^data:/i.test(src));
       if (img && !entry.img) entry.img = img;
       if (/sold ?out|품절/i.test(text) || a.querySelector('[class*="soldout" i]')) entry.soldOut = true;
       byIdx.set(idx, entry);
@@ -137,6 +141,7 @@ function toItem(card, idx, base, source) {
 
   let image = card.img;
   if (image?.startsWith('//')) image = 'https:' + image;
+  if (image && !/^https?:\/\//i.test(image)) image = null; // 상대경로는 앱에서 열 수 없음
 
   return {
     external_id: idx,
