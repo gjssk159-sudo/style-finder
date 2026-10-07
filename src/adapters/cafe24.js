@@ -284,7 +284,7 @@ function canonicalProductUrl(u) {
   return m ? m[1] + '/' : clean;
 }
 
-function parseProductPage(html, url, source) {
+export function parseProductPage(html, url, source) {
   const $ = cheerio.load(html);
 
   // --- 1. JSON-LD Product ---
@@ -366,6 +366,19 @@ function parseProductPage(html, url, source) {
   let price =
     priceRaw != null ? parseInt(String(priceRaw).replace(/[^\d]/g, ''), 10) : null;
   if (Number.isNaN(price)) price = null;
+  // 달러 등 외화로 파는 쇼핑몰(실측: saengin — "$75.00")은 아래 "1,000원 미만은 가짜 상품" 필터에 걸려서 상품이 통째로
+  // 앱에서 빠졌다. JSON-LD priceCurrency가 KRW로 잘못 적힌 경우도 있어서 화면에 보이는 가격 표기($)로 통화를 판단하고,
+  // shopify 어댑터와 같은 근사 환율로 원화 환산한다.
+  if (price != null) {
+    const domPrice = $('#span_product_price_text').first().text() + ' ' + ($('#span_product_price_text').first().html() || '');
+    const isUsd = /[$]|&#36;|USD/i.test(domPrice);
+    const cur = String(isUsd ? 'USD' : offers?.priceCurrency || meta('product:price:currency') || 'KRW').toUpperCase();
+    const FX = { USD: 1400, EUR: 1550, JPY: 9.3, GBP: 1800 };
+    if (cur !== 'KRW' && FX[cur]) {
+      const num = parseFloat((isUsd ? domPrice.match(/\d[\d,]*(?:\.\d+)?/)?.[0] : String(priceRaw)).replace(/,/g, ''));
+      if (!Number.isNaN(num)) price = Math.round(num * FX[cur]);
+    }
+  }
 
   // --- brand (편집샵이면 상품의 실제 브랜드, 자사몰이면 소스명) ---
   let brand = source.name;
@@ -403,6 +416,9 @@ function parseProductPage(html, url, source) {
 
   if (!title) return null;
   // 편집샵에 흔한 룩북/공지사항이 상품 URL을 씀(가격 1원짜리 가짜 "상품") -> 걸러냄
+  // 브랜드 자사몰에서 가격이 0으로 나오는 건 품절/가격 비공개 상품인 경우가 대부분이라(실측: heritagefloss 53개, ojos 22개
+  // 등이 이 필터 때문에 앱에서 빠졌음) 가격 없음(null)으로 두고 살린다. 가짜 1원짜리 룩북/공지가 흔한 건 편집샵뿐.
+  if (price === 0 && source.type !== 'select_shop') price = null;
   if (price != null && price < 1000) return null;
 
   const description = (ld?.description || meta('og:description') || '')
