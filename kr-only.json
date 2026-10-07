@@ -1,4 +1,8 @@
 {
-  "_설명": "해외 IP(GitHub Actions 서버는 미국)를 차단하는 쇼핑몰. CI에선 'Access is restricted'만 받아서 0개로 수집되므로 건너뛰고, 한국 IP의 내 PC에서 `npm run collect:kr`로 수집한다.",
-  "ids": ["mono-prive", "mascompany", "asien", "machinesynthesiscollective"]
+  "_설명": "서버(GitHub Actions, 미국 IP)에서는 차단되거나 일부만 수집되는 쇼핑몰. CI에선 건너뛰고, 한국 IP인 내 PC에서 `npm run collect:kr`(또는 collect-kr.bat)로 수집한다.",
+  "ids": [
+    "mono-prive", "mascompany", "asien", "machinesynthesiscollective",
+    "bluesf", "earthjigu", "bordr", "studiosalloy",
+    "the-museum-visitor", "coyseio", "rakelack"
+  ]
 }
