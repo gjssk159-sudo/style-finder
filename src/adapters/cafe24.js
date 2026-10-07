@@ -54,6 +54,22 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
   // 비공개 상품이 대부분 빠진 불완전한 sitemap일 가능성이 큼 -> 카테고리 크롤링으로 보정.
   if (!forceCategories && productUrls.length >= 5) {
     console.log(`  sitemap: ${allUrls.length} urls, ${productUrls.length} products`);
+    // sitemap은 갱신이 늦거나 일부만 담는 경우가 많아서 sitemap만 믿으면 쇼핑몰에 있는 상품이 앱에서 빠짐
+    // (실측: byeunoia 72개↔실제 508개, 999humanity 584↔772, costperkilo 156↔206). 카테고리 목록도 같이 훑어서
+    // 합친다. 같은 상품이 두 방식에서 다른 URL 형태로 나오므로 상품 번호(product_no/숫자 id)로 중복 제거.
+    try {
+      const idOf = (u) => u.match(/product_no=(\d+)/i)?.[1] || u.match(/\/product\/[^/?#]+\/(\d+)/i)?.[1] || u;
+      const known = new Set(productUrls.map(idOf));
+      const stopAt = Number.isFinite(limit) ? limit * 4 : Infinity;
+      const viaCats = await discoverViaCategories(base, { stopAt });
+      const extra = viaCats.filter((u) => !known.has(idOf(u)));
+      if (extra.length) {
+        console.log(`  카테고리 크롤링으로 sitemap에 없는 상품 ${extra.length}개 추가`);
+        productUrls = [...productUrls, ...extra];
+      }
+    } catch (err) {
+      console.warn(`  ! 카테고리 보강 실패(sitemap만 사용): ${err.message}`);
+    }
   } else {
     console.log('  sitemap 없음 → 카테고리 크롤링으로 전환');
     const stopAt = Number.isFinite(limit) ? limit * 4 : Infinity;
@@ -62,19 +78,45 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
   }
 
   const targets = Number.isFinite(limit) ? productUrls.slice(0, limit) : productUrls;
-  const parsed = await mapPool(
-    targets,
-    async (url) => {
-      const { text, status } = await fetchText(url);
-      if (status === 404 || !text) return null;
-      return parseProductPage(text, url, source);
-    },
-    CONCURRENCY
-  );
-  return parsed.filter(Boolean);
+  const results = [];
+  // 일부 쇼핑몰은 서버(CI)에서 한꺼번에 요청하면 HTTP 403/429로 막는다(실측: the-museum-visitor 444개, xlim 305개가
+  // 한 번에 막혀서 상품이 앱에서 통째로 빠졌음). 실패한 것만 모아서 동시성을 낮추고 잠깐 쉬었다가 다시 시도한다.
+  let pending = targets;
+  const PASSES = [
+    { concurrency: CONCURRENCY, wait: 0 },
+    { concurrency: 3, wait: 15000 },
+    { concurrency: 1, wait: 30000 },
+  ];
+  for (let pass = 0; pass < PASSES.length && pending.length; pass++) {
+    if (pass > 0) {
+      console.log(`  ${pending.length}개 실패 → ${PASSES[pass].wait / 1000}초 쉬고 동시성 ${PASSES[pass].concurrency}로 재시도`);
+      await sleep(PASSES[pass].wait);
+    }
+    const failed = [];
+    await mapPool(
+      pending,
+      async (url) => {
+        let r;
+        try {
+          r = await fetchText(url, { retries: pass === 0 ? 1 : 2 });
+        } catch {
+          failed.push(url);
+          return;
+        }
+        if (r.status === 404 || !r.text) return;
+        const item = parseProductPage(r.text, url, source);
+        if (item) results.push(item);
+        if (pass > 0) await sleep(300);
+      },
+      PASSES[pass].concurrency,
+    );
+    pending = failed;
+  }
+  if (pending.length) console.warn(`  ! 끝까지 못 가져온 상품 ${pending.length}개 (차단/네트워크)`);
+  return results;
 }
 
-async function collectSitemapUrls(sitemapUrl, depth = 0) {
+export async function collectSitemapUrls(sitemapUrl, depth = 0) {
   if (depth > 3) return [];
   let text;
   try {
@@ -119,7 +161,7 @@ function withPage(href, page) {
   return href.includes('?') ? `${href}&page=${page}` : `${href}${href.endsWith('/') ? '' : '/'}?page=${page}`;
 }
 
-async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt = Infinity } = {}) {
+export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt = Infinity } = {}) {
   const seedPages = [base + '/', base + '/product/list.html', base + '/index.html'];
   const categoryHrefs = new Set();
 
@@ -186,15 +228,21 @@ async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt = Infin
     [...categoryHrefs],
     async (catHref) => {
       let emptyStreak = 0;
+      let failStreak = 0;
       for (let page = 1; page <= maxPagesPerCat; page++) {
         if (products.size >= stopAt) break;
         const listUrl = base + withPage(catHref, page);
         let text, status;
         try {
-          ({ text, status } = await fetchText(listUrl));
+          ({ text, status } = await fetchText(listUrl, { retries: 4 }));
         } catch {
-          break;
+          // 일시적 차단/네트워크 오류로 카테고리를 중간에 끊어버리면(예전 동작) 뒤쪽 상품이 전부 빠진다 —
+          // 이 페이지만 건너뛰고 계속하되, 연속으로 3번 실패하면 포기.
+          if (++failStreak >= 3) break;
+          await sleep(3000);
+          continue;
         }
+        failStreak = 0;
         if (status === 404 || !text) break;
 
         const $ = cheerio.load(text);

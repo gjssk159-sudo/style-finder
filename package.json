@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "collect": "node src/run.js"
+    "collect": "node src/run.js",
+    "collect:kr": "node src/collect-kr.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

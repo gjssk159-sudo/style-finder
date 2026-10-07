@@ -42,6 +42,13 @@ if (args.source) {
 
 // --skip-existing: 이미 수집해둔(data/out/{id}.json 있는) 소스는 건너뜀.
 // 큰 배치를 동시성 올려서 재시작할 때, 이미 끝난 걸 또 처음부터 하지 않기 위함.
+// kr-only.json: 해외 IP를 막는 쇼핑몰은 CI(GitHub Actions, 미국)에서 항상 0개라 건너뛴다(한국 PC에서 collect-kr로 수집).
+if (process.env.GITHUB_ACTIONS) {
+  const krOnly = new Set(JSON.parse(readFileSync(join(root, 'kr-only.json'), 'utf8')).ids);
+  const skipped = targets.filter((s) => krOnly.has(s.id)).map((s) => s.id);
+  if (skipped.length) { console.log('CI에서 건너뜀(해외 IP 차단, 한국 PC에서 수집):', skipped.join(', ')); targets = targets.filter((s) => !krOnly.has(s.id)); }
+}
+
 if (args['skip-existing']) {
   const before = targets.length;
   targets = targets.filter((s) => !existsSync(join(root, 'data', 'out', `${s.id}.json`)));
@@ -49,6 +56,8 @@ if (args['skip-existing']) {
 }
 
 if (targets.length === 0) {
+  // CI에서 kr-only만 담긴 샤드는 할 일이 없는 게 정상 — 실패로 처리하지 않는다.
+  if (process.env.GITHUB_ACTIONS && args.source) { console.log('수집할 대상 없음(전부 CI 제외 대상).'); process.exit(0); }
   console.error('대상 소스 없음. --source=<id> 확인 또는 brands.json의 status 확인.');
   process.exit(1);
 }
