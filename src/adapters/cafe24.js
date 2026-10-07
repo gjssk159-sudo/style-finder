@@ -77,6 +77,16 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
     console.log(`  카테고리 크롤링: ${productUrls.length} products`);
   }
 
+  // 같은 상품이 /product/{slug}/{id}/ 와 detail.html?product_no={id} 두 가지 주소로 다 나오는 몰이 있어(yiyae) 번호로 한 번 더 합친다.
+  {
+    const seenIds = new Set();
+    productUrls = productUrls.filter((u) => {
+      const id = u.match(/product_no=(\d+)/i)?.[1] || u.match(/\/product\/[^/?#]+\/(\d+)/i)?.[1] || u;
+      if (seenIds.has(id)) return false;
+      seenIds.add(id);
+      return true;
+    });
+  }
   const targets = Number.isFinite(limit) ? productUrls.slice(0, limit) : productUrls;
   const results = [];
   // 일부 쇼핑몰은 서버(CI)에서 한꺼번에 요청하면 HTTP 403/429로 막는다(실측: the-museum-visitor 444개, xlim 305개가

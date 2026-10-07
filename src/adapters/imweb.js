@@ -15,7 +15,13 @@ const CATEGORY_CONCURRENCY = 4;
 export async function collectImweb(source, { limit = Infinity } = {}) {
   const base = source.shopUrl.replace(/\/$/, '');
 
-  const categoryHrefs = await discoverCategories(base);
+  // 홈이 아직 하이드레이션되기 전에 링크를 읽으면 0개로 나오는 일이 있어(실측: earthjigu·bordr·studiosalloy가
+  // 한국 PC에서도 2초 만에 0개) 몇 번 더 시도한다.
+  let categoryHrefs = [];
+  for (let attempt = 0; attempt < 4 && categoryHrefs.length === 0; attempt++) {
+    if (attempt > 0) await sleep(3000 * attempt);
+    categoryHrefs = await discoverCategories(base);
+  }
   if (categoryHrefs.length === 0) {
     console.warn(`  ? ${base} 카테고리 링크를 하나도 못 찾음`);
     return [];
@@ -109,6 +115,8 @@ async function discoverCategories(base) {
   }
   if (lastErr) throw lastErr;
   try {
+    // 메뉴 링크가 하이드레이션/스플래시 화면 뒤에 뜨는 사이트가 있어서(studiosalloy) 링크가 충분히 생길 때까지 기다린다.
+    await page.waitForFunction(() => document.querySelectorAll('a[href]').length > 10, null, { timeout: 20000 }).catch(() => {});
     const hrefs = await page.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
     const out = new Set();
     for (const h of hrefs) {
@@ -149,7 +157,9 @@ async function extractCards(page) {
 }
 
 function toItem(card, idx, base, source) {
-  const lines = card.text.split('\n').map((s) => s.trim()).filter(Boolean);
+  // "3개 남았어요!"(재고 알림), SOLD OUT, NEW 같은 배지 문구가 첫 줄이면 그게 상품명으로 잡혀버리므로 건너뛴다(실측: bluesf).
+  const BADGE = /^(\d+\s*개\s*남았어요!?|sold\s*out|품절|new|best|sale|\d+%)$/i;
+  const lines = card.text.split('\n').map((s) => s.trim()).filter((l) => l && !BADGE.test(l));
   const title = lines[0] || null;
   // 가격 표기가 사이트마다 다름: "113,000원" / "KRW 113,000" / "₩113,000"
   const priceMatches = card.text.match(/(?:₩|KRW)?\s?[\d,]{4,}\s*(?:원|KRW)?/gi) || [];
