@@ -8,6 +8,7 @@
 
 import { renderPage } from '../lib/browser.js';
 import { mapPool } from '../lib/concurrency.js';
+import { sleep } from '../lib/http.js';
 
 const CATEGORY_CONCURRENCY = 4;
 
@@ -15,7 +16,11 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
   const base = source.shopUrl.replace(/\/$/, '');
 
   const categoryHrefs = await discoverCategories(base);
-  if (categoryHrefs.length === 0) return [];
+  if (categoryHrefs.length === 0) {
+    console.warn(`  ? ${base} 카테고리 링크를 하나도 못 찾음`);
+    return [];
+  }
+  console.log(`  카테고리 ${categoryHrefs.length}개 발견`);
 
   const items = new Map(); // idx -> item (여러 카테고리에 중복 등장 방지)
 
@@ -41,6 +46,21 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
           // 진짜 빈 페이지(더 없음)면 8초 타임아웃 후 그냥 진행(=found 0으로 자연 처리).
           const { page: pw, context } = await renderPage(url, { waitForSelector: 'a[href*="idx="]' });
           cards = await extractCards(pw);
+          // 카테고리 첫 페이지가 0개인 건 "진짜 빈 카테고리"일 수도, 서버/네트워크가 느려서 카드가 아직 안 뜬 것일
+          // 수도 있다. 후자를 "끝"으로 오판하면 브랜드 전체가 0개로 수집되므로(실측: CI에서 mono-prive·asien·
+          // mascompany 등이 0개) 페이지 내용을 로그로 남기고 몇 번 더 다시 시도한다.
+          if (cards.length === 0 && page === 1) {
+            const snippet = await pw.evaluate(() => `${document.title} | ${document.body.innerText.replace(/\s+/g, ' ').slice(0, 140)}`).catch(() => '');
+            await context.close();
+            if (attempt < 2) {
+              console.warn(`  ? ${url} 카드 0개 (시도 ${attempt + 1}/3) — ${snippet}`);
+              await sleep(3000 * (attempt + 1));
+              continue;
+            }
+            console.warn(`  ? ${url} 카드 0개 (최종) — ${snippet}`);
+            ok = true;
+            break;
+          }
           await context.close();
           ok = true;
         } catch (err) {

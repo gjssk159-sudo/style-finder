@@ -188,6 +188,12 @@ async function main() {
   for (const brandId of affectedBrandIds) {
     const existing = await selectAll(sb, 'product_group', 'brand_id', brandId, 'id,title_norm');
     const staleIds = existing.filter((r) => !freshGroupKeys.has(`${brandId}||${r.title_norm}`)).map((r) => r.id);
+    // 이번 수집이 기존의 70%도 안 되면 수집이 중간에 끊긴 것(타임아웃/차단)일 가능성이 커서, 멀쩡한 기존 상품을
+    // 지우지 않고 그대로 둔다(실측: CI에서 아임웹 몰들이 일부만/0개 수집돼 있던 상품이 사라지거나 줄어듦).
+    if (existing.length >= 20 && staleIds.length > existing.length * 0.3) {
+      console.warn(`  ! ${brandId}: 기존 ${existing.length}개 중 ${staleIds.length}개가 이번에 안 나옴 → 수집이 불완전한 걸로 보고 삭제 건너뜀`);
+      continue;
+    }
     for (let i = 0; i < staleIds.length; i += BATCH) {
       const { error } = await sb.from('product_group').delete().in('id', staleIds.slice(i, i + BATCH));
       if (error) throw new Error('오래된 product_group 삭제 실패: ' + error.message);
@@ -201,6 +207,10 @@ async function main() {
   for (const sourceId of affectedSourceIds) {
     const existing = await selectAll(sb, 'offer', 'source_id', sourceId, 'id,external_id');
     const staleIds = existing.filter((r) => !freshOfferKeys.has(`${sourceId}||${r.external_id}`)).map((r) => r.id);
+    if (existing.length >= 20 && staleIds.length > existing.length * 0.3) {
+      console.warn(`  ! ${sourceId}: offer ${existing.length}개 중 ${staleIds.length}개가 이번에 안 나옴 → 삭제 건너뜀`);
+      continue;
+    }
     for (let i = 0; i < staleIds.length; i += BATCH) {
       const { error } = await sb.from('offer').delete().in('id', staleIds.slice(i, i + BATCH));
       if (error) throw new Error('오래된 offer 삭제 실패: ' + error.message);
