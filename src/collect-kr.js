@@ -15,8 +15,16 @@ const run = (args) => spawnSync(process.execPath, args, { cwd: root, stdio: 'inh
 console.log(`한국 IP 수집(한 곳씩 순서대로): ${ids.join(', ')}`);
 // 여러 곳을 동시에 돌리면 내 PC/회선이 막혀서 페이지 로딩이 시간초과로 0개가 나오는 일이 있어(실측) 하나씩 처리한다.
 let failed = 0;
+// 사이트가 느리거나 일시적으로 응답이 비면 0개로 끝나는 일이 있어서(실측), 0개면 최대 3번까지 다시 시도한다.
+const countOf = (id) => { try { return JSON.parse(readFileSync(join(root, 'data', 'out', `${id}.json`), 'utf8')).length; } catch { return 0; } };
 for (const id of ids) {
-  if (run(['src/run.js', `--source=${id}`]) !== 0 || run(['src/load-supabase.js', id]) !== 0) { console.error(`! ${id} 실패`); failed++; }
+  let ok = false;
+  for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
+    if (run(['src/run.js', `--source=${id}`]) !== 0) continue;
+    if (countOf(id) === 0) { console.warn(`  ${id}: 0개 수집 → 재시도 (${attempt}/3)`); continue; }
+    ok = run(['src/load-supabase.js', id]) === 0;
+  }
+  if (!ok) { console.error(`! ${id} 실패`); failed++; }
 }
 console.log(failed ? `완료 (실패 ${failed}곳)` : '완료');
 process.exit(failed ? 1 : 0);
