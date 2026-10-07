@@ -12,8 +12,11 @@ const ids = process.argv.slice(2).length ? process.argv.slice(2) : all;
 
 const run = (args) => spawnSync(process.execPath, args, { cwd: root, stdio: 'inherit' }).status;
 
-console.log(`한국 IP 수집: ${ids.join(', ')}`);
-if (run(['src/run.js', `--source=${ids.join(',')}`]) !== 0) process.exit(1);
-// 안전장치: 수집이 하나도 안 됐으면(차단/네트워크) 올리지 않음 — load-supabase에도 불완전 수집 삭제 방지가 있지만 한 번 더.
-if (run(['src/load-supabase.js', ...ids]) !== 0) process.exit(1);
-console.log('완료');
+console.log(`한국 IP 수집(한 곳씩 순서대로): ${ids.join(', ')}`);
+// 여러 곳을 동시에 돌리면 내 PC/회선이 막혀서 페이지 로딩이 시간초과로 0개가 나오는 일이 있어(실측) 하나씩 처리한다.
+let failed = 0;
+for (const id of ids) {
+  if (run(['src/run.js', `--source=${id}`]) !== 0 || run(['src/load-supabase.js', id]) !== 0) { console.error(`! ${id} 실패`); failed++; }
+}
+console.log(failed ? `완료 (실패 ${failed}곳)` : '완료');
+process.exit(failed ? 1 : 0);

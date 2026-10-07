@@ -44,7 +44,7 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
           // waitForSelector를 안 주면 매 페이지마다 무조건 2초씩 고정으로 기다려서(브랜드마다
           // 페이지 수십 개면 그것만으로도 크게 느려짐) 상품 카드가 뜨는 즉시 넘어가게 지정.
           // 진짜 빈 페이지(더 없음)면 8초 타임아웃 후 그냥 진행(=found 0으로 자연 처리).
-          const { page: pw, context } = await renderPage(url, { waitForSelector: 'a[href*="idx="]' });
+          const { page: pw, context } = await renderPage(url, { waitForSelector: 'a[href*="idx="]', timeout: 45000 });
           cards = await extractCards(pw);
           // 카테고리 첫 페이지가 0개인 건 "진짜 빈 카테고리"일 수도, 서버/네트워크가 느려서 카드가 아직 안 뜬 것일
           // 수도 있다. 후자를 "끝"으로 오판하면 브랜드 전체가 0개로 수집되므로(실측: CI에서 mono-prive·asien·
