@@ -175,65 +175,78 @@
     .dlg-body input { font-size: 16px; }
   }
 </style><style id="intro-css">
-/* ===== 시작 인트로: "나만의 편집샵을 만들어보세요" — CSS 3D로 편집샵이 뚝딱 지어지는 시네마틱 ===== */
+/* ===== 시작 인트로 v2: 밝은 배경 + 패셔너블한 사람이 뚝딱뚝딱 편집샵을 만든다 ===== */
 html.no-intro #intro { display: none; }
 html.intro-on, html.intro-on body { overflow: hidden; }
-#intro { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(120% 90% at 50% 30%, #1c1d23 0%, #0b0b0e 70%); color: #fff; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; }
-#intro.out { opacity: 0; transform: scale(1.06); transition: opacity .55s ease, transform .65s cubic-bezier(.3,.7,.2,1); pointer-events: none; }
-#intro .in-spot { position: absolute; left: 50%; top: -8%; width: 130vmax; height: 95%; transform: translateX(-50%); background: radial-gradient(ellipse at 50% 0%, rgba(255,238,210,.24), rgba(255,238,210,0) 62%); opacity: 0; animation: inFade .9s .25s ease-out forwards; }
-#intro .in-bar { position: absolute; left: 0; right: 0; height: 0; background: #000; z-index: 6; animation: inBar .6s cubic-bezier(.2,.8,.2,1) forwards; }
-#intro .in-bar.top { top: 0; }
-#intro .in-bar.bot { bottom: 0; }
-#intro .in-stage { position: absolute; left: 50%; top: 41%; width: 0; height: 0; perspective: 1100px; transform: scale(var(--sc, 1)); }
+#intro { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(120% 90% at 50% 28%, #fdfaf4 0%, #efe9dc 62%, #e4dccb 100%); color: #141414; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; }
+#intro.out { opacity: 0; transform: scale(1.05); transition: opacity .55s ease, transform .65s cubic-bezier(.3,.7,.2,1); pointer-events: none; }
+#intro .in-spot { position: absolute; left: 50%; top: -10%; width: 130vmax; height: 90%; transform: translateX(-50%); background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.85), rgba(255,255,255,0) 62%); }
+/* 무대+문구를 한 묶음으로 세로 가운데 정렬 → 위/아래 여백이 같아진다 (--oy는 눈에 보이는 무게중심 보정값) */
+#intro .in-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: translateY(var(--oy, 0px)); }
+#intro .in-stagebox { position: relative; width: 100%; height: calc(300px * var(--sc, 1)); flex: none; }
+#intro .in-stage { position: absolute; left: 50%; top: 52%; width: 0; height: 0; perspective: 1100px; transform: scale(var(--sc, 1)); }
 #intro .in-cam, #intro .in-room, #intro .pos, #intro .cube, #intro .hang { transform-style: preserve-3d; position: absolute; }
-#intro .in-cam { left: 0; top: 0; animation: camMove 2.6s cubic-bezier(.22,.7,.2,1) forwards, camIdle 5s ease-in-out 2.6s infinite alternate; }
+#intro .in-cam { left: 0; top: 0; animation: camMove 2.8s cubic-bezier(.22,.7,.2,1) forwards, camIdle 5s ease-in-out 2.8s infinite alternate; }
 #intro .in-room { left: 0; top: 0; }
 #intro .face { position: absolute; backface-visibility: hidden; }
-#intro .floor { width: 300px; height: 250px; left: -150px; top: -125px; transform: translateY(105px) rotateX(90deg); background: conic-gradient(#2c2e35 25%, #24262c 0 50%, #2c2e35 0 75%, #24262c 0) 0 0 / 50px 50px; box-shadow: 0 0 40px 6px rgba(0,0,0,.6) inset; animation: floorIn .45s ease-out both; }
+#intro .floor { width: 300px; height: 250px; left: -150px; top: -125px; transform: translateY(105px) rotateX(90deg); background: repeating-linear-gradient(90deg, #dcc39e 0 46px, #cfb48b 46px 48px); box-shadow: 0 0 36px 4px rgba(120,90,50,.22) inset; animation: floorIn .45s ease-out both; }
 #intro .wall { transform-origin: 50% 100%; }
-#intro .back { width: 300px; height: 210px; left: -150px; top: -105px; transform: translateZ(-125px); background: repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 2px, transparent 2px 40px), linear-gradient(#23252c, #17181d); animation: wallBack .5s .2s cubic-bezier(.2,.8,.2,1) both; }
-#intro .left { width: 250px; height: 210px; left: -125px; top: -105px; transform: translateX(-150px) rotateY(90deg); background: repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 2px, transparent 2px 40px), linear-gradient(#1b1d22, #121317); animation: wallLeft .5s .32s cubic-bezier(.2,.8,.2,1) both; }
-#intro .rail { width: 244px; height: 4px; left: -122px; top: -27px; transform: translateZ(-117px); background: linear-gradient(#bfc3ca, #6c7078); border-radius: 2px; animation: railIn .35s .7s ease-out both; box-shadow: 0 6px 10px rgba(0,0,0,.4); }
+#intro .back { width: 300px; height: 210px; left: -150px; top: -105px; transform: translateZ(-125px); background: repeating-linear-gradient(90deg, rgba(0,0,0,.03) 0 2px, transparent 2px 40px), linear-gradient(#faf6ee, #f0e9db); animation: wallBack .5s .15s cubic-bezier(.2,.8,.2,1) both; box-shadow: 0 0 0 1px rgba(0,0,0,.05); }
+#intro .left { width: 250px; height: 210px; left: -125px; top: -105px; transform: translateX(-150px) rotateY(90deg); background: repeating-linear-gradient(90deg, rgba(0,0,0,.03) 0 2px, transparent 2px 40px), linear-gradient(#ebe3d3, #ddd3c0); animation: wallLeft .5s .25s cubic-bezier(.2,.8,.2,1) both; }
+#intro .rail { width: 244px; height: 4px; left: -122px; top: -27px; transform: translateZ(-117px); background: linear-gradient(#5b5f66, #34373c); border-radius: 2px; animation: railIn .35s .8s ease-out both; box-shadow: 0 6px 8px rgba(0,0,0,.18); }
 #intro .hang { left: 0; top: 0; width: 0; height: 0; transform: translateZ(-114px); }
-#intro .hang .drop { position: absolute; left: calc(var(--x) * 1px - 26px); top: -24px; width: 52px; height: 80px; animation: hangDrop .6s cubic-bezier(.3,1.5,.5,1) calc(.85s + var(--i) * .11s) both; transform-origin: 50% 0; }
-#intro .hang .hook { position: absolute; left: 25px; top: 0; width: 2px; height: 14px; background: #9a9ea6; }
-#intro .hang .shirt { position: absolute; left: 0; top: 12px; width: 52px; height: 62px; background: var(--c); clip-path: polygon(33% 0, 41% 9%, 59% 9%, 67% 0, 100% 22%, 86% 38%, 76% 30%, 76% 100%, 24% 100%, 24% 30%, 14% 38%, 0 22%); transform-origin: 50% 0; animation: swing 2.6s ease-in-out calc(1.6s + var(--i) * .2s) infinite alternate; }
-#intro .hang .shirt::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, rgba(255,255,255,.22), rgba(255,255,255,0) 45%, rgba(0,0,0,.25)); }
-#intro .sign { position: absolute; left: -125px; top: -90px; width: 250px; height: 32px; transform: translateZ(-118px); text-align: center; font-weight: 800; font-size: 21px; letter-spacing: .3em; line-height: 32px; color: #b9ffe3; text-shadow: 0 0 6px #2aa876, 0 0 16px #2aa876, 0 0 34px rgba(42,168,118,.8); animation: neon .7s steps(1) 1.6s both, glow 1.8s ease-in-out 2.3s infinite alternate; white-space: nowrap; }
+#intro .hang .drop { position: absolute; left: calc(var(--x) * 1px - 26px); top: -24px; width: 52px; height: 80px; animation: shirtPop .5s cubic-bezier(.3,1.7,.5,1) var(--t) both; transform-origin: 50% 0; }
+#intro .hang .hook { position: absolute; left: 25px; top: 0; width: 2px; height: 14px; background: #6f737a; }
+#intro .hang .shirt { position: absolute; left: 0; top: 12px; width: 52px; height: 62px; background: var(--c); clip-path: polygon(33% 0, 41% 9%, 59% 9%, 67% 0, 100% 22%, 86% 38%, 76% 30%, 76% 100%, 24% 100%, 24% 30%, 14% 38%, 0 22%); transform-origin: 50% 0; animation: swing 2.6s ease-in-out calc(var(--t) + .5s) infinite alternate; filter: drop-shadow(0 5px 4px rgba(0,0,0,.22)); }
+#intro .hang .shirt::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, rgba(255,255,255,.28), rgba(255,255,255,0) 45%, rgba(0,0,0,.18)); }
+#intro .sign { position: absolute; left: -112px; top: -92px; width: 224px; height: 34px; transform: translateZ(-118px); text-align: center; font-weight: 800; font-size: 19px; letter-spacing: .28em; line-height: 34px; color: #c9ffe6; background: #161616; border-radius: 6px; text-shadow: 0 0 6px #2aa876, 0 0 14px #2aa876; box-shadow: 0 6px 14px rgba(0,0,0,.25); animation: neon .7s steps(1) 2.5s both; white-space: nowrap; }
 #intro .pos { width: 0; height: 0; }
-#intro .cube { left: 0; top: 0; width: 0; height: 0; animation: cubeDrop .55s cubic-bezier(.3,1.45,.5,1) calc(1.05s + var(--j) * .16s) both; }
+#intro .cube { left: 0; top: 0; width: 0; height: 0; animation: cubeDrop .5s cubic-bezier(.3,1.5,.5,1) var(--t) both; }
 #intro .cube .f { position: absolute; background: var(--c); }
 #intro .cube .fr, #intro .cube .bk { width: var(--w); height: var(--h); left: calc(var(--w) / -2); top: calc(var(--h) / -2); }
 #intro .cube .fr { transform: translateZ(calc(var(--d) / 2)); }
-#intro .cube .bk { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); filter: brightness(.7); }
+#intro .cube .bk { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); filter: brightness(.8); }
 #intro .cube .rt, #intro .cube .lf { width: var(--d); height: var(--h); left: calc(var(--d) / -2); top: calc(var(--h) / -2); }
-#intro .cube .rt { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); filter: brightness(.78); }
-#intro .cube .lf { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); filter: brightness(.62); }
-#intro .cube .tp { width: var(--w); height: var(--d); left: calc(var(--w) / -2); top: calc(var(--d) / -2); transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); filter: brightness(1.18); }
-#intro .glow { width: 220px; height: 140px; left: -110px; top: -70px; transform: translateY(106px) rotateX(90deg); background: radial-gradient(closest-side, rgba(42,168,118,.42), rgba(42,168,118,0)); opacity: 0; animation: inFade .8s 1.8s ease-out forwards; }
-#intro .in-copy { position: absolute; left: 0; right: 0; bottom: 17%; text-align: center; z-index: 7; padding: 0 24px; }
+#intro .cube .rt { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); filter: brightness(.86); }
+#intro .cube .lf { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); filter: brightness(.74); }
+#intro .cube .tp { width: var(--w); height: var(--d); left: calc(var(--w) / -2); top: calc(var(--d) / -2); transform: rotateX(90deg) translateZ(calc(var(--h) / 2)); filter: brightness(1.08); }
+/* 사람 */
+#intro .in-fx { perspective: none; z-index: 5; pointer-events: none; }
+#intro .in-person { position: absolute; left: -176px; top: -112px; width: 112px; height: 240px; animation: personIn .6s cubic-bezier(.3,1.4,.5,1) .1s both; }
+#intro .in-person svg { width: 100%; height: 100%; overflow: visible; display: block; }
+#intro .in-person .bob { animation: bob .3s ease-in-out .95s 5; transform-origin: 70px 290px; }
+#intro .in-person .ar { transform-origin: 106px 86px; animation: hit .3s ease-in .95s 5 both; }
+#intro .in-person .al { transform-origin: 34px 86px; animation: armL 1.2s ease-in-out infinite alternate; }
+#intro .spark, #intro .pop { position: absolute; z-index: 6; pointer-events: none; }
+#intro .spark { left: -50px; top: -44px; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: radial-gradient(circle, #fff 0 18%, #ffd66b 19% 38%, rgba(255,214,107,0) 62%); opacity: 0; animation: spark .3s ease-out var(--t) both; }
+#intro .pop { left: -36px; top: -96px; font-weight: 900; font-size: 26px; letter-spacing: -.04em; color: #141414; -webkit-text-stroke: 5px #fdfaf4; paint-order: stroke fill; opacity: 0; transform-origin: 0 100%; animation: popText .55s cubic-bezier(.2,1.6,.4,1) var(--t) both; white-space: nowrap; }
+#intro .in-copy { position: relative; width: 100%; margin-top: calc(18px * var(--sc, 1)); text-align: center; z-index: 7; padding: 0 24px; flex: none; }
 #intro .in-copy .ln { display: block; font-size: clamp(24px, 7vw, 36px); line-height: 1.28; font-weight: 800; letter-spacing: -.035em; }
-#intro .in-copy .ln span { display: inline-block; opacity: 0; animation: inRise .6s cubic-bezier(.2,.8,.2,1) calc(1.55s + var(--k) * .12s) forwards; }
-#intro .in-copy .hl { color: #6cf0bd; }
-#intro .in-brand { margin-top: 18px; font-size: 12px; font-weight: 700; letter-spacing: .5em; color: rgba(255,255,255,.55); opacity: 0; animation: inFade .6s 2.1s ease-out forwards; }
+#intro .in-copy .ln span { display: inline-block; opacity: 0; animation: inRise .6s cubic-bezier(.2,.8,.2,1) calc(2.45s + var(--k) * .12s) forwards; }
+#intro .in-copy .hl { color: #0e9f6e; }
+#intro .in-brand { margin-top: 18px; font-size: 12px; font-weight: 700; letter-spacing: .5em; color: rgba(20,20,20,.5); opacity: 0; animation: inFade .6s 2.95s ease-out forwards; }
 #intro .in-brand b { color: #2aa876; font-weight: 700; }
-#intro .in-load { margin: 16px auto 0; width: 120px; height: 2px; background: rgba(255,255,255,.14); border-radius: 2px; overflow: hidden; opacity: 0; animation: inFade .4s 2.1s forwards; }
+#intro .in-load { margin: 16px auto 0; width: 120px; height: 2px; background: rgba(0,0,0,.1); border-radius: 2px; overflow: hidden; opacity: 0; animation: inFade .4s 2.95s forwards; }
 #intro .in-load i { display: block; width: 40%; height: 100%; background: #2aa876; border-radius: 2px; animation: inSlide 1.1s ease-in-out infinite; }
 @keyframes inFade { to { opacity: 1; } }
-@keyframes inBar { to { height: 8vh; } }
 @keyframes inRise { from { opacity: 0; transform: translateY(16px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes inSlide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
-@keyframes camMove { from { transform: rotateX(-24deg) rotateY(-66deg) translateZ(-160px) scale(.78); } to { transform: rotateX(-10deg) rotateY(-26deg) translateZ(30px) scale(1.02); } }
-@keyframes camIdle { from { transform: rotateX(-10deg) rotateY(-26deg) translateZ(30px) scale(1.02); } to { transform: rotateX(-8deg) rotateY(-17deg) translateZ(46px) scale(1.04); } }
+@keyframes camMove { from { transform: rotateX(-14deg) rotateY(-36deg) translateZ(-70px) scale(.9); } to { transform: rotateX(-9deg) rotateY(-22deg) translateZ(24px) scale(1.02); } }
+@keyframes camIdle { from { transform: rotateX(-9deg) rotateY(-22deg) translateZ(24px) scale(1.02); } to { transform: rotateX(-8deg) rotateY(-18deg) translateZ(34px) scale(1.03); } }
 @keyframes floorIn { from { opacity: 0; transform: translateY(105px) rotateX(90deg) scale(.5); } to { opacity: 1; transform: translateY(105px) rotateX(90deg) scale(1); } }
 @keyframes wallBack { from { transform: translateZ(-125px) scaleY(0); } to { transform: translateZ(-125px) scaleY(1); } }
 @keyframes wallLeft { from { transform: translateX(-150px) rotateY(90deg) scaleY(0); } to { transform: translateX(-150px) rotateY(90deg) scaleY(1); } }
 @keyframes railIn { from { transform: translateZ(-117px) scaleX(0); } to { transform: translateZ(-117px) scaleX(1); } }
-@keyframes hangDrop { 0% { opacity: 0; transform: translateY(-230px) rotate(-10deg); } 20% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes shirtPop { 0% { opacity: 0; transform: translateY(-40px) scale(.2) rotate(-14deg); } 25% { opacity: 1; } 100% { opacity: 1; transform: none; } }
 @keyframes swing { from { transform: rotate(-2.2deg); } to { transform: rotate(2.2deg); } }
-@keyframes cubeDrop { 0% { opacity: 0; transform: translateY(-300px); } 15% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes cubeDrop { 0% { opacity: 0; transform: translateY(-190px); } 18% { opacity: 1; } 100% { opacity: 1; transform: none; } }
 @keyframes neon { 0% { opacity: 0; } 12% { opacity: 1; } 22% { opacity: .15; } 38% { opacity: 1; } 50% { opacity: .35; } 100% { opacity: 1; } }
-@keyframes glow { from { text-shadow: 0 0 6px #2aa876, 0 0 14px #2aa876, 0 0 26px rgba(42,168,118,.7); } to { text-shadow: 0 0 8px #2aa876, 0 0 22px #2aa876, 0 0 46px rgba(42,168,118,.95); } }
+@keyframes personIn { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes hit { 0% { transform: rotate(-62deg); } 55% { transform: rotate(-62deg); } 72% { transform: rotate(14deg); } 100% { transform: rotate(-62deg); } }
+@keyframes armL { from { transform: rotate(-3deg); } to { transform: rotate(5deg); } }
+@keyframes spark { 0% { opacity: 0; transform: scale(.2); } 30% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes popText { 0% { opacity: 0; transform: scale(.3) rotate(-14deg); } 30% { opacity: 1; transform: scale(1.15) rotate(-6deg); } 70% { opacity: 1; transform: scale(1) rotate(-6deg); } 100% { opacity: 0; transform: translateY(-14px) scale(.95) rotate(-6deg); } }
 @media (prefers-reduced-motion: reduce) { #intro *, #intro { animation-duration: .01s !important; animation-delay: 0s !important; } }
 </style>
 <script>
@@ -241,9 +254,9 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   try {
     var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     var force = /[?&]intro=1/.test(location.search);
-    var skip = nav.type === 'back_forward' || nav.type === 'reload';
+    var skip = nav.type === 'back_forward';
     var last = +localStorage.getItem('sf_intro_ts') || 0;
-    if (Date.now() - last < 10 * 60 * 1000) skip = true; // 10분 안에 다시 열면 생략(뒤로가기/앱 전환 복귀 때 반복 재생 방지)
+    if (Date.now() - last < 25 * 1000) skip = true; // 25초 안에 연달아 다시 열리는 경우만 생략(같은 열기에서 두 번 재생 방지)
     if (force) skip = false;
     if (skip) document.documentElement.classList.add('no-intro');
     else { localStorage.setItem('sf_intro_ts', Date.now()); document.documentElement.classList.add('intro-on'); }
@@ -253,31 +266,49 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 </head><body>
 <div id="intro" aria-hidden="true">
   <div class="in-spot"></div>
-  <div class="in-stage" id="inStage"><div class="in-cam"><div class="in-room">
+  <div class="in-wrap" id="inWrap"><div class="in-stagebox"><div class="in-stage" id="inStage"><div class="in-cam"><div class="in-room">
     <div class="face floor"></div>
     <div class="face wall back"></div>
     <div class="face wall left"></div>
-    <div class="face glow"></div>
     <div class="face rail"></div>
     <div class="face sign">MY SELECT SHOP</div>
-    <div class="hang"><div class="drop" style="--i:0;--x:-96"><i class="hook"></i><div class="shirt" style="--i:0;--c:#e8e1d0"></div></div></div>
-    <div class="hang"><div class="drop" style="--i:1;--x:-48"><i class="hook"></i><div class="shirt" style="--i:1;--c:#171717"></div></div></div>
-    <div class="hang"><div class="drop" style="--i:2;--x:0"><i class="hook"></i><div class="shirt" style="--i:2;--c:#8a9a7b"></div></div></div>
-    <div class="hang"><div class="drop" style="--i:3;--x:48"><i class="hook"></i><div class="shirt" style="--i:3;--c:#22314f"></div></div></div>
-    <div class="hang"><div class="drop" style="--i:4;--x:96"><i class="hook"></i><div class="shirt" style="--i:4;--c:#b4553a"></div></div></div>
-    <div class="pos" style="transform:translate3d(78px,94px,-30px)"><div class="cube" style="--j:0;--w:78px;--h:22px;--d:56px;--c:#e9e2d2"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
-    <div class="pos" style="transform:translate3d(78px,72px,-30px)"><div class="cube" style="--j:1;--w:72px;--h:22px;--d:52px;--c:#7d8b72"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
-    <div class="pos" style="transform:translate3d(78px,50px,-30px)"><div class="cube" style="--j:2;--w:66px;--h:22px;--d:48px;--c:#b9573c"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
-    <div class="pos" style="transform:translate3d(-84px,95px,40px)"><div class="cube" style="--j:3;--w:70px;--h:20px;--d:54px;--c:#1d1d1f"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
-    <div class="pos" style="transform:translate3d(-84px,75px,40px)"><div class="cube" style="--j:4;--w:64px;--h:20px;--d:50px;--c:#2a3a5e"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
+    <div class="hang"><div class="drop" style="--x:-96;--t:1.16s"><i class="hook"></i><div class="shirt" style="--c:#e8e1d0;--t:1.16s"></div></div></div>
+    <div class="hang"><div class="drop" style="--x:-48;--t:1.46s"><i class="hook"></i><div class="shirt" style="--c:#171717;--t:1.46s"></div></div></div>
+    <div class="hang"><div class="drop" style="--x:0;--t:1.76s"><i class="hook"></i><div class="shirt" style="--c:#8a9a7b;--t:1.76s"></div></div></div>
+    <div class="hang"><div class="drop" style="--x:48;--t:2.06s"><i class="hook"></i><div class="shirt" style="--c:#22314f;--t:2.06s"></div></div></div>
+    <div class="hang"><div class="drop" style="--x:96;--t:2.36s"><i class="hook"></i><div class="shirt" style="--c:#b4553a;--t:2.36s"></div></div></div>
+    <div class="pos" style="transform:translate3d(78px,94px,-30px)"><div class="cube" style="--t:1.76s;--w:78px;--h:22px;--d:56px;--c:#e9e2d2"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
+    <div class="pos" style="transform:translate3d(78px,72px,-30px)"><div class="cube" style="--t:2.06s;--w:72px;--h:22px;--d:52px;--c:#8a9a7b"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
+    <div class="pos" style="transform:translate3d(78px,50px,-30px)"><div class="cube" style="--t:2.36s;--w:66px;--h:22px;--d:48px;--c:#c0603f"><i class="f fr"></i><i class="f bk"></i><i class="f rt"></i><i class="f lf"></i><i class="f tp"></i></div></div>
+    
   </div></div></div>
+  <div class="in-stage in-fx"><div class="spark" style="--t:1.16s"></div><div class="spark" style="--t:1.46s"></div><div class="spark" style="--t:1.76s"></div><div class="spark" style="--t:2.06s"></div><div class="spark" style="--t:2.36s"></div>
+    <div class="pop" style="--t:1.16s">뚝!</div><div class="pop" style="--t:1.46s;top:-110px;left:-20px">딱!</div><div class="pop" style="--t:1.76s">뚝!</div><div class="pop" style="--t:2.06s;top:-110px;left:-20px">딱!</div><div class="pop" style="--t:2.36s;font-size:30px">뚝딱!</div>
+    <div class="in-person"><svg viewBox="0 0 140 300" xmlns="http://www.w3.org/2000/svg"><g class="bob">
+      <ellipse cx="70" cy="293" rx="46" ry="7" fill="rgba(0,0,0,.16)"/>
+      <path d="M36 170 L68 170 L66 280 L28 280 Z" fill="#2b2b30"/><path d="M72 170 L104 170 L112 280 L74 280 Z" fill="#33333a"/>
+      <path d="M36 170 L68 170 L67 186 L35 186 Z" fill="rgba(255,255,255,.06)"/>
+      <path d="M22 276 h46 v10 q0 7 -8 7 h-32 q-8 0 -6 -9z" fill="#fff" stroke="#222" stroke-width="2"/><path d="M22 288 h46" stroke="#222" stroke-width="3"/>
+      <path d="M72 276 h46 v10 q0 7 -8 7 h-32 q-8 0 -6 -9z" fill="#fff" stroke="#222" stroke-width="2"/><path d="M72 288 h46" stroke="#222" stroke-width="3"/>
+      <g class="al"><path d="M34 84 L14 134 L26 142 L48 98 Z" fill="#7d8d70"/><circle cx="20" cy="140" r="9" fill="#f0c7a0"/>
+        <path d="M2 128 L8 124 L20 124 L26 128 L26 156 L2 156 Z" fill="#b4553a" transform="rotate(-8 14 140)"/></g>
+      <path d="M30 76 Q70 58 110 76 L120 174 Q70 186 20 174 Z" fill="#8a9a7b"/><path d="M30 76 Q70 58 110 76 L112 92 Q70 76 28 92 Z" fill="rgba(255,255,255,.12)"/>
+      <path d="M58 70 L70 100 L82 70 Z" fill="#f4efe6"/><path d="M70 100 L70 176" stroke="rgba(0,0,0,.22)" stroke-width="2"/>
+      <path d="M36 140 h24 v22 h-24z M80 140 h24 v22 h-24z" fill="rgba(0,0,0,.1)"/>
+      <rect x="62" y="66" width="16" height="14" rx="4" fill="#f0c7a0"/>
+      <circle cx="70" cy="46" r="25" fill="#f0c7a0"/><circle cx="45.5" cy="52" r="4.5" fill="#e6b88f"/><circle cx="94.5" cy="52" r="4.5" fill="#e6b88f"/>
+      <path d="M44 44 Q44 8 70 8 Q96 8 96 44 Z" fill="#1c1c1f"/><path d="M70 8 L70 44 M57 11 Q54 28 54 44 M83 11 Q86 28 86 44" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.6"/><circle cx="70" cy="8.5" r="2.6" fill="#35353a"/><rect x="62" y="22" width="16" height="9" rx="2" fill="#f4efe6"/><path d="M34 44 L106 44 L112 52 L28 52 Z" fill="#101012"/><path d="M34 44 L106 44 L108 47 L32 47 Z" fill="rgba(255,255,255,.14)"/><path d="M28 52 L112 52 L111 54 L29 54 Z" fill="rgba(0,0,0,.25)"/>
+      <circle cx="60" cy="59" r="7.5" fill="#161616"/><circle cx="80" cy="59" r="7.5" fill="#161616"/><path d="M67.5 59 h5" stroke="#161616" stroke-width="2.5"/><path d="M52.5 57 L45 55 M87.5 57 L95 55" stroke="#161616" stroke-width="2"/><path d="M57 56.5 l3 -1.5 M77 56.5 l3 -1.5" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M63 69 q7 5 14 0" fill="none" stroke="#a65d3f" stroke-width="2.4" stroke-linecap="round"/>
+      <g class="ar"><path d="M106 84 L134 96 L128 110 L100 98 Z" fill="#7d8d70"/><circle cx="136" cy="101" r="9" fill="#f0c7a0"/>
+        <rect x="132" y="56" width="7" height="46" rx="3" fill="#b07a4a"/><rect x="122" y="46" width="28" height="14" rx="3" fill="#6b7078"/><rect x="146" y="46" width="6" height="14" rx="2" fill="#4f535a"/></g>
+    </g></svg></div></div></div>
   <div class="in-copy">
     <span class="ln"><span style="--k:0">나만의</span> <span class="hl" style="--k:1">편집샵을</span></span>
     <span class="ln"><span style="--k:2">만들어보세요</span></span>
     <div class="in-brand">MY <b>·</b> SELECT <b>·</b> SHOP</div>
     <div class="in-load"><i></i></div>
-  </div>
-  <div class="in-bar top"></div><div class="in-bar bot"></div>
+  </div></div>
 </div>
 <script>
 (function () {
@@ -285,10 +316,11 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   if (!el || document.documentElement.classList.contains('no-intro')) return;
   var sc = Math.max(.7, Math.min(1.35, Math.min(innerWidth / 400, innerHeight / 760)));
   document.getElementById('inStage').style.setProperty('--sc', sc);
+  document.getElementById('inWrap').style.setProperty('--oy', (57 * sc - 77.3).toFixed(1) + 'px'); // 눈에 보이는 무게중심 보정: 화면 크기별로 위/아래 여백이 같아지게 실측해서 맞춘 값
   window.hideIntro = function () {
     if (el.dataset.done) return;
     el.dataset.done = '1';
-    var wait = Math.max(0, 2500 - performance.now()); // 인트로가 한 번은 끝까지 보이도록 최소 노출 시간
+    var wait = Math.max(0, 3500 - performance.now()); // 인트로가 한 번은 끝까지 보이도록 최소 노출 시간
     setTimeout(function () {
       el.classList.add('out');
       document.documentElement.classList.remove('intro-on');
