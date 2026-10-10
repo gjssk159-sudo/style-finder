@@ -37,7 +37,13 @@ const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANO
 let currentUser = null;
 let myFolderIds = []; // 현재 보고 있는 폴더(내 폴더 또는 공유받은 폴더)에 있는 brand_id 목록
 let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
-let catSel = ''; // 상위(TOP/OUTER...) 또는 하위 카테고리 칩 선택 — 그룹 id 또는 카테고리 id
+// 여러 개를 동시에 고를 수 있다. 각 원소는 그룹 id(그 그룹 전체) 또는 카테고리 id(하나)
+try { history.scrollRestoration = 'manual'; } catch {} // 스크롤 복원은 아래 restoreScrollIfMatching이 직접 처리
+let catSel = [];
+let colorSel = []; // 선택한 색상 id들
+let pendingSize = ''; // URL에서 복원한 사이즈 — 사이즈 옵션이 아직 안 채워진 부팅 중에도 검색/주소에 유지하려고 따로 들고 있음
+const getSize = () => document.getElementById('size').value || pendingSize;
+let renderSeq = 0; // 응답이 뒤바뀌어 도착해도(예: 칩을 빠르게 여러 번 누를 때) 마지막 요청 결과만 그리게 함
 let myFolders = [];        // 로그인한 사람의 폴더 목록 [{id,name,share_id}] (최대 3개)
 let currentFolderId = null; // 지금 검색에 쓰이는 폴더 id
 let sharedView = null;      // 공유 링크로 남의 폴더를 보는 중이면 {id,name,share_id,user_id}
@@ -608,10 +614,11 @@ async function loadSizeOptionsUncached(key) {
 
 function renderSizeFilter() {
   const sel = document.getElementById('size');
-  const current = sel.value;
+  const current = sel.value || pendingSize;
   sel.innerHTML = '<option value="">사이즈 전체</option>';
   for (const s of sizeOptions) sel.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`);
   sel.value = sizeOptions.includes(current) ? current : '';
+  if (sizeOptions.length) pendingSize = ''; // 옵션이 채워졌으니 복원 끝(선택값이 옵션에 없으면 그냥 해제)
 }
 
 function currentFilteredBrands() {
@@ -820,22 +827,21 @@ async function submitAdd() {
 function qs() {
   const p = new URLSearchParams();
   const q = document.getElementById('q').value.trim();
-  const color = document.getElementById('color').value;
-  const size = document.getElementById('size').value;
+  const size = getSize();
   const brand = document.getElementById('brand').value;
   const sort = document.getElementById('sort').value;
   const priceMin = document.getElementById('priceMin').value;
   const priceMax = document.getElementById('priceMax').value;
   const inStock = document.getElementById('inStock').checked;
   if (q) p.set('q', q);
-  if (color) p.set('color', color);
+  if (colorSel.length) p.set('color', colorSel.join(','));
   if (size) p.set('size', size);
   if (brand) p.set('brand', brand);
   if (sort !== 'brand') p.set('sort', sort);
   if (priceMin) p.set('priceMin', priceMin);
   if (priceMax) p.set('priceMax', priceMax);
   if (inStock) p.set('inStock', '1');
-  if (catSel) p.set('cat', catSel);
+  if (catSel.length) p.set('cat', catSel.join(','));
   if (sharedView) p.set('share', sharedView.share_id);
   if (currentPage > 1) p.set('p', currentPage);
   return p;
@@ -847,9 +853,8 @@ function buildQuery(offset, count = PAGE_SIZE) {
   // 칩으로 고른 카테고리가 있으면 그걸 우선(검색창에 카테고리 단어를 직접 치면 go()에서 칩 선택이 풀림)
   const chipCategories = window.StyleFinderTaxonomy.expandSelection(catSel);
   const categories = chipCategories.length ? chipCategories : queryCategories;
-  const color = document.getElementById('color').value;
-  const colors = [...new Set([...(color ? [color] : []), ...colorsFromQuery])];
-  const size = document.getElementById('size').value;
+  const colors = [...new Set([...colorSel, ...colorsFromQuery])];
+  const size = getSize();
   const brand = document.getElementById('brand').value;
   const sort = document.getElementById('sort').value;
   const priceMin = document.getElementById('priceMin').value;
@@ -1077,17 +1082,21 @@ async function renderCurrentPage() {
 
   const offset = (currentPage - 1) * PAGE_SIZE;
   const { query, categories, colors, keywords } = buildQuery(offset, PAGE_SIZE);
+  const mySeq = ++renderSeq;
   const { data, error, count } = await query;
+  if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림
   if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
 
   lastTotal = count || 0;
   const parts = [`${lastTotal}개`];
   if (categories.length) {
     const T = window.StyleFinderTaxonomy;
-    const g = T.GROUPS.find((x) => x.id === catSel);
-    parts.push('카테고리: ' + (g ? g.label : categories.map((c) => T.labelOf(c)).join(', ')));
+    const names = catSel.length
+      ? catSel.map((id) => { const g = T.GROUPS.find((x) => x.id === id); return g ? g.label : T.labelOf(id); })
+      : categories.map((c) => T.labelOf(c));
+    parts.push('카테고리: ' + names.join(', '));
   }
-  if (colors.length) parts.push('색상: ' + colors.join(', '));
+  if (colors.length) parts.push('색상: ' + colors.map((c) => window.StyleFinderTaxonomy.COLOR_LABELS[c] || c).join(', '));
   if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
   meta.textContent = parts.join('  ·  ');
 
@@ -1101,7 +1110,7 @@ async function renderCurrentPage() {
 
 // 검색창에 카테고리 단어(예: "후드티", "바지")를 직접 치면 칩 선택은 풀고 검색창 쪽을 따른다.
 function syncCatWithQuery() {
-  if (catSel && window.StyleFinderTaxonomy.parseQuery(document.getElementById('q').value).categories.length) catSel = '';
+  if (catSel.length && window.StyleFinderTaxonomy.parseQuery(document.getElementById('q').value).categories.length) catSel = [];
 }
 
 async function go() {
@@ -1174,7 +1183,11 @@ function restoreScrollIfMatching(savedOverride) {
   // pageshow 외에 visibilitychange/focus에도 걸어놨는데, 정상적으로 쓰다가 우연히 이 이벤트들이
   // 발생한 경우까지 건드리면 안 되니 "지금 이미 맨 위 근처인데 원래는 내려가 있었어야 하는"
   // 경우(=리셋된 상황)에만 작동한다.
-  if (!target || target < 30 || window.scrollY > 30) return;
+  // 부팅 때(savedOverride 있음)는 브라우저가 이미 엉뚱한 위치(예: 문서가 아직 짧을 때의 중간 지점)로 옮겨놨을 수 있어서
+  // "맨 위일 때만" 조건을 빼고 저장해둔 위치로 맞춘다. 그 외(포커스 등 우연한 이벤트)는 예전처럼 리셋됐을 때만.
+  const forced = !!savedOverride;
+  if (!target || target < 30) return;
+  if (!forced && window.scrollY > 30) return;
   // 실측 확인됨: 상품 클릭 후 뒤로가기하면 iOS가 페이지를 다시 실행하지 않고 그대로
   // 얼렸다가 복원하는데(bfcache), 이때 스크롤 위치를 0으로 리셋해버리는 iOS/WebKit
   // 버그가 있음. 정해진 시점에만 되돌리는 걸로는 iOS가 그보다 늦게 다시 0으로 되돌리는
@@ -1188,7 +1201,7 @@ function restoreScrollIfMatching(savedOverride) {
   const maxAttempts = 40; // 최대 4초(100ms 간격)
   const enforce = () => {
     attempts++;
-    if (!stop && Math.round(window.scrollY) < 30) window.scrollTo(0, target);
+    if (!stop && (forced ? Math.abs(window.scrollY - target) > 30 : Math.round(window.scrollY) < 30)) window.scrollTo(0, target);
     if (attempts < maxAttempts && !stop) setTimeout(enforce, 100);
     else removeEventListener('touchstart', onTouch);
   };
@@ -1200,40 +1213,110 @@ addEventListener('pageshow', (e) => { if (e.persisted) rearmUnfinishedImages(); 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') restoreScrollIfMatching(); });
 addEventListener('focus', () => restoreScrollIfMatching());
 
-function activeGroup() {
+// 상위 카테고리(TOP/OUTER/BOTTOM...)와 하위 카테고리를 여러 개 동시에 고를 수 있다.
+//  - 상위 칩을 누르면 그 그룹 전체가 선택되고 아래에 하위 칩 줄이 펼쳐진다. 선택된 그룹마다 줄이 하나씩.
+//  - 하위 칩은 눌러서 켜고 끄는 토글(후드 + 반팔티 처럼 여러 개). 하나도 안 남으면 다시 그룹 전체로 돌아간다.
+//  - 이미 선택된 상위 칩을 다시 누르면 그 그룹(과 그 하위 선택)이 해제된다.
+const groupById = (id) => window.StyleFinderTaxonomy.GROUPS.find((g) => g.id === id);
+const groupOfLeaf = (leaf) => window.StyleFinderTaxonomy.GROUPS.find((g) => g.children.includes(leaf));
+function selectedGroups() {
   const T = window.StyleFinderTaxonomy;
-  return T.GROUPS.find((g) => g.id === catSel || g.children.includes(catSel)) || null;
+  return T.GROUPS.filter((g) => catSel.includes(g.id) || g.children.some((c) => catSel.includes(c)));
 }
 
-// 상위 카테고리(TOP/OUTER/BOTTOM...) 칩 + 하나를 누르면 그 아래 하위 카테고리 칩이 쭉 펼쳐짐
 function renderChips() {
   const T = window.StyleFinderTaxonomy;
-  const ag = activeGroup();
-  document.getElementById('chips').innerHTML = `<span class="chip ${catSel ? '' : 'on'}" onclick="pickCategory('', true)">ALL</span>` + T.GROUPS
-    .map((g) => `<span class="chip ${ag && ag.id === g.id ? 'on' : ''}" onclick="pickCategory('${g.id}')">${g.label}</span>`)
-    .join('');
+  const on = selectedGroups();
+  document.getElementById('chips').innerHTML =
+    `<span class="chip ${catSel.length ? '' : 'on'}" onclick="clearCategories()">ALL</span>` +
+    T.GROUPS.map((g) => `<span class="chip ${on.includes(g) ? 'on' : ''}" onclick="toggleGroup('${g.id}')">${g.label}</span>`).join('');
   const sub = document.getElementById('subChips');
-  if (!ag || ag.children.length <= 1) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
+  const rows = on.filter((g) => g.children.length > 1);
+  if (!rows.length) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
   sub.style.display = 'flex';
-  sub.innerHTML =
-    `<span class="chip sub ${catSel === ag.id ? 'on' : ''}" onclick="pickCategory('${ag.id}', true)">전체</span>` +
-    ag.children.map((id) => `<span class="chip sub ${catSel === id ? 'on' : ''}" onclick="pickCategory('${id}', true)">${T.labelOf(id)}</span>`).join('');
+  sub.innerHTML = rows.map((g) =>
+    `<span class="subrow"><span class="chip sub tag">${g.label}</span>` +
+    `<span class="chip sub ${catSel.includes(g.id) ? 'on' : ''}" onclick="selectWholeGroup('${g.id}')">전체</span>` +
+    g.children.map((id) => `<span class="chip sub ${catSel.includes(id) ? 'on' : ''}" onclick="toggleLeaf('${id}')">${T.labelOf(id)}</span>`).join('') +
+    '</span>').join('');
 }
 
-function pickCategory(sel, fromSub) {
-  // 이미 선택된 상위 칩을 다시 누르면 해제
-  catSel = !fromSub && catSel === sel ? '' : sel;
+function afterCategoryChange() {
   const q = document.getElementById('q');
   q.value = window.StyleFinderTaxonomy.stripCategoryTokens(q.value);
   renderChips();
   go();
 }
 
+function clearCategories() { catSel = []; afterCategoryChange(); }
+
+function toggleGroup(gid) {
+  const g = groupById(gid);
+  if (!g) return;
+  if (selectedGroups().includes(g)) catSel = catSel.filter((id) => id !== g.id && !g.children.includes(id));
+  else catSel = [...catSel, g.id];
+  afterCategoryChange();
+}
+
+function selectWholeGroup(gid) {
+  const g = groupById(gid);
+  if (!g) return;
+  catSel = [...catSel.filter((id) => !g.children.includes(id) && id !== g.id), g.id];
+  afterCategoryChange();
+}
+
+function toggleLeaf(leaf) {
+  const g = groupOfLeaf(leaf);
+  if (!g) return;
+  let next = catSel.slice();
+  if (next.includes(g.id)) next = next.filter((id) => id !== g.id); // 그룹 전체 선택 상태에서 하위를 누르면 그 하나부터 시작
+  next = next.includes(leaf) ? next.filter((id) => id !== leaf) : [...next, leaf];
+  if (!g.children.some((c) => next.includes(c))) next.push(g.id); // 하위가 하나도 안 남으면 그룹 전체로
+  catSel = next;
+  afterCategoryChange();
+}
+
+// ---------------- 색상 다중 선택 ----------------
+const COLOR_SWATCH = {
+  black: '#161616', white: '#f6f6f6', ivory: '#f4eedc', cream: '#f1e6c8', beige: '#d8c6a6', khaki: '#8b8b5c',
+  navy: '#1d2b4b', blue: '#2f5fd0', sky: '#8fc6f2', green: '#2f7d4f', olive: '#6c6c2e', grey: '#9b9b9b',
+  charcoal: '#3b3b3b', brown: '#6b4528', tan: '#b98c5b', camel: '#c1915b', purple: '#6f41a4', lavender: '#b8a5e0',
+  pink: '#f1a3b9', red: '#d1322f', wine: '#6f202f', burgundy: '#5b1623', orange: '#ef8b2b', yellow: '#f3d03b',
+  sand: '#d9c49b', mint: '#a0e0c5', melange: '#b6b6b6', denim: '#506fa0', indigo: '#2f407b', washed: '#8ba1b9',
+  silver: '#c7cacf', gold: '#d0aa3b', multi: 'conic-gradient(#e33,#fb3,#3c6,#39f,#93f,#e33)',
+};
+function colorLabel(id) { return window.StyleFinderTaxonomy.COLOR_LABELS[id] || id; }
+function updateColorBtn() {
+  const btn = document.getElementById('colorBtn');
+  if (!btn) return;
+  btn.textContent = !colorSel.length ? '색상 전체' : colorSel.length === 1 ? colorLabel(colorSel[0]) : `${colorLabel(colorSel[0])} 외 ${colorSel.length - 1}`;
+  btn.classList.toggle('on', colorSel.length > 0);
+}
+function renderColorPanel() {
+  const panel = document.getElementById('colorPanel');
+  if (!panel) return;
+  panel.innerHTML =
+    '<div class="msel-head"><span>색상 (여러 개 선택 가능)</span><button type="button" class="linklike" onclick="clearColors()">초기화</button></div><div class="msel-list">' +
+    Object.keys(window.StyleFinderTaxonomy.COLOR_LABELS).map((id) =>
+      `<label class="msel-item"><input type="checkbox" autocomplete="off" value="${id}" ${colorSel.includes(id) ? 'checked' : ''} onchange="toggleColor('${id}', this.checked)">` +
+      `<i class="sw" style="background:${COLOR_SWATCH[id] || '#ccc'}"></i><span>${colorLabel(id)}</span></label>`).join('') + '</div>';
+  updateColorBtn();
+}
+let goTimer = null;
+function goSoon() { clearTimeout(goTimer); goTimer = setTimeout(go, 350); } // 여러 개를 연달아 고르는 동안엔 마지막에 한 번만 검색
+function toggleColor(id, on) {
+  colorSel = on ? [...new Set([...colorSel, id])] : colorSel.filter((c) => c !== id);
+  updateColorBtn();
+  goSoon();
+}
+function clearColors() { colorSel = []; renderColorPanel(); goSoon(); }
+function closeColorPanel() { document.getElementById('colorPanel')?.classList.remove('open'); }
+document.getElementById('colorBtn')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('colorPanel').classList.toggle('open'); });
+document.addEventListener('click', (e) => { if (!e.target.closest('.msel')) closeColorPanel(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeColorPanel(); });
+
 async function loadFacetSelectors() {
-  const colorSel = document.getElementById('color');
-  for (const [id, label] of Object.entries(window.StyleFinderTaxonomy.COLOR_LABELS)) {
-    colorSel.insertAdjacentHTML('beforeend', `<option value="${id}">${label}</option>`);
-  }
+  renderColorPanel();
   // 사이즈 옵션은 고정 목록이 아니라 로그인/폴더 전환 시 loadSizeOptions()가 실제 데이터로 채움
   // (브랜드마다 S/M/L, 1/2/3, 신발 사이즈 등 표기가 달라서 고정 목록으론 다 못 잡음).
 }
@@ -1241,7 +1324,7 @@ async function loadFacetSelectors() {
 // ---------------- 초기화 ----------------
 document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
 document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth(); });
-for (const id of ['color', 'size', 'brand', 'sort', 'inStock']) document.getElementById(id).addEventListener('change', go);
+for (const id of ['size', 'brand', 'sort', 'inStock']) document.getElementById(id).addEventListener('change', () => { if (id === 'size') pendingSize = ''; go(); });
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
 (async () => {
@@ -1255,8 +1338,10 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
     history.replaceState(0, '', '?' + savedAtBoot.params);
   }
   if (initial.get('q')) document.getElementById('q').value = initial.get('q');
-  if (initial.get('color')) document.getElementById('color').value = initial.get('color');
-  if (initial.get('size')) document.getElementById('size').value = initial.get('size');
+  // 색상 칩/사이즈 옵션은 부팅 뒤에 채워지므로(옵션이 없는 select에 value를 넣으면 조용히 무시됨 — 뒤로가기 후 필터가 풀리던 원인)
+  // 값은 변수로 들고 있다가 옵션이 생기면 반영한다.
+  colorSel = (initial.get('color') || '').split(',').filter(Boolean);
+  pendingSize = initial.get('size') || '';
   // 이 시점엔 #brand select에 아직 <option>이 하나도 없어서(브랜드 목록은 뒤에서
   // loadAllBrands()/renderBrandFilter()가 채움) sel.value 대입이 조용히 무시된다.
   // renderBrandFilter()는 그 비어버린 값을 "현재 선택값"으로 보고 그대로 유지해버리므로,
@@ -1270,7 +1355,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
   if (initial.get('priceMax')) document.getElementById('priceMax').value = initial.get('priceMax');
   if (initial.get('inStock')) document.getElementById('inStock').checked = true;
-  catSel = initial.get('cat') || '';
+  catSel = (initial.get('cat') || '').split(',').filter(Boolean);
   if (initial.get('p')) currentPage = Math.max(1, parseInt(initial.get('p'), 10) || 1);
 
   // 서로 독립적인 초기 요청들(사전 로드, 브랜드 목록, 로그인 세션)을 동시에 보내서
@@ -1306,4 +1391,5 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   await renderCurrentPage();
   restoreScrollIfMatching(savedAtBoot);
   bootComplete = true;
+  if (window.hideIntro) window.hideIntro(); // 시작 인트로(index.html) 걷어내기 — 첫 화면이 그려진 뒤
 })();

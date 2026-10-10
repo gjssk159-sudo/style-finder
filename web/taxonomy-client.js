@@ -71,10 +71,15 @@ async function loadTaxonomy() {
 
 // 상위(그룹 id) 또는 하위(카테고리 id) 선택 → 검색에 쓸 카테고리 id 목록
 function expandSelection(sel) {
-  if (!sel) return [];
-  const g = GROUPS.find((x) => x.id === sel);
-  if (g) return g.children.slice();
-  return CATEGORIES.some((c) => c.id === sel) ? [sel] : [];
+  // 여러 개 선택 가능: 배열(또는 단일 id)을 받아 합집합으로 펼친다
+  const list = Array.isArray(sel) ? sel : sel ? [sel] : [];
+  const out = new Set();
+  for (const id of list) {
+    const g = GROUPS.find((x) => x.id === id);
+    if (g) g.children.forEach((c) => out.add(c));
+    else if (CATEGORIES.some((c) => c.id === id)) out.add(id);
+  }
+  return [...out];
 }
 
 function labelOf(id) {
@@ -84,7 +89,7 @@ function labelOf(id) {
 
 // 검색어에서 카테고리 단어만 빼고 나머지(브랜드/색상/상품명)는 그대로 — 칩으로 카테고리를 고를 때 사용
 function stripCategoryTokens(raw) {
-  return (raw || '').split(/s+/).filter((tok) => tok && !resolveCategoryToken(tok).length).join(' ');
+  return (raw || '').split(/\s+/).filter((tok) => tok && !resolveCategoryToken(tok).length).join(' ');
 }
 
 function stripFillers(raw) {
