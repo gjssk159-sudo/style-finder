@@ -178,7 +178,8 @@
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
 html.intro-on, html.intro-on body { overflow: hidden; }
-#intro { position: fixed; inset: 0; z-index: 9999; background: #fafaf9 linear-gradient(180deg, #fdfbfa 0%, #fafaf9 420px); color: #121212; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; animation: inOut .35s cubic-bezier(.4,0,.2,1) 2.15s forwards; }
+#intro { position: fixed; inset: 0; z-index: 9999; background: #fafaf9 linear-gradient(180deg, #fdfbfa 0%, #fafaf9 420px); color: #121212; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; }
+#intro.out { opacity: 0; transform: scale(1.015); transition: opacity .35s cubic-bezier(.4,0,.2,1), transform .35s cubic-bezier(.4,0,.2,1); pointer-events: none; }
 #intro .in-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 8vw; transform: translateY(var(--oy, -7px)); }
 #intro .in-col { width: min(78vw, 340px); }
 #intro .in-art { display: block; width: 100%; height: auto; overflow: visible; }
@@ -202,7 +203,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 @keyframes inUp { to { opacity: 1; transform: none; } }
 @keyframes inProg { to { transform: scaleX(1); } }
 @keyframes inOut { to { opacity: 0; transform: scale(1.015); visibility: hidden; } }
-@media (prefers-reduced-motion: reduce) { #intro *, #intro::before { animation-duration: .01s !important; animation-delay: 0s !important; } #intro { animation-delay: 2.1s; } }
+@media (prefers-reduced-motion: reduce) { #intro *, #intro::before { animation-duration: .01s !important; animation-delay: 0s !important; } }
 </style>
 <script>
 (function () {
@@ -266,17 +267,28 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 (function () {
   var el = document.getElementById('intro');
   if (!el || document.documentElement.classList.contains('no-intro')) return;
-  var t0 = performance.now(), DUR = 2500, num = document.getElementById('inNum');
+  // 인트로는 "로딩 시간을 채우는" 용도다. 애니메이션이 한 번은 끝까지 보이도록 최소 MIN ms 보여주고,
+  // 그 시점에 앱이 첫 화면(상품 사진까지)을 이미 준비했다면 바로 걷는다. 아직이면 준비될 때까지만 더 기다린다(최대 CAP).
+  var t0 = performance.now(), MIN = 2150, CAP = 6000, ready = false, minDone = false, closed = false;
+  var num = document.getElementById('inNum');
   function tick() {
-    var p = Math.min(1, (performance.now() - t0) / 2150), e = 1 - Math.pow(1 - p, 2.2);
-    num.textContent = ('00' + Math.round(e * 100)).slice(-3);
-    if (p < 1) requestAnimationFrame(tick);
+    var p = Math.min(1, (performance.now() - t0) / MIN), v = Math.round((1 - Math.pow(1 - p, 2.2)) * 100);
+    if (!ready && v > 99) v = 99; // 준비가 안 됐으면 99에서 대기
+    num.textContent = ('00' + v).slice(-3);
+    if (!closed) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
-  // 정확히 2.5초: 로딩이 끝났든 아니든 2.5초에 인트로를 걷어낸다(마지막 0.35초는 페이드아웃).
-  window.hideIntro = function () {};
-  setTimeout(function () { document.documentElement.classList.remove('intro-on'); }, DUR);
-  setTimeout(function () { el.remove(); }, DUR + 60);
+  function close() {
+    if (closed) return;
+    closed = true;
+    num.textContent = '100';
+    document.documentElement.classList.remove('intro-on');
+    el.classList.add('out');
+    setTimeout(function () { el.remove(); }, 450);
+  }
+  window.hideIntro = function () { ready = true; if (minDone) close(); }; // 앱(app.js)이 첫 화면 준비 완료를 알림
+  setTimeout(function () { minDone = true; if (ready) close(); }, MIN);
+  setTimeout(close, CAP);
 })();
 </script>
 

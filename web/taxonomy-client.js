@@ -62,11 +62,21 @@ const FILLER_PHRASES = [
 
 let CATEGORIES = [];
 let GROUPS = [];
-async function loadTaxonomy() {
-  const res = await fetch('./taxonomy.json');
-  const data = await res.json();
+function applyTaxonomy(data) {
   CATEGORIES = data.categories;
   GROUPS = data.groups || [];
+}
+// 분류표는 거의 안 바뀌니 저장해둔 걸 바로 쓰고(첫 화면을 기다리게 하지 않음), 최신본은 뒤에서 받아 갱신한다.
+async function loadTaxonomy() {
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem('sf_tax') || 'null'); } catch {}
+  const fresh = fetch('./taxonomy.json').then((r) => r.json()).then((data) => { try { localStorage.setItem('sf_tax', JSON.stringify(data)); } catch {} return data; });
+  if (cached && Array.isArray(cached.categories) && cached.categories.length) {
+    applyTaxonomy(cached);
+    fresh.then(applyTaxonomy).catch(() => {});
+    return;
+  }
+  applyTaxonomy(await fresh);
 }
 
 // 상위(그룹 id) 또는 하위(카테고리 id) 선택 → 검색에 쓸 카테고리 id 목록

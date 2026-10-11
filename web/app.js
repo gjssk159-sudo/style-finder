@@ -304,6 +304,7 @@ async function loadFolderBrandIds() {
   const { data, error } = await sb.from('user_brands').select('brand_id').eq('folder_id', currentFolderId);
   if (error) { console.error(error); return; }
   myFolderIds = data.map((r) => r.brand_id);
+  try { localStorage.setItem('sf_ids', JSON.stringify({ uid: currentUser?.id, folderId: currentFolderId, ids: myFolderIds })); } catch {}
 }
 
 async function createFolder(silent) {
@@ -574,6 +575,8 @@ async function loadSizeOptionsUncached(key) {
       return;
     }
   } catch {}
+  // 첫 화면 사진 로딩과 네트워크를 다투지 않게, 캐시가 없을 때의 무거운 전체 조회는 첫 화면이 준비된 뒤(최대 4초)로 미룬다.
+  await Promise.race([homeReady, new Promise((r) => setTimeout(r, 4000))]);
   // select는 기본 1000행 제한이 있어서, 폴더 상품이 그보다 많으면 뒤쪽 사이즈를 놓치므로 끝까지 페이지네이션.
   // 첫 페이지에서 총 개수를 알아내고, 나머지 페이지는 동시에 받는다(예전엔 7~13번을 줄줄이 기다렸음).
   const fetchPage = (from) => sb.from('product_group').select('sizes', { count: from === 0 ? 'exact' : undefined }).in('brand_id', myFolderIds).range(from, from + 999);
@@ -1059,6 +1062,49 @@ function updatePager() {
   document.getElementById('pageLabel').textContent = `${currentPage}/${totalPages}페이지 · ${start}-${end}/${lastTotal}개`;
 }
 
+// ---------------- 홈 화면 즉시 표시 ----------------
+// 앱을 열 때마다 서버에서 상품을 새로 받아 그리면 인트로가 끝난 뒤에도 로딩을 또 기다리게 된다. 그래서
+//  1) 직전에 본 첫 화면(상품 목록)을 localStorage에 저장해뒀다가 앱이 뜨자마자 먼저 그리고(사진은 브라우저 캐시에서 바로 나옴),
+//  2) 뒤에서 최신 데이터를 받아 달라진 게 있을 때만 화면을 갈아끼운다(같으면 아무것도 안 건드려서 깜빡임/스크롤 튐 없음).
+// 인트로는 첫 화면 사진이 준비되면(최소 시간이 지난 뒤) 걷힌다.
+const HOME_CACHE_KEY = 'sf_home_cache';
+const HOME_CACHE_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+let renderedSig = '';
+const sigOf = (data) => data.map((g) => [g.id, g.min_price, g.max_price, g.in_stock ? 1 : 0, g.image || '', g.title].join('|')).join('~');
+function storedUserId() {
+  try {
+    const ref = new URL(window.SUPABASE_URL).hostname.split('.')[0];
+    const raw = hybridStorage.getItem('sb-' + ref + '-auth-token');
+    return raw ? (JSON.parse(raw)?.user?.id || null) : null;
+  } catch { return null; }
+}
+function readHomeCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(HOME_CACHE_KEY) || 'null');
+    if (!c || !Array.isArray(c.data) || Date.now() - (c.at || 0) > HOME_CACHE_MAX_AGE_MS) return null;
+    return c;
+  } catch { return null; }
+}
+function saveHomeCache(search, data, count, metaText) {
+  if (!currentUser || sharedView || !data.length) return;
+  try { localStorage.setItem(HOME_CACHE_KEY, JSON.stringify({ uid: currentUser.id, search, data, count, meta: metaText, at: Date.now() })); } catch {}
+}
+let homeReadyResolve;
+const homeReady = new Promise((r) => { homeReadyResolve = r; });
+function markHomeReady() { homeReadyResolve(); if (window.hideIntro) window.hideIntro(); }
+// 화면에 보이는 상품 사진이 모두 로드될 때까지(최대 cap ms) 기다림
+function whenFirstScreenImagesReady(cap = 3000) {
+  return new Promise((resolve) => {
+    const t0 = performance.now();
+    const check = () => {
+      const imgs = [...document.querySelectorAll('#grid img')].filter((i) => { const r = i.getBoundingClientRect(); return r.top < innerHeight * 1.05 && r.bottom > 0; });
+      if (imgs.every((i) => i.complete) || performance.now() - t0 > cap) return resolve();
+      setTimeout(check, 80);
+    };
+    check();
+  });
+}
+
 async function renderCurrentPage() {
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
@@ -1069,6 +1115,7 @@ async function renderCurrentPage() {
     meta.textContent = '';
     grid.innerHTML = '<div class="empty"><span class="empty-icon">✨</span>로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
     document.getElementById('moreWrap').style.display = 'none';
+    renderedSig = '';
     return;
   }
   if (myFolderIds.length === 0) {
@@ -1077,6 +1124,7 @@ async function renderCurrentPage() {
       ? '<div class="empty"><span class="empty-icon">📭</span>이 폴더는 비어있어요.</div>'
       : '<div class="empty"><span class="empty-icon">📂</span>내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
     document.getElementById('moreWrap').style.display = 'none';
+    renderedSig = '';
     return;
   }
 
@@ -1100,11 +1148,16 @@ async function renderCurrentPage() {
   if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
   meta.textContent = parts.join('  ·  ');
 
-  if (!data.length) { grid.innerHTML = '<div class="empty"><span class="empty-icon">🔎</span>결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; return; }
-  grid.innerHTML = cardsHtml(data);
-  hintShopOrigins(data);
-  armImageTimeouts(grid);
+  if (!data.length) { grid.innerHTML = '<div class="empty"><span class="empty-icon">🔎</span>결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
+  const sig = sigOf(data);
+  if (sig !== renderedSig) { // 캐시로 먼저 그린 화면과 내용이 같으면 DOM을 그대로 둔다(사진 재요청·깜빡임·스크롤 튐 방지)
+    grid.innerHTML = cardsHtml(data);
+    hintShopOrigins(data);
+    armImageTimeouts(grid);
+    renderedSig = sig;
+  }
   updatePager();
+  saveHomeCache(p.toString(), data, lastTotal, meta.textContent);
   saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
@@ -1328,6 +1381,7 @@ for (const id of ['size', 'brand', 'sort', 'inStock']) document.getElementById(i
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
 (async () => {
+  let earlyDone = false;
   let initial = new URLSearchParams(location.search);
   // 다른 앱(유튜브 등)을 쓰다 오면 OS가 이 앱을 메모리에서 내렸다가 다시 띄우는데, 홈 화면 앱은 마지막 주소가 아니라
   // 항상 처음 주소(?없음)로 열려서 3페이지에서 보던 게 1페이지로 돌아가 있었다. 주소에 아무 조건도 없으면
@@ -1360,10 +1414,32 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
 
   // 서로 독립적인 초기 요청들(사전 로드, 브랜드 목록, 로그인 세션)을 동시에 보내서
   // 줄줄이 기다리며 부팅마다 1~2초씩 걸리던 걸 줄임.
+  const taxonomyP = window.StyleFinderTaxonomy.loadTaxonomy();
+  const brandsP = loadAllBrands(); // brands는 누구나 읽기 가능 — 로그인 전에도 공유 폴더 열람/검색 매칭에 필요
+  const sessionP = sb.auth.getSession();
+  await taxonomyP; // 태그 이름(카테고리 라벨)이 필요하니 가벼운 taxonomy.json만 먼저 기다림
+
+  // 직전에 본 첫 화면이 저장돼 있고 같은 조건이면 서버 응답을 기다리지 않고 바로 그린다.
+  let paintedFromCache = false;
+  {
+    const hc = readHomeCache();
+    if (hc && !initial.get('share') && hc.uid && hc.uid === storedUserId() && hc.search === initial.toString() && hc.data.length) {
+      document.getElementById('grid').innerHTML = cardsHtml(hc.data);
+      hintShopOrigins(hc.data);
+      armImageTimeouts(document.getElementById('grid'));
+      renderedSig = sigOf(hc.data);
+      lastTotal = hc.count || 0;
+      document.getElementById('meta').textContent = hc.meta || '';
+      updatePager();
+      restoreScrollIfMatching(savedAtBoot);
+      paintedFromCache = true;
+      whenFirstScreenImagesReady().then(markHomeReady);
+    }
+  }
   const [, , sessionResult] = await Promise.all([
-    window.StyleFinderTaxonomy.loadTaxonomy().then(() => { renderChips(); return loadFacetSelectors(); }),
-    loadAllBrands(), // brands는 누구나 읽기 가능 — 로그인 전에도 공유 폴더 열람/검색 매칭에 필요
-    sb.auth.getSession(),
+    Promise.resolve().then(() => { renderChips(); return loadFacetSelectors(); }),
+    brandsP,
+    sessionP,
   ]);
   currentUser = sessionResult.data.session?.user || null;
   if (lastAuthUserId === undefined) lastAuthUserId = currentUser?.id || null;
@@ -1373,8 +1449,27 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (shareParam) {
     await loadSharedFolder(shareParam);
   } else if (currentUser) {
+    // 폴더/브랜드 목록 조회(왕복 2번)를 기다리지 않고, 저장해둔 폴더 정보로 상품 조회를 먼저 시작한다.
+    let early = null;
+    let cachedIds = null;
+    try { const c = JSON.parse(localStorage.getItem('sf_ids') || 'null'); if (c && c.uid === currentUser.id && Array.isArray(c.ids) && c.ids.length) cachedIds = c; } catch {}
+    if (cachedIds) {
+      myFolderIds = cachedIds.ids;
+      currentFolderId = cachedIds.folderId;
+      if (initialBrand) { // 브랜드 목록이 아직 없어 select에 옵션이 없으면 값이 안 들어가므로 임시 옵션을 넣어둠(나중에 renderBrandFilter가 다시 채움)
+        const bsel = document.getElementById('brand');
+        bsel.insertAdjacentHTML('beforeend', '<option value="' + initialBrand.replace(/"/g, '&quot;') + '">' + initialBrand.replace(/</g, '&lt;') + '</option>');
+        bsel.value = initialBrand;
+      }
+      early = renderCurrentPage();
+    }
     await loadMyFolders();
     renderBrandFilter(); // loadAllBrands() 시점엔 아직 myFolderIds가 비어있어서 옵션이 없었으므로 다시 채움
+    if (early) {
+      await early;
+      if (cachedIds.ids.join(',') !== myFolderIds.join(',')) await renderCurrentPage(); // 폴더 구성이 바뀌었으면 다시
+      earlyDone = true;
+    }
   }
   // 위 두 분기 모두 renderBrandFilter()를 거친 뒤라 이제 #brand에 실제 <option>들이 채워져
   // 있으므로, 맨 위에서 실패했던 URL의 brand 값을 여기서 다시 적용해야 제대로 선택된다.
@@ -1388,8 +1483,10 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   // currentPage는 위에서 URL의 p로 이미 정해놨으니 go()(항상 1페이지로 리셋)가 아니라
   // renderCurrentPage()로 바로 그 페이지를 그린다. 스크롤 위치는 pageshow(bfcache 복원)에서
   // 따로 처리하지만, 이건 일반 로드(새로고침 등)에도 적용되게 여기서도 한 번 시도한다.
-  await renderCurrentPage();
+  if (!earlyDone) await renderCurrentPage();
   restoreScrollIfMatching(savedAtBoot);
   bootComplete = true;
-  if (window.hideIntro) window.hideIntro(); // 시작 인트로(index.html) 걷어내기 — 첫 화면이 그려진 뒤
+  // 시작 인트로(index.html)는 첫 화면 사진이 준비된 뒤에 걷는다(이미 캐시로 그렸다면 위에서 예약돼 있음)
+  if (!paintedFromCache) await whenFirstScreenImagesReady();
+  markHomeReady();
 })();
