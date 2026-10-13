@@ -2,84 +2,1979 @@
   "version": 4,
   "note": "검색 카테고리 사전(무신사식 2단계). groups = 상위 카테고리(TOP/OUTER/BOTTOM...), categories = 하위(대표) 카테고리. 분류(classify)는 \"상품명의 마지막 명사가 본체\" 방식 — 규칙은 src/lib/taxonomy.js 상단 주석 참고. parent = 같은 종류(type)의 세부 분류(예: 데님→바지, 트러커→재킷): 세부 키워드가 상품명 어디에 있든 본체와 같은 종류면 세부로 분류(배열 순서가 우선순위, 마지막이 기본값). modifier = 단독으로는 본체가 못 되는 소재/핏 단어. weakKeywords = 다른 키워드가 없을 때만 쓰는 약한 키워드. queryAliases = 검색창 입력 해석용(그룹명/종류명으로 하위 전부 검색). 영문은 복수형 s/es 자동 허용.",
   "groups": [
-    {"id":"top","label":"TOP","aliases":["top","상의"],"children":["hoodie","sweatshirt","tshirt","longsleeve_tee","polo","shirt","knit","sleeveless_top"]},
-    {"id":"outer","label":"OUTER","aliases":["outer","outerwear","아우터"],"children":["hoodie_zipup","cardigan","jacket","blouson","leather_jacket","trucker","windbreaker","blazer","field_jacket","track_jacket","fur","fleece","coat","trench","padding","long_padding","vest","padding_vest"]},
-    {"id":"bottom","label":"BOTTOM","aliases":["bottom","바지","하의"],"children":["denim","jogger","slacks","cargo","nylon","cotton","pants","shorts","leggings","jumpsuit"]},
-    {"id":"dress_skirt","label":"DRESS/SKIRT","aliases":["dress/skirt","원피스/스커트"],"children":["onepiece","mini_dress","midi_dress","skirt","mini_skirt","midi_skirt"]},
-    {"id":"shoes","label":"SHOES","aliases":["shoes","신발"],"children":["sneakers","dress_shoes","boots","sandals","shoes"]},
-    {"id":"bag","label":"BAG","aliases":["bag","가방"],"children":["backpack","crossbody","shoulder_bag","tote","waist_bag","pouch","bag"]},
-    {"id":"cap","label":"CAP","aliases":["cap","모자"],"children":["cap","beanie","bucket_hat","beret_hunting","hat"]},
-    {"id":"acc","label":"ACC","aliases":["acc","패션소품","액세서리","소품"],"children":["socks","muffler","glove","belt","jewelry","eyewear","wallet","acc"]},
-    {"id":"etc","label":"ETC","aliases":["etc","기타"],"children":["etc"]}
+    {
+      "id": "top",
+      "label": "TOP",
+      "aliases": [
+        "top",
+        "상의"
+      ],
+      "children": [
+        "hoodie",
+        "sweatshirt",
+        "tshirt",
+        "longsleeve_tee",
+        "polo",
+        "shirt",
+        "knit",
+        "sleeveless_top"
+      ]
+    },
+    {
+      "id": "outer",
+      "label": "OUTER",
+      "aliases": [
+        "outer",
+        "outerwear",
+        "아우터"
+      ],
+      "children": [
+        "hoodie_zipup",
+        "cardigan",
+        "jacket",
+        "blouson",
+        "leather_jacket",
+        "trucker",
+        "windbreaker",
+        "blazer",
+        "field_jacket",
+        "track_jacket",
+        "fur",
+        "fleece",
+        "coat",
+        "trench",
+        "padding",
+        "long_padding",
+        "vest",
+        "padding_vest"
+      ]
+    },
+    {
+      "id": "bottom",
+      "label": "BOTTOM",
+      "aliases": [
+        "bottom",
+        "바지",
+        "하의"
+      ],
+      "children": [
+        "denim",
+        "jogger",
+        "slacks",
+        "cargo",
+        "nylon",
+        "cotton",
+        "pants",
+        "shorts",
+        "leggings",
+        "jumpsuit"
+      ]
+    },
+    {
+      "id": "dress_skirt",
+      "label": "DRESS/SKIRT",
+      "aliases": [
+        "dress/skirt",
+        "원피스/스커트"
+      ],
+      "children": [
+        "onepiece",
+        "mini_dress",
+        "midi_dress",
+        "skirt",
+        "mini_skirt",
+        "midi_skirt"
+      ]
+    },
+    {
+      "id": "shoes",
+      "label": "SHOES",
+      "aliases": [
+        "shoes",
+        "신발"
+      ],
+      "children": [
+        "sneakers",
+        "dress_shoes",
+        "boots",
+        "sandals",
+        "shoes"
+      ]
+    },
+    {
+      "id": "bag",
+      "label": "BAG",
+      "aliases": [
+        "bag",
+        "가방"
+      ],
+      "children": [
+        "backpack",
+        "crossbody",
+        "shoulder_bag",
+        "tote",
+        "waist_bag",
+        "pouch",
+        "bag"
+      ]
+    },
+    {
+      "id": "cap",
+      "label": "CAP",
+      "aliases": [
+        "cap",
+        "모자"
+      ],
+      "children": [
+        "cap",
+        "beanie",
+        "bucket_hat",
+        "beret_hunting",
+        "hat"
+      ]
+    },
+    {
+      "id": "acc",
+      "label": "ACC",
+      "aliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ],
+      "children": [
+        "socks",
+        "muffler",
+        "glove",
+        "belt",
+        "jewelry",
+        "eyewear",
+        "wallet",
+        "acc"
+      ]
+    },
+    {
+      "id": "etc",
+      "label": "ETC",
+      "aliases": [
+        "etc",
+        "기타"
+      ],
+      "children": [
+        "swimwear",
+        "etc"
+      ]
+    }
   ],
   "categories": [
-    { "id": "hoodie", "label": "후드 티셔츠", "keywords": ["후드티","후디","후드 티","hoodie","hoody","hooded sweat","hoodie sweat","pullover hood","pullover hoodie"], "exclude": ["집업","zip hood","zip hoodie","zip hooded","zip hoody","zip-up hood","zip-up hoodie","zip-up hooded","zip-up hoody","zip up hood","zip up hoodie","zip up hooded","zip up hoody","zipup hood","zipup hoodie","zipup hooded","zipup hoody","hood zip","hoodie zip","hooded zip","hoody zip","hood zip-up","hoodie zip-up","hooded zip-up","hoody zip-up","hood zip up","hoodie zip up","hooded zip up","hoody zip up","hood zipup","hoodie zipup","hooded zipup","hoody zipup"], "queryAliases": ["top","상의","후드"] },
-    { "id": "sweatshirt", "label": "맨투맨/스웨트셔츠", "keywords": ["맨투맨","스웨트셔츠","스웨트 셔츠","sweatshirt","sweat shirt","crewneck","crew neck","크루넥"], "queryAliases": ["top","상의","트레이닝복","츄리닝"], "weakKeywords": ["스웨트","sweat","crew","크루"] },
-    { "id": "tshirt", "label": "반소매 티셔츠", "keywords": ["티셔츠","티 셔츠","t-shirt","t shirt","tshirt","tee","반팔","반팔티","half tee","ss tee"], "exclude": ["긴팔","긴팔티","롱슬리브","롱 슬리브","long sleeve","longsleeve","long-sleeve","ls tee","l/s tee","l/s"], "queryAliases": ["top","상의","티셔츠","반팔"], "weakKeywords": ["t","top","탑"] },
-    { "id": "longsleeve_tee", "label": "긴소매 티셔츠", "keywords": ["긴팔티","긴팔 티셔츠","긴팔티셔츠","긴팔","롱슬리브","롱 슬리브","long sleeve","longsleeve","long-sleeve","ls tee","l/s tee","l/s"], "exclude": ["반팔","half tee","ss tee"], "queryAliases": ["top","상의","티셔츠","긴팔","롱슬리브"] },
-    { "id": "polo", "label": "피케/카라 티셔츠", "keywords": ["폴로 셔츠","폴로셔츠","폴로티","폴로 티","polo shirt","polo tee","polo t-shirt","피케","pique","카라티","카라 티"], "weakKeywords": ["polo","폴로"], "queryAliases": ["top","상의","티셔츠","폴로"] },
-    { "id": "shirt", "label": "셔츠/블라우스", "keywords": ["셔츠","남방","shirt","우븐 셔츠","oxford shirt","overshirt","over shirt","blouse","블라우스"], "exclude": ["티셔츠","t-shirt","t shirt","tshirt","tee","sweatshirt","sweat shirt","스웨트","맨투맨"], "queryAliases": ["top","상의"] },
-    { "id": "knit", "label": "니트/스웨터", "keywords": ["니트","스웨터","knit","sweater","니트웨어"], "exclude": ["hood","hoodie","hooded","hoody","knit cap","knit beanie","knit hat","knit bag","knit backpack","knit tote","knit pouch","니트 비니","니트비니","니트 모자","니트모자","니트 캡","니트캡","니트백","니트 백","니트 가방","니트가방","니트 배낭","니트배낭"], "queryAliases": ["top","상의"], "weakKeywords": ["pullover"] },
-    { "id": "sleeveless_top", "label": "슬리브리스", "keywords": ["나시","민소매","sleeveless","camisole","cami","bralette","^tank","tank top","탱크탑","^tank","tank top","탱크탑","^tank","tank top","탱크탑","^tank","tank top","탱크탑"], "queryAliases": ["top","상의"] },
-    { "id": "hoodie_zipup", "label": "후드 집업", "keywords": ["후드집업","후드 집업","집업 후디","zip hood","zip hoodie","zip hooded","zip hoody","zip-up hood","zip-up hoodie","zip-up hooded","zip-up hoody","zip up hood","zip up hoodie","zip up hooded","zip up hoody","zipup hood","zipup hoodie","zipup hooded","zipup hoody","hood zip","hoodie zip","hooded zip","hoody zip","hood zip-up","hoodie zip-up","hooded zip-up","hoody zip-up","hood zip up","hoodie zip up","hooded zip up","hoody zip up","hood zipup","hoodie zipup","hooded zipup","hoody zipup"], "queryAliases": ["outer","outerwear","아우터","집업"] },
-    { "id": "cardigan", "label": "카디건", "keywords": ["가디건","cardigan","니트가디건","볼레로","bolero"], "weakKeywords": ["shrug","슈러그"], "queryAliases": ["outer","outerwear","아우터"] },
-    { "id": "blouson", "label": "블루종/MA-1", "keywords": ["블루종","blouson","bomber","ma-1","ma1","봄버","플라이트 재킷","flight jacket"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","재킷","자켓"] },
-    { "id": "leather_jacket", "label": "레더/라이더 재킷", "keywords": ["가죽 재킷","가죽재킷","가죽 자켓","가죽자켓","레더 재킷","레더 자켓","레더재킷","레더자켓","leather jacket","biker","rider","라이더","바이커"], "parent": "jacket", "modifierKeywords": ["leather","레더","가죽"], "queryAliases": ["outer","outerwear","아우터","가죽재킷","레더재킷","가죽자켓","재킷","자켓"] },
-    { "id": "trucker", "label": "트러커/데님 재킷", "keywords": ["트러커","trucker jacket","trucker","데님 재킷","데님 자켓","데님재킷","데님자켓","denim jacket","jean jacket","청자켓","청 자켓"], "parent": "jacket", "exclude": ["trucker cap","trucker hat","트러커 캡","트러커캡","트러커 모자","트러커모자"], "queryAliases": ["outer","outerwear","아우터","재킷","자켓"] },
-    { "id": "windbreaker", "label": "나일론/아노락/바람막이", "keywords": ["바람막이","windbreaker","아노락","anorak","coach jacket","코치 재킷","코치 자켓","nylon jacket","나일론 재킷","나일론 자켓","wind jacket"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","재킷","자켓"] },
-    { "id": "blazer", "label": "블레이저", "keywords": ["블레이저","blazer","suit jacket","수트 재킷","수트 자켓","테일러드 재킷","tailored jacket"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","재킷","자켓"] },
-    { "id": "field_jacket", "label": "사파리/헌팅/야상", "keywords": ["사파리","safari jacket","hunting jacket","hunting","헌팅","야상","field jacket","필드 재킷","필드 자켓","m-65","m65","military jacket","work jacket","워크 재킷","워크 자켓","chore jacket"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","야상","재킷","자켓"] },
-    { "id": "track_jacket", "label": "트레이닝/스타디움 재킷", "keywords": ["track jacket","트랙 재킷","트랙 자켓","트레이닝 재킷","트레이닝 자켓","training jacket","varsity","바시티","stadium","스타디움","jersey jacket","져지"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","재킷","자켓"] },
-    { "id": "fur", "label": "무스탕/퍼", "keywords": ["무스탕","mustang","shearling","시어링","mouton","무통","fur jacket","퍼 재킷","퍼 자켓","퍼자켓","퍼재킷","faux fur"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","무스탕","재킷","자켓"] },
-    { "id": "fleece", "label": "플리스/뽀글이", "keywords": ["fleece","플리스","후리스","뽀글이","boa jacket","보아 재킷"], "parent": "jacket", "queryAliases": ["outer","outerwear","아우터","재킷","자켓"] },
-    { "id": "jacket", "label": "기타 재킷", "keywords": ["재킷","자켓","jacket","parka","파카","점퍼"], "weakKeywords": ["jumper","zip up","zipup","zip-up","집업","half zip","하프 집업","하프집업","soft shell","softshell"], "exclude": ["trucker cap","트러커 캡","트러커캡","트러커 모자","트러커모자"], "queryAliases": ["outer","outerwear","아우터","점퍼","재킷","자켓"] },
-    { "id": "trench", "label": "트렌치 코트", "keywords": ["트렌치","trench","트렌치코트"], "parent": "coat", "queryAliases": ["outer","outerwear","아우터","코트"] },
-    { "id": "coat", "label": "기타 코트", "keywords": ["코트","coat","overcoat","raincoat","peacoat","발마칸","balmacaan","체스터","chesterfield","더플","duffle","carcoat","car coat","duster"], "exclude": ["duffle bag","더플백","더플 백"], "queryAliases": ["outer","outerwear","아우터","우비","롱코트","숏코트","코트"] },
-    { "id": "long_padding", "label": "롱패딩", "keywords": ["롱패딩","롱 패딩","long padding","long puffer","long down","롱 다운","롱다운","롱푸퍼","long padding coat","long puffer coat","롱패딩 코트","롱 패딩 코트"], "parent": "padding", "queryAliases": ["outer","outerwear","아우터","롱패딩","패딩"] },
-    { "id": "padding", "label": "패딩/다운", "keywords": ["패딩","다운재킷","다운 재킷","down jacket","puffer","푸퍼","구스다운","덕다운","패딩 점퍼","puffer jacket","padded jacket","padding jacket","puffer coat","padding coat","패딩 재킷","패딩 자켓","패딩 코트","푸퍼 재킷","푸퍼 자켓","goose down","duck down","puffer jacket","padded jacket","padding jacket","puffer coat","padding coat","패딩 재킷","패딩 자켓","패딩 코트","푸퍼 재킷","푸퍼 자켓","goose down","duck down","puffer jacket","padded jacket","padding jacket","puffer coat","padding coat","패딩 재킷","패딩 자켓","패딩 코트","푸퍼 재킷","푸퍼 자켓","goose down","duck down"], "queryAliases": ["outer","outerwear","아우터","점퍼","숏패딩","패딩"] },
-    { "id": "padding_vest", "label": "패딩 베스트", "keywords": ["패딩 베스트","패딩베스트","패딩 조끼","puffer vest","down vest","padding vest","푸퍼 베스트","푸퍼베스트","padded vest","다운 베스트"], "parent": "vest", "queryAliases": ["outer","outerwear","아우터","베스트","조끼"] },
-    { "id": "vest", "label": "베스트", "keywords": ["베스트","조끼","vest","gilet"], "queryAliases": ["outer","outerwear","아우터","베스트","조끼"] },
-    { "id": "denim", "label": "데님 팬츠", "keywords": ["데님","denim","jean","청바지"], "exclude": ["denim cap","denim beanie","denim hat","denim bag","denim tote","denim backpack","denim wallet","denim pouch","데님 캡","데님캡","데님 모자","데님모자","데님 가방","데님가방","데님 백","데님백","데님 지갑","데님지갑"], "queryAliases": ["bottom","바지","하의","팬츠"], "parent": "pants" },
-    { "id": "jogger", "label": "트레이닝/조거 팬츠", "keywords": ["조거","조거팬츠","jogger","스웻팬츠","스웨트팬츠","sweatpant","트랙팬츠","track pant","이지 팬츠","파자마","pajama pant"], "queryAliases": ["bottom","바지","하의","트레이닝복","츄리닝","팬츠"], "parent": "pants" },
-    { "id": "slacks", "label": "슈트 팬츠/슬랙스", "keywords": ["슬랙스","slack","trouser","수트팬츠","suit pant","트라우저"], "queryAliases": ["bottom","바지","하의","팬츠"], "parent": "pants" },
-    { "id": "cargo", "label": "카고 팬츠", "keywords": ["카고","cargo"], "queryAliases": ["bottom","바지","하의","팬츠"], "parent": "pants", "modifier": true },
-    { "id": "nylon", "label": "나일론 팬츠", "keywords": ["나일론","nylon","립스탑","ripstop","파라슈트","parachute"], "queryAliases": ["bottom","바지","하의","팬츠"], "parent": "pants", "modifier": true },
-    { "id": "cotton", "label": "코튼 팬츠", "keywords": ["코튼","cotton","치노","chino","트윌","twill"], "queryAliases": ["bottom","바지","하의","팬츠"], "parent": "pants", "modifier": true },
-    { "id": "pants", "label": "기타 바지", "keywords": ["팬츠","바지","pant","bootcut","bootscut","boots cut"], "exclude": ["cargo bag","cargo boot","cargo messenger bag","eco bag","카고백","카고 백","카고 부츠","카고부츠","카고 메신저백","카고메신저백","에코백","에코 백"], "queryAliases": ["bottom","바지","하의","팬츠"] },
-    { "id": "shorts", "label": "숏 팬츠", "keywords": ["쇼츠","반바지","숏 팬츠","숏팬츠","shorts","short pant","하프 팬츠","버뮤다","bermuda"], "queryAliases": ["bottom","바지","하의"] },
-    { "id": "leggings", "label": "레깅스", "keywords": ["레깅스","leggings","타이츠","tights"], "queryAliases": ["bottom","바지","하의"] },
-    { "id": "jumpsuit", "label": "점프슈트/오버올", "keywords": ["점프슈트","점프 슈트","jumpsuit","jump suit","오버올","overall","dungaree","던가리","coverall"], "queryAliases": ["bottom","바지","하의"] },
-    { "id": "mini_dress", "label": "미니 원피스", "keywords": ["미니 원피스","미니원피스","mini dress","mini one piece","mini onepiece"], "parent": "onepiece", "queryAliases": ["dress/skirt","원피스/스커트","원피스"] },
-    { "id": "midi_dress", "label": "미디/맥시 원피스", "keywords": ["미디 원피스","미디원피스","맥시 원피스","맥시원피스","롱 원피스","롱원피스","midi dress","maxi dress","long dress","midi one piece","maxi one piece"], "parent": "onepiece", "queryAliases": ["dress/skirt","원피스/스커트","원피스"] },
-    { "id": "onepiece", "label": "기타 원피스", "keywords": ["원피스","드레스","onepiece","one piece","dress"], "queryAliases": ["dress/skirt","원피스/스커트","원피스"] },
-    { "id": "mini_skirt", "label": "미니 스커트", "keywords": ["미니 스커트","미니스커트","mini skirt","skort","스코트"], "parent": "skirt", "queryAliases": ["dress/skirt","원피스/스커트","스커트"] },
-    { "id": "midi_skirt", "label": "미디/롱 스커트", "keywords": ["미디 스커트","미디스커트","롱 스커트","롱스커트","맥시 스커트","midi skirt","maxi skirt","long skirt"], "parent": "skirt", "queryAliases": ["dress/skirt","원피스/스커트","스커트"] },
-    { "id": "skirt", "label": "기타 스커트", "keywords": ["스커트","치마","skirt"], "queryAliases": ["dress/skirt","원피스/스커트","스커트"] },
-    { "id": "sneakers", "label": "스니커즈", "keywords": ["스니커","sneaker","trainers","trainer","운동화","러닝화","running shoe","슬립온","slip-on","slip on"], "parent": "shoes", "queryAliases": ["shoes","신발"] },
-    { "id": "dress_shoes", "label": "구두/로퍼", "keywords": ["구두","로퍼","loafer","derby","oxford shoe","옥스포드","메리제인","mary jane","더비","flat shoes","플랫슈즈","플랫 슈즈","pumps","펌프스","heels"], "parent": "shoes", "exclude": ["derby hat","더비 햇","더비햇","더비 모자","더비모자"], "queryAliases": ["shoes","신발"] },
-    { "id": "boots", "label": "부츠", "keywords": ["boot","부츠"], "parent": "shoes", "exclude": ["boot cut","boots cut","bootcut","bootscut","부츠컷","부츠 컷"], "queryAliases": ["shoes","신발"] },
-    { "id": "sandals", "label": "샌들/슬리퍼", "keywords": ["샌들","sandal","슬리퍼","slipper","mule","뮬","clog","쪼리","flip flop","flip-flop","slides","슬라이드"], "parent": "shoes", "queryAliases": ["shoes","신발"] },
-    { "id": "shoes", "label": "기타 신발", "keywords": ["신발","슈즈","^shoe","트레킹","trekking","monk strap","몽크"], "queryAliases": ["shoes","신발"] },
-    { "id": "backpack", "label": "백팩", "keywords": ["backpack","백팩","배낭","rucksack","럭색"], "parent": "bag", "queryAliases": ["bag","가방"] },
-    { "id": "crossbody", "label": "크로스백", "keywords": ["crossbody","cross body","cross bag","크로스백","크로스바디","크로스 백","messenger","메신저","sacoche","새코슈","사코슈"], "parent": "bag", "queryAliases": ["bag","가방"] },
-    { "id": "shoulder_bag", "label": "숄더백", "keywords": ["shoulder bag","숄더백","숄더 백","hobo","호보","baguette","바게트"], "parent": "bag", "queryAliases": ["bag","가방"] },
-    { "id": "tote", "label": "토트/에코백", "keywords": ["tote","토트","eco bag","에코백","에코 백","shopper","쇼퍼","canvas bag","캔버스백"], "parent": "bag", "queryAliases": ["bag","가방"] },
-    { "id": "waist_bag", "label": "웨이스트백", "keywords": ["waist bag","waist pouch","웨이스트","belt bag","벨트백","벨트 백","sling bag","슬링","fanny","힙색","hip bag"], "parent": "bag", "queryAliases": ["bag","가방"] },
-    { "id": "pouch", "label": "파우치/클러치", "keywords": ["pouch","파우치","포치","clutch","클러치"], "parent": "bag", "queryAliases": ["bag","가방"] },
-    { "id": "bag", "label": "기타 가방", "keywords": ["가방","bag","boston","보스턴","더플백","duffle bag","duffel"], "exclude": ["pouch pants","파우치 팬츠"], "queryAliases": ["bag","가방"] },
-    { "id": "beanie", "label": "비니", "keywords": ["beanie","비니","knit hat","니트 모자","bonnet","본넷","skullcap","스컬캡","ear flap","이어플랩","balaclava","발라클라바"], "parent": "cap", "queryAliases": ["cap","모자"] },
-    { "id": "bucket_hat", "label": "버킷햇/사파리햇", "keywords": ["bucket hat","버킷햇","버킷 햇","safari hat","사파리 햇","boonie","부니"], "parent": "cap", "queryAliases": ["cap","모자"] },
-    { "id": "beret_hunting", "label": "헌팅캡/베레모", "keywords": ["beret","베레","hunting cap","헌팅캡","헌팅 캡","newsboy","뉴스보이","flat cap","baker boy","베이커보이"], "parent": "cap", "queryAliases": ["cap","모자"] },
-    { "id": "hat", "label": "햇", "keywords": ["hat","모자","fedora","페도라","bowler","볼러","panama","파나마","visor","바이저","선캡","trapper","트래퍼"], "parent": "cap", "exclude": ["cap sleeve"], "queryAliases": ["cap","모자"] },
-    { "id": "cap", "label": "캡/야구모자", "keywords": ["cap","볼캡","캡","6패널","5패널","snapback","스냅백","trucker hat"], "exclude": ["cap sleeve","캡 슬리브","캡슬리브"], "queryAliases": ["cap","모자"] },
-    { "id": "socks", "label": "양말/레그웨어", "keywords": ["sock","양말","stocking","스타킹","tights","타이츠","leg warmer","레그워머"], "parent": "acc", "exclude": ["socks boots"], "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "muffler", "label": "머플러/스카프", "keywords": ["muffler","머플러","scarf","스카프","shawl","숄","bandana","반다나","neck warmer","넥워머","gaiter","목도리","stole","스톨"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "glove", "label": "장갑", "keywords": ["glove","장갑","mitten","미튼"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "belt", "label": "벨트", "keywords": ["belt","벨트"], "parent": "acc", "exclude": ["belt bag","벨트백","벨트 백","belt skirt"], "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "jewelry", "label": "주얼리", "keywords": ["necklace","목걸이","bracelet","팔찌","^ring","반지","earring","귀걸이","brooch","브로치","pendant","펜던트","anklet","발찌","jewelry","주얼리"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "eyewear", "label": "선글라스/안경", "keywords": ["sunglasses","선글라스","glasses","안경","eyewear","아이웨어"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "wallet", "label": "지갑/카드지갑", "keywords": ["wallet","지갑","card holder","card case","카드지갑","카드 지갑","카드홀더","카드 홀더","coin purse","동전지갑"], "parent": "acc", "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "acc", "label": "기타 소품", "keywords": ["액세서리","accessory","keyring","keychain","키링","key ring","clip","클립","hair","헤어","pin badge","뱃지"], "queryAliases": ["acc","패션소품","액세서리","소품"] },
-    { "id": "etc", "label": "기타", "keywords": [], "queryAliases": ["etc","기타"] }
+    {
+      "id": "hoodie",
+      "label": "후드 티셔츠",
+      "keywords": [
+        "후드티",
+        "후디",
+        "후드 티",
+        "hoodie",
+        "hoody",
+        "hooded sweat",
+        "hoodie sweat",
+        "pullover hood",
+        "pullover hoodie"
+      ],
+      "exclude": [
+        "집업",
+        "zip hood",
+        "zip hoodie",
+        "zip hooded",
+        "zip hoody",
+        "zip-up hood",
+        "zip-up hoodie",
+        "zip-up hooded",
+        "zip-up hoody",
+        "zip up hood",
+        "zip up hoodie",
+        "zip up hooded",
+        "zip up hoody",
+        "zipup hood",
+        "zipup hoodie",
+        "zipup hooded",
+        "zipup hoody",
+        "hood zip",
+        "hoodie zip",
+        "hooded zip",
+        "hoody zip",
+        "hood zip-up",
+        "hoodie zip-up",
+        "hooded zip-up",
+        "hoody zip-up",
+        "hood zip up",
+        "hoodie zip up",
+        "hooded zip up",
+        "hoody zip up",
+        "hood zipup",
+        "hoodie zipup",
+        "hooded zipup",
+        "hoody zipup"
+      ],
+      "queryAliases": [
+        "top",
+        "상의",
+        "후드"
+      ]
+    },
+    {
+      "id": "sweatshirt",
+      "label": "맨투맨/스웨트셔츠",
+      "keywords": [
+        "맨투맨",
+        "스웨트셔츠",
+        "스웨트 셔츠",
+        "sweatshirt",
+        "sweat shirt",
+        "crewneck",
+        "crew neck",
+        "크루넥",
+        "half zip",
+        "half-zip"
+      ],
+      "queryAliases": [
+        "top",
+        "상의",
+        "트레이닝복",
+        "츄리닝"
+      ],
+      "weakKeywords": [
+        "스웨트",
+        "sweat",
+        "crew",
+        "크루"
+      ]
+    },
+    {
+      "id": "tshirt",
+      "label": "반소매 티셔츠",
+      "keywords": [
+        "티셔츠",
+        "티 셔츠",
+        "t-shirt",
+        "t shirt",
+        "tshirt",
+        "tee",
+        "반팔",
+        "반팔티",
+        "half tee",
+        "ss tee",
+        "half sleeve",
+        "half-sleeve",
+        "short sleeve",
+        "short-sleeve",
+        "shortsleeve",
+        "반소매",
+        "숏슬리브",
+        "숏 슬리브",
+        "쇼트 슬리브",
+        "하프 슬리브"
+      ],
+      "exclude": [
+        "긴팔",
+        "긴팔티",
+        "롱슬리브",
+        "롱 슬리브",
+        "long sleeve",
+        "longsleeve",
+        "long-sleeve",
+        "ls tee",
+        "l/s tee",
+        "l/s"
+      ],
+      "queryAliases": [
+        "top",
+        "상의",
+        "티셔츠",
+        "반팔"
+      ],
+      "weakKeywords": [
+        "t",
+        "top",
+        "탑",
+        "henley",
+        "jersey"
+      ]
+    },
+    {
+      "id": "longsleeve_tee",
+      "label": "긴소매 티셔츠",
+      "keywords": [
+        "긴팔티",
+        "긴팔 티셔츠",
+        "긴팔티셔츠",
+        "긴팔",
+        "롱슬리브",
+        "롱 슬리브",
+        "long sleeve",
+        "longsleeve",
+        "long-sleeve",
+        "ls tee",
+        "l/s tee",
+        "l/s",
+        "3/4 sleeve",
+        "three quarter",
+        "7부",
+        "7부 티"
+      ],
+      "exclude": [
+        "반팔",
+        "half tee",
+        "ss tee"
+      ],
+      "queryAliases": [
+        "top",
+        "상의",
+        "티셔츠",
+        "긴팔",
+        "롱슬리브"
+      ],
+      "weakKeywords": [
+        "sleeve"
+      ]
+    },
+    {
+      "id": "polo",
+      "label": "피케/카라 티셔츠",
+      "keywords": [
+        "폴로 셔츠",
+        "폴로셔츠",
+        "폴로티",
+        "폴로 티",
+        "polo shirt",
+        "polo tee",
+        "polo t-shirt",
+        "피케",
+        "pique",
+        "카라티",
+        "카라 티"
+      ],
+      "weakKeywords": [
+        "polo",
+        "폴로"
+      ],
+      "queryAliases": [
+        "top",
+        "상의",
+        "티셔츠",
+        "폴로"
+      ]
+    },
+    {
+      "id": "shirt",
+      "label": "셔츠/블라우스",
+      "keywords": [
+        "셔츠",
+        "남방",
+        "shirt",
+        "우븐 셔츠",
+        "oxford shirt",
+        "overshirt",
+        "over shirt",
+        "blouse",
+        "블라우스"
+      ],
+      "exclude": [
+        "티셔츠",
+        "t-shirt",
+        "t shirt",
+        "tshirt",
+        "tee",
+        "sweatshirt",
+        "sweat shirt",
+        "스웨트",
+        "맨투맨"
+      ],
+      "queryAliases": [
+        "top",
+        "상의"
+      ]
+    },
+    {
+      "id": "knit",
+      "label": "니트/스웨터",
+      "keywords": [
+        "니트",
+        "스웨터",
+        "knit",
+        "sweater",
+        "니트웨어",
+        "knitted",
+        "turtleneck",
+        "turtle neck",
+        "mockneck",
+        "mock neck"
+      ],
+      "exclude": [
+        "hood",
+        "hoodie",
+        "hooded",
+        "hoody",
+        "knit cap",
+        "knit beanie",
+        "knit hat",
+        "knit bag",
+        "knit backpack",
+        "knit tote",
+        "knit pouch",
+        "니트 비니",
+        "니트비니",
+        "니트 모자",
+        "니트모자",
+        "니트 캡",
+        "니트캡",
+        "니트백",
+        "니트 백",
+        "니트 가방",
+        "니트가방",
+        "니트 배낭",
+        "니트배낭"
+      ],
+      "queryAliases": [
+        "top",
+        "상의"
+      ],
+      "weakKeywords": [
+        "pullover",
+        "v-neck",
+        "v neck"
+      ]
+    },
+    {
+      "id": "sleeveless_top",
+      "label": "슬리브리스",
+      "keywords": [
+        "나시",
+        "민소매",
+        "sleeveless",
+        "camisole",
+        "cami",
+        "bralette",
+        "^tank",
+        "tank top",
+        "탱크탑",
+        "singlet",
+        "싱글렛",
+        "beater",
+        "beaters"
+      ],
+      "queryAliases": [
+        "top",
+        "상의"
+      ]
+    },
+    {
+      "id": "hoodie_zipup",
+      "label": "후드 집업",
+      "keywords": [
+        "후드집업",
+        "후드 집업",
+        "집업 후디",
+        "zip hood",
+        "zip hoodie",
+        "zip hooded",
+        "zip hoody",
+        "zip-up hood",
+        "zip-up hoodie",
+        "zip-up hooded",
+        "zip-up hoody",
+        "zip up hood",
+        "zip up hoodie",
+        "zip up hooded",
+        "zip up hoody",
+        "zipup hood",
+        "zipup hoodie",
+        "zipup hooded",
+        "zipup hoody",
+        "hood zip",
+        "hoodie zip",
+        "hooded zip",
+        "hoody zip",
+        "hood zip-up",
+        "hoodie zip-up",
+        "hooded zip-up",
+        "hoody zip-up",
+        "hood zip up",
+        "hoodie zip up",
+        "hooded zip up",
+        "hoody zip up",
+        "hood zipup",
+        "hoodie zipup",
+        "hooded zipup",
+        "hoody zipup"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "집업"
+      ]
+    },
+    {
+      "id": "cardigan",
+      "label": "카디건",
+      "keywords": [
+        "가디건",
+        "cardigan",
+        "니트가디건",
+        "볼레로",
+        "bolero"
+      ],
+      "weakKeywords": [
+        "shrug",
+        "슈러그"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터"
+      ]
+    },
+    {
+      "id": "blouson",
+      "label": "블루종/MA-1",
+      "keywords": [
+        "블루종",
+        "blouson",
+        "bomber",
+        "ma-1",
+        "ma1",
+        "봄버",
+        "플라이트 재킷",
+        "flight jacket"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "leather_jacket",
+      "label": "레더/라이더 재킷",
+      "keywords": [
+        "가죽 재킷",
+        "가죽재킷",
+        "가죽 자켓",
+        "가죽자켓",
+        "레더 재킷",
+        "레더 자켓",
+        "레더재킷",
+        "레더자켓",
+        "leather jacket",
+        "biker",
+        "rider",
+        "라이더",
+        "바이커"
+      ],
+      "parent": "jacket",
+      "modifierKeywords": [
+        "leather",
+        "레더",
+        "가죽"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "가죽재킷",
+        "레더재킷",
+        "가죽자켓",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "trucker",
+      "label": "트러커/데님 재킷",
+      "keywords": [
+        "트러커",
+        "trucker jacket",
+        "trucker",
+        "데님 재킷",
+        "데님 자켓",
+        "데님재킷",
+        "데님자켓",
+        "denim jacket",
+        "jean jacket",
+        "청자켓",
+        "청 자켓"
+      ],
+      "parent": "jacket",
+      "exclude": [
+        "trucker cap",
+        "trucker hat",
+        "트러커 캡",
+        "트러커캡",
+        "트러커 모자",
+        "트러커모자"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "windbreaker",
+      "label": "나일론/아노락/바람막이",
+      "keywords": [
+        "바람막이",
+        "windbreaker",
+        "아노락",
+        "anorak",
+        "coach jacket",
+        "코치 재킷",
+        "코치 자켓",
+        "nylon jacket",
+        "나일론 재킷",
+        "나일론 자켓",
+        "wind jacket"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "blazer",
+      "label": "블레이저",
+      "keywords": [
+        "블레이저",
+        "blazer",
+        "suit jacket",
+        "수트 재킷",
+        "수트 자켓",
+        "테일러드 재킷",
+        "tailored jacket"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "field_jacket",
+      "label": "사파리/헌팅/야상",
+      "keywords": [
+        "사파리",
+        "safari jacket",
+        "hunting jacket",
+        "hunting",
+        "헌팅",
+        "야상",
+        "field jacket",
+        "필드 재킷",
+        "필드 자켓",
+        "m-65",
+        "m65",
+        "military jacket",
+        "work jacket",
+        "워크 재킷",
+        "워크 자켓",
+        "chore jacket"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "야상",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "track_jacket",
+      "label": "트레이닝/스타디움 재킷",
+      "keywords": [
+        "track jacket",
+        "트랙 재킷",
+        "트랙 자켓",
+        "트레이닝 재킷",
+        "트레이닝 자켓",
+        "training jacket",
+        "varsity",
+        "바시티",
+        "stadium",
+        "스타디움",
+        "jersey jacket",
+        "져지"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "fur",
+      "label": "무스탕/퍼",
+      "keywords": [
+        "무스탕",
+        "mustang",
+        "shearling",
+        "시어링",
+        "mouton",
+        "무통",
+        "fur jacket",
+        "퍼 재킷",
+        "퍼 자켓",
+        "퍼자켓",
+        "퍼재킷",
+        "faux fur"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "무스탕",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "fleece",
+      "label": "플리스/뽀글이",
+      "keywords": [
+        "fleece",
+        "플리스",
+        "후리스",
+        "뽀글이",
+        "boa jacket",
+        "보아 재킷"
+      ],
+      "parent": "jacket",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "jacket",
+      "label": "기타 재킷",
+      "keywords": [
+        "재킷",
+        "자켓",
+        "jacket",
+        "parka",
+        "파카",
+        "점퍼",
+        "shacket",
+        "shirket",
+        "셔켓",
+        "셔츠 재킷",
+        "셔츠 자켓",
+        "셔츠자켓"
+      ],
+      "weakKeywords": [
+        "jumper",
+        "zip up",
+        "zipup",
+        "zip-up",
+        "집업",
+        "half zip",
+        "하프 집업",
+        "하프집업",
+        "soft shell",
+        "softshell"
+      ],
+      "exclude": [
+        "trucker cap",
+        "트러커 캡",
+        "트러커캡",
+        "트러커 모자",
+        "트러커모자"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "점퍼",
+        "재킷",
+        "자켓"
+      ]
+    },
+    {
+      "id": "trench",
+      "label": "트렌치 코트",
+      "keywords": [
+        "트렌치",
+        "trench",
+        "트렌치코트"
+      ],
+      "parent": "coat",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "코트"
+      ]
+    },
+    {
+      "id": "coat",
+      "label": "기타 코트",
+      "keywords": [
+        "코트",
+        "coat",
+        "overcoat",
+        "raincoat",
+        "peacoat",
+        "발마칸",
+        "balmacaan",
+        "체스터",
+        "chesterfield",
+        "더플",
+        "duffle",
+        "carcoat",
+        "car coat",
+        "duster"
+      ],
+      "exclude": [
+        "duffle bag",
+        "더플백",
+        "더플 백"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "우비",
+        "롱코트",
+        "숏코트",
+        "코트"
+      ]
+    },
+    {
+      "id": "long_padding",
+      "label": "롱패딩",
+      "keywords": [
+        "롱패딩",
+        "롱 패딩",
+        "long padding",
+        "long puffer",
+        "long down",
+        "롱 다운",
+        "롱다운",
+        "롱푸퍼",
+        "long padding coat",
+        "long puffer coat",
+        "롱패딩 코트",
+        "롱 패딩 코트"
+      ],
+      "parent": "padding",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "롱패딩",
+        "패딩"
+      ]
+    },
+    {
+      "id": "padding",
+      "label": "패딩/다운",
+      "keywords": [
+        "패딩",
+        "다운재킷",
+        "다운 재킷",
+        "down jacket",
+        "puffer",
+        "푸퍼",
+        "구스다운",
+        "덕다운",
+        "패딩 점퍼",
+        "puffer jacket",
+        "padded jacket",
+        "padding jacket",
+        "puffer coat",
+        "padding coat",
+        "패딩 재킷",
+        "패딩 자켓",
+        "패딩 코트",
+        "푸퍼 재킷",
+        "푸퍼 자켓",
+        "goose down",
+        "duck down",
+        "puffer jacket",
+        "padded jacket",
+        "padding jacket",
+        "puffer coat",
+        "padding coat",
+        "패딩 재킷",
+        "패딩 자켓",
+        "패딩 코트",
+        "푸퍼 재킷",
+        "푸퍼 자켓",
+        "goose down",
+        "duck down",
+        "puffer jacket",
+        "padded jacket",
+        "padding jacket",
+        "puffer coat",
+        "padding coat",
+        "패딩 재킷",
+        "패딩 자켓",
+        "패딩 코트",
+        "푸퍼 재킷",
+        "푸퍼 자켓",
+        "goose down",
+        "duck down"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "점퍼",
+        "숏패딩",
+        "패딩"
+      ]
+    },
+    {
+      "id": "padding_vest",
+      "label": "패딩 베스트",
+      "keywords": [
+        "패딩 베스트",
+        "패딩베스트",
+        "패딩 조끼",
+        "puffer vest",
+        "down vest",
+        "padding vest",
+        "푸퍼 베스트",
+        "푸퍼베스트",
+        "padded vest",
+        "다운 베스트"
+      ],
+      "parent": "vest",
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "베스트",
+        "조끼"
+      ]
+    },
+    {
+      "id": "vest",
+      "label": "베스트",
+      "keywords": [
+        "베스트",
+        "조끼",
+        "vest",
+        "gilet"
+      ],
+      "queryAliases": [
+        "outer",
+        "outerwear",
+        "아우터",
+        "베스트",
+        "조끼"
+      ]
+    },
+    {
+      "id": "denim",
+      "label": "데님 팬츠",
+      "keywords": [
+        "데님",
+        "denim",
+        "jean",
+        "청바지",
+        "selvedge",
+        "셀비지"
+      ],
+      "exclude": [
+        "denim cap",
+        "denim beanie",
+        "denim hat",
+        "denim bag",
+        "denim tote",
+        "denim backpack",
+        "denim wallet",
+        "denim pouch",
+        "데님 캡",
+        "데님캡",
+        "데님 모자",
+        "데님모자",
+        "데님 가방",
+        "데님가방",
+        "데님 백",
+        "데님백",
+        "데님 지갑",
+        "데님지갑"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "팬츠"
+      ],
+      "parent": "pants"
+    },
+    {
+      "id": "jogger",
+      "label": "트레이닝/조거 팬츠",
+      "keywords": [
+        "조거",
+        "조거팬츠",
+        "jogger",
+        "스웻팬츠",
+        "스웨트팬츠",
+        "sweatpant",
+        "트랙팬츠",
+        "track pant",
+        "이지 팬츠",
+        "파자마",
+        "pajama pant"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "트레이닝복",
+        "츄리닝",
+        "팬츠"
+      ],
+      "parent": "pants",
+      "weakKeywords": [
+        "pajama",
+        "pajamas",
+        "잠옷"
+      ]
+    },
+    {
+      "id": "slacks",
+      "label": "슈트 팬츠/슬랙스",
+      "keywords": [
+        "슬랙스",
+        "slack",
+        "trouser",
+        "수트팬츠",
+        "suit pant",
+        "트라우저"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "팬츠"
+      ],
+      "parent": "pants"
+    },
+    {
+      "id": "cargo",
+      "label": "카고 팬츠",
+      "keywords": [
+        "카고",
+        "cargo"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "팬츠"
+      ],
+      "parent": "pants",
+      "modifier": true
+    },
+    {
+      "id": "nylon",
+      "label": "나일론 팬츠",
+      "keywords": [
+        "나일론",
+        "nylon",
+        "립스탑",
+        "ripstop",
+        "파라슈트",
+        "parachute"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "팬츠"
+      ],
+      "parent": "pants",
+      "modifier": true
+    },
+    {
+      "id": "cotton",
+      "label": "코튼 팬츠",
+      "keywords": [
+        "코튼",
+        "cotton",
+        "치노",
+        "chino",
+        "트윌",
+        "twill"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "팬츠"
+      ],
+      "parent": "pants",
+      "modifier": true
+    },
+    {
+      "id": "pants",
+      "label": "기타 바지",
+      "keywords": [
+        "팬츠",
+        "바지",
+        "pant",
+        "bootcut",
+        "bootscut",
+        "boots cut"
+      ],
+      "exclude": [
+        "cargo bag",
+        "cargo boot",
+        "cargo messenger bag",
+        "eco bag",
+        "카고백",
+        "카고 백",
+        "카고 부츠",
+        "카고부츠",
+        "카고 메신저백",
+        "카고메신저백",
+        "에코백",
+        "에코 백"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의",
+        "팬츠"
+      ],
+      "weakKeywords": [
+        "chino",
+        "chinos",
+        "치노",
+        "jean",
+        "jeans",
+        "trousers"
+      ]
+    },
+    {
+      "id": "shorts",
+      "label": "숏 팬츠",
+      "keywords": [
+        "쇼츠",
+        "반바지",
+        "숏 팬츠",
+        "숏팬츠",
+        "shorts",
+        "short pant",
+        "하프 팬츠",
+        "버뮤다",
+        "bermuda"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의"
+      ],
+      "weakKeywords": [
+        "short"
+      ]
+    },
+    {
+      "id": "leggings",
+      "label": "레깅스",
+      "keywords": [
+        "레깅스",
+        "leggings",
+        "타이츠",
+        "tights"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의"
+      ]
+    },
+    {
+      "id": "jumpsuit",
+      "label": "점프슈트/오버올",
+      "keywords": [
+        "점프슈트",
+        "점프 슈트",
+        "jumpsuit",
+        "jump suit",
+        "오버올",
+        "overall",
+        "dungaree",
+        "던가리",
+        "coverall"
+      ],
+      "queryAliases": [
+        "bottom",
+        "바지",
+        "하의"
+      ]
+    },
+    {
+      "id": "mini_dress",
+      "label": "미니 원피스",
+      "keywords": [
+        "미니 원피스",
+        "미니원피스",
+        "mini dress",
+        "mini one piece",
+        "mini onepiece"
+      ],
+      "parent": "onepiece",
+      "queryAliases": [
+        "dress/skirt",
+        "원피스/스커트",
+        "원피스"
+      ]
+    },
+    {
+      "id": "midi_dress",
+      "label": "미디/맥시 원피스",
+      "keywords": [
+        "미디 원피스",
+        "미디원피스",
+        "맥시 원피스",
+        "맥시원피스",
+        "롱 원피스",
+        "롱원피스",
+        "midi dress",
+        "maxi dress",
+        "long dress",
+        "midi one piece",
+        "maxi one piece"
+      ],
+      "parent": "onepiece",
+      "queryAliases": [
+        "dress/skirt",
+        "원피스/스커트",
+        "원피스"
+      ]
+    },
+    {
+      "id": "onepiece",
+      "label": "기타 원피스",
+      "keywords": [
+        "원피스",
+        "드레스",
+        "onepiece",
+        "one piece",
+        "dress"
+      ],
+      "queryAliases": [
+        "dress/skirt",
+        "원피스/스커트",
+        "원피스"
+      ]
+    },
+    {
+      "id": "mini_skirt",
+      "label": "미니 스커트",
+      "keywords": [
+        "미니 스커트",
+        "미니스커트",
+        "mini skirt",
+        "skort",
+        "스코트"
+      ],
+      "parent": "skirt",
+      "queryAliases": [
+        "dress/skirt",
+        "원피스/스커트",
+        "스커트"
+      ]
+    },
+    {
+      "id": "midi_skirt",
+      "label": "미디/롱 스커트",
+      "keywords": [
+        "미디 스커트",
+        "미디스커트",
+        "롱 스커트",
+        "롱스커트",
+        "맥시 스커트",
+        "midi skirt",
+        "maxi skirt",
+        "long skirt"
+      ],
+      "parent": "skirt",
+      "queryAliases": [
+        "dress/skirt",
+        "원피스/스커트",
+        "스커트"
+      ]
+    },
+    {
+      "id": "skirt",
+      "label": "기타 스커트",
+      "keywords": [
+        "스커트",
+        "치마",
+        "skirt",
+        "sk",
+        "skort"
+      ],
+      "queryAliases": [
+        "dress/skirt",
+        "원피스/스커트",
+        "스커트"
+      ]
+    },
+    {
+      "id": "sneakers",
+      "label": "스니커즈",
+      "keywords": [
+        "스니커",
+        "sneaker",
+        "trainers",
+        "trainer",
+        "운동화",
+        "러닝화",
+        "running shoe",
+        "슬립온",
+        "slip-on",
+        "slip on"
+      ],
+      "parent": "shoes",
+      "queryAliases": [
+        "shoes",
+        "신발"
+      ]
+    },
+    {
+      "id": "dress_shoes",
+      "label": "구두/로퍼",
+      "keywords": [
+        "구두",
+        "로퍼",
+        "loafer",
+        "derby",
+        "oxford shoe",
+        "옥스포드",
+        "메리제인",
+        "mary jane",
+        "더비",
+        "flat shoes",
+        "플랫슈즈",
+        "플랫 슈즈",
+        "pumps",
+        "펌프스",
+        "heels",
+        "flats",
+        "ballet flat",
+        "발레 플랫",
+        "ballerina",
+        "발레리나"
+      ],
+      "parent": "shoes",
+      "exclude": [
+        "derby hat",
+        "더비 햇",
+        "더비햇",
+        "더비 모자",
+        "더비모자"
+      ],
+      "queryAliases": [
+        "shoes",
+        "신발"
+      ]
+    },
+    {
+      "id": "boots",
+      "label": "부츠",
+      "keywords": [
+        "boot",
+        "부츠"
+      ],
+      "parent": "shoes",
+      "exclude": [
+        "boot cut",
+        "boots cut",
+        "bootcut",
+        "bootscut",
+        "부츠컷",
+        "부츠 컷"
+      ],
+      "queryAliases": [
+        "shoes",
+        "신발"
+      ]
+    },
+    {
+      "id": "sandals",
+      "label": "샌들/슬리퍼",
+      "keywords": [
+        "샌들",
+        "sandal",
+        "슬리퍼",
+        "slipper",
+        "mule",
+        "뮬",
+        "clog",
+        "쪼리",
+        "flip flop",
+        "flip-flop",
+        "slides",
+        "슬라이드"
+      ],
+      "parent": "shoes",
+      "queryAliases": [
+        "shoes",
+        "신발"
+      ]
+    },
+    {
+      "id": "shoes",
+      "label": "기타 신발",
+      "keywords": [
+        "신발",
+        "슈즈",
+        "^shoe",
+        "트레킹",
+        "trekking",
+        "monk strap",
+        "몽크"
+      ],
+      "queryAliases": [
+        "shoes",
+        "신발"
+      ]
+    },
+    {
+      "id": "backpack",
+      "label": "백팩",
+      "keywords": [
+        "backpack",
+        "백팩",
+        "배낭",
+        "rucksack",
+        "럭색"
+      ],
+      "parent": "bag",
+      "queryAliases": [
+        "bag",
+        "가방"
+      ],
+      "weakKeywords": [
+        "pack"
+      ]
+    },
+    {
+      "id": "crossbody",
+      "label": "크로스백",
+      "keywords": [
+        "crossbody",
+        "cross body",
+        "cross bag",
+        "크로스백",
+        "크로스바디",
+        "크로스 백",
+        "messenger",
+        "메신저",
+        "sacoche",
+        "새코슈",
+        "사코슈"
+      ],
+      "parent": "bag",
+      "queryAliases": [
+        "bag",
+        "가방"
+      ]
+    },
+    {
+      "id": "shoulder_bag",
+      "label": "숄더백",
+      "keywords": [
+        "shoulder bag",
+        "숄더백",
+        "숄더 백",
+        "hobo",
+        "호보",
+        "baguette",
+        "바게트"
+      ],
+      "parent": "bag",
+      "queryAliases": [
+        "bag",
+        "가방"
+      ]
+    },
+    {
+      "id": "tote",
+      "label": "토트/에코백",
+      "keywords": [
+        "tote",
+        "토트",
+        "eco bag",
+        "에코백",
+        "에코 백",
+        "shopper",
+        "쇼퍼",
+        "canvas bag",
+        "캔버스백"
+      ],
+      "parent": "bag",
+      "queryAliases": [
+        "bag",
+        "가방"
+      ]
+    },
+    {
+      "id": "waist_bag",
+      "label": "웨이스트백",
+      "keywords": [
+        "waist bag",
+        "waist pouch",
+        "웨이스트",
+        "belt bag",
+        "벨트백",
+        "벨트 백",
+        "sling bag",
+        "슬링",
+        "fanny",
+        "힙색",
+        "hip bag"
+      ],
+      "parent": "bag",
+      "queryAliases": [
+        "bag",
+        "가방"
+      ]
+    },
+    {
+      "id": "pouch",
+      "label": "파우치/클러치",
+      "keywords": [
+        "pouch",
+        "파우치",
+        "포치",
+        "clutch",
+        "클러치"
+      ],
+      "parent": "bag",
+      "queryAliases": [
+        "bag",
+        "가방"
+      ]
+    },
+    {
+      "id": "bag",
+      "label": "기타 가방",
+      "keywords": [
+        "가방",
+        "bag",
+        "boston",
+        "보스턴",
+        "더플백",
+        "duffle bag",
+        "duffel"
+      ],
+      "exclude": [
+        "pouch pants",
+        "파우치 팬츠"
+      ],
+      "queryAliases": [
+        "bag",
+        "가방"
+      ]
+    },
+    {
+      "id": "beanie",
+      "label": "비니",
+      "keywords": [
+        "beanie",
+        "비니",
+        "knit hat",
+        "니트 모자",
+        "bonnet",
+        "본넷",
+        "skullcap",
+        "스컬캡",
+        "ear flap",
+        "이어플랩",
+        "balaclava",
+        "발라클라바"
+      ],
+      "parent": "cap",
+      "queryAliases": [
+        "cap",
+        "모자"
+      ]
+    },
+    {
+      "id": "bucket_hat",
+      "label": "버킷햇/사파리햇",
+      "keywords": [
+        "bucket hat",
+        "버킷햇",
+        "버킷 햇",
+        "safari hat",
+        "사파리 햇",
+        "boonie",
+        "부니"
+      ],
+      "parent": "cap",
+      "queryAliases": [
+        "cap",
+        "모자"
+      ]
+    },
+    {
+      "id": "beret_hunting",
+      "label": "헌팅캡/베레모",
+      "keywords": [
+        "beret",
+        "베레",
+        "hunting cap",
+        "헌팅캡",
+        "헌팅 캡",
+        "newsboy",
+        "뉴스보이",
+        "flat cap",
+        "baker boy",
+        "베이커보이"
+      ],
+      "parent": "cap",
+      "queryAliases": [
+        "cap",
+        "모자"
+      ]
+    },
+    {
+      "id": "hat",
+      "label": "햇",
+      "keywords": [
+        "hat",
+        "모자",
+        "fedora",
+        "페도라",
+        "bowler",
+        "볼러",
+        "panama",
+        "파나마",
+        "visor",
+        "바이저",
+        "선캡",
+        "trapper",
+        "트래퍼"
+      ],
+      "parent": "cap",
+      "exclude": [
+        "cap sleeve"
+      ],
+      "queryAliases": [
+        "cap",
+        "모자"
+      ]
+    },
+    {
+      "id": "cap",
+      "label": "캡/야구모자",
+      "keywords": [
+        "cap",
+        "볼캡",
+        "캡",
+        "6패널",
+        "5패널",
+        "snapback",
+        "스냅백",
+        "trucker hat",
+        "ballcap",
+        "ball cap",
+        "baseball cap",
+        "야구모자",
+        "볼 캡"
+      ],
+      "exclude": [
+        "cap sleeve",
+        "캡 슬리브",
+        "캡슬리브"
+      ],
+      "queryAliases": [
+        "cap",
+        "모자"
+      ]
+    },
+    {
+      "id": "socks",
+      "label": "양말/레그웨어",
+      "keywords": [
+        "sock",
+        "양말",
+        "stocking",
+        "스타킹",
+        "tights",
+        "타이츠",
+        "leg warmer",
+        "레그워머",
+        "삭스",
+        "ankle sock"
+      ],
+      "parent": "acc",
+      "exclude": [
+        "socks boots"
+      ],
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ]
+    },
+    {
+      "id": "muffler",
+      "label": "머플러/스카프",
+      "keywords": [
+        "muffler",
+        "머플러",
+        "scarf",
+        "스카프",
+        "shawl",
+        "숄",
+        "bandana",
+        "반다나",
+        "neck warmer",
+        "넥워머",
+        "gaiter",
+        "목도리",
+        "stole",
+        "스톨"
+      ],
+      "parent": "acc",
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ]
+    },
+    {
+      "id": "glove",
+      "label": "장갑",
+      "keywords": [
+        "glove",
+        "장갑",
+        "mitten",
+        "미튼"
+      ],
+      "parent": "acc",
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ],
+      "weakKeywords": [
+        "gunte",
+        "건트",
+        "fingerless"
+      ]
+    },
+    {
+      "id": "belt",
+      "label": "벨트",
+      "keywords": [
+        "belt",
+        "벨트"
+      ],
+      "parent": "acc",
+      "exclude": [
+        "belt bag",
+        "벨트백",
+        "벨트 백",
+        "belt skirt"
+      ],
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ]
+    },
+    {
+      "id": "jewelry",
+      "label": "주얼리",
+      "keywords": [
+        "necklace",
+        "목걸이",
+        "bracelet",
+        "팔찌",
+        "^ring",
+        "반지",
+        "earring",
+        "귀걸이",
+        "brooch",
+        "브로치",
+        "pendant",
+        "펜던트",
+        "anklet",
+        "발찌",
+        "jewelry",
+        "주얼리",
+        "브레이슬렛",
+        "뱅글",
+        "bangle",
+        "네크리스"
+      ],
+      "parent": "acc",
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ]
+    },
+    {
+      "id": "eyewear",
+      "label": "선글라스/안경",
+      "keywords": [
+        "sunglasses",
+        "선글라스",
+        "glasses",
+        "안경",
+        "eyewear",
+        "아이웨어"
+      ],
+      "parent": "acc",
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ]
+    },
+    {
+      "id": "wallet",
+      "label": "지갑/카드지갑",
+      "keywords": [
+        "wallet",
+        "지갑",
+        "card holder",
+        "card case",
+        "카드지갑",
+        "카드 지갑",
+        "카드홀더",
+        "카드 홀더",
+        "coin purse",
+        "동전지갑"
+      ],
+      "parent": "acc",
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ]
+    },
+    {
+      "id": "acc",
+      "label": "기타 소품",
+      "keywords": [
+        "액세서리",
+        "accessory",
+        "keyring",
+        "keychain",
+        "키링",
+        "key ring",
+        "clip",
+        "클립",
+        "hair",
+        "헤어",
+        "pin badge",
+        "뱃지"
+      ],
+      "queryAliases": [
+        "acc",
+        "패션소품",
+        "액세서리",
+        "소품"
+      ],
+      "weakKeywords": [
+        "scrunchie",
+        "scrunch",
+        "스크런치",
+        "pin",
+        "case",
+        "케이스",
+        "strap",
+        "mug",
+        "pillow",
+        "tumbler",
+        "bottle",
+        "nalgene",
+        "tie",
+        "necktie",
+        "넥타이",
+        "band",
+        "sticker",
+        "poster",
+        "tape measure",
+        "umbrella",
+        "우산",
+        "towel",
+        "blanket"
+      ]
+    },
+    {
+      "id": "swimwear",
+      "label": "수영복/비치웨어",
+      "keywords": [
+        "bikini",
+        "swimsuit",
+        "swimwear",
+        "swim wear",
+        "수영복",
+        "비키니",
+        "래시가드",
+        "rash guard",
+        "swim trunk",
+        "swim short",
+        "board short",
+        "boardshort",
+        "swim"
+      ],
+      "queryAliases": [
+        "수영복",
+        "swim",
+        "비치웨어"
+      ]
+    },
+    {
+      "id": "etc",
+      "label": "기타",
+      "keywords": [],
+      "queryAliases": [
+        "etc",
+        "기타"
+      ]
+    }
   ]
 }

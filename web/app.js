@@ -1009,7 +1009,7 @@ function hintShopOrigins(data) {
     if (document.getElementById(id)) return;
     const l = document.createElement('link');
     l.id = id;
-    l.rel = i < 8 ? 'preconnect' : 'dns-prefetch';
+    l.rel = 'dns-prefetch'; // preconnect는 여러 몰에 소켓을 미리 열어두게 돼 오래 쓸수록 부담이 됨
     l.href = origin;
     document.head.appendChild(l);
   });
@@ -1197,8 +1197,10 @@ const SCROLL_STATE_MAX_AGE_MS = 60 * 60 * 1000;
 // 그 페이지 안에서 스크롤로 어디까지 내려가 있었는지만 기억하면 된다(상품을 눌러서 나갔다가
 // 뒤로가기했을 때 정확히 그 지점으로). 페이지를 실제로 넘기는 것(goToPage)과는 다른 얘기라
 // 그때는 평범하게 맨 위에서 시작한다.
+let restoreTarget = null; // 스크롤 복원이 진행 중이면 그 목표 위치
 function saveScrollState() {
   if (!document.querySelector('#grid .card')) return;
+  if (restoreTarget !== null && Math.abs(window.scrollY - restoreTarget) > 30) return; // 복원 도중의 임시 위치는 저장하지 않음
   try {
     localStorage.setItem(SCROLL_STATE_KEY, JSON.stringify({
       params: qs().toString(),
@@ -1208,6 +1210,8 @@ function saveScrollState() {
   } catch {}
 }
 addEventListener('pagehide', saveScrollState);
+// 상품 카드를 누르는 순간의 위치를 바로 저장(이동 직전 스크롤 이벤트가 디바운스에 걸려 못 저장되는 경우 방지)
+document.getElementById('grid').addEventListener('click', (e) => { if (e.target.closest('a.card')) { restoreTarget = null; saveScrollState(); } }, true);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveScrollState(); });
 // "떠나는 순간" 이벤트만 믿으면 모바일 브라우저마다 타이밍이 달라서 못 미더우므로,
 // 스크롤하는 동안에도 계속 저장해서 언제 떠나든 최신 상태가 이미 저장돼 있게 한다.
@@ -1248,7 +1252,8 @@ function restoreScrollIfMatching(savedOverride) {
   // 그 몇 초 사이에 사용자가 직접 스크롤하려고 하면(=화면을 터치) 그것까지 도로
   // 끌어올려버렸었음(실측). 사용자가 터치하는 순간 감시를 바로 멈춘다.
   let stop = false;
-  const onTouch = () => { stop = true; };
+  restoreTarget = target;
+  const onTouch = () => { stop = true; restoreTarget = null; };
   addEventListener('touchstart', onTouch, { passive: true, once: true });
   let attempts = 0;
   const maxAttempts = 40; // 최대 4초(100ms 간격)
@@ -1256,7 +1261,7 @@ function restoreScrollIfMatching(savedOverride) {
     attempts++;
     if (!stop && (forced ? Math.abs(window.scrollY - target) > 30 : Math.round(window.scrollY) < 30)) window.scrollTo(0, target);
     if (attempts < maxAttempts && !stop) setTimeout(enforce, 100);
-    else removeEventListener('touchstart', onTouch);
+    else { removeEventListener('touchstart', onTouch); restoreTarget = null; }
   };
   enforce();
 }
@@ -1303,6 +1308,29 @@ function afterCategoryChange() {
 
 function clearCategories() { catSel = []; afterCategoryChange(); }
 
+// 로고(마이셀렉트샵)를 누르면 검색어·색상·카테고리·브랜드·사이즈·가격·정렬·페이지·스크롤을 전부 처음 상태로 되돌린다.
+function resetAll() {
+  if (sharedView) { location.href = location.pathname; return; }
+  document.getElementById('q').value = '';
+  colorSel = [];
+  catSel = [];
+  pendingSize = '';
+  document.getElementById('size').value = '';
+  document.getElementById('brand').value = '';
+  document.getElementById('brandInput').value = '';
+  document.getElementById('sort').value = 'brand';
+  document.getElementById('priceMin').value = '';
+  document.getElementById('priceMax').value = '';
+  document.getElementById('inStock').checked = false;
+  currentPage = 1;
+  try { localStorage.removeItem(SCROLL_STATE_KEY); } catch {}
+  closeColorPanel();
+  renderColorPanel();
+  renderChips();
+  window.scrollTo(0, 0);
+  go();
+}
+
 function toggleGroup(gid) {
   const g = groupById(gid);
   if (!g) return;
@@ -1324,7 +1352,7 @@ function toggleLeaf(leaf) {
   let next = catSel.slice();
   if (next.includes(g.id)) next = next.filter((id) => id !== g.id); // 그룹 전체 선택 상태에서 하위를 누르면 그 하나부터 시작
   next = next.includes(leaf) ? next.filter((id) => id !== leaf) : [...next, leaf];
-  if (!g.children.some((c) => next.includes(c))) next.push(g.id); // 하위가 하나도 안 남으면 그룹 전체로
+  // 하위를 전부 해제하면(=취소) 그룹 선택 자체가 풀려 칩이 원래대로 돌아간다
   catSel = next;
   afterCategoryChange();
 }

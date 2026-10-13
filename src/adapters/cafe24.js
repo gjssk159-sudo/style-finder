@@ -402,8 +402,34 @@ export function parseProductPage(html, url, source) {
   }
 
   // --- stock ---
-  const availability = offers?.availability || '';
-  const in_stock = !/OutOfStock|SoldOut|Discontinued/i.test(availability);
+  // 품절 판정: 첫 번째 옵션 하나의 JSON-LD 값만 보면 틀리는 경우가 많았다(사이즈 중 일부만 품절이거나, JSON-LD 자체가 없는 몰은
+  // "재고 있음"으로 잘못 남음 — 실측: heritagefloss 품절 12개 전부, coyseio 일부). 카페24는 상품 페이지에 옵션별 실제 재고가
+  // option_stock_data로 들어 있으니 그걸 1순위로 쓰고(판매 가능한 옵션이 하나라도 있으면 재고 있음), 없으면 페이지 안 모든
+  // JSON-LD availability를 종합한다.
+  let in_stock = true;
+  let optionsKnown = false;
+  const stockM = html.match(/option_stock_data\s*=\s*'((?:\\.|[^'\\])*)'/) || html.match(/option_stock_data\s*=\s*"((?:\\.|[^"\\])*)"/);
+  if (stockM) {
+    try {
+      const parsed = JSON.parse(stockM[1].replace(/\\(.)/g, '$1'));
+      const opts = Object.values(parsed || {});
+      if (opts.length) {
+        optionsKnown = true;
+        const sellable = opts.filter((o) => {
+          if (!o || o.is_selling === 'F' || o.is_display === 'F') return false;
+          if (o.use_stock && Number(o.stock_number) <= 0) return false;
+          return true;
+        });
+        in_stock = sellable.length > 0;
+      }
+    } catch {
+      /* 형식이 다르면 아래 JSON-LD 방식으로 */
+    }
+  }
+  if (!optionsKnown) {
+    const avail = [...html.matchAll(/"availability"\s*:\s*"([^"]+)"/g)].map((m) => m[1]);
+    if (avail.length) in_stock = avail.some((v) => /InStock|LimitedAvailability|PreOrder|BackOrder|OnlineOnly/i.test(v));
+  }
 
   // --- id ---
   // 주의: 마지막 숫자 세그먼트를 그냥 잡으면 안 됨 -> .../category/146/display/1/ 같은 꼬리가 붙으면
