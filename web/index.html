@@ -43,6 +43,10 @@
   #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
   .nav-links button svg { width: 13px; height: 13px; margin-right: 5px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   #authArea button.linklike, #authArea .who { font-size: 11px; }
+  /* 아이콘 잉크 중심을 글자 잉크 중심에 맞추는 미세 보정(실측) */
+  .nav-links button:nth-child(1) svg { transform: translateY(-.5px); }
+  .nav-links button:nth-child(2) svg { transform: translateY(-1px); }
+  .nav-links button:nth-child(3) svg { transform: translateY(-.75px); }
   button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
   /* ── 검색 + 필터: 박스 없이 밑줄만 ── */
@@ -145,7 +149,7 @@
   .foot-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: flex-start; gap: 16px; align-items: center; }
   .foot b { display: block; font-size: 11px; letter-spacing: .28em; text-transform: uppercase; margin-bottom: 8px; }
   .foot p { margin: 0; font-size: 12px; line-height: 1.8; color: var(--sub); max-width: 520px; }
-  .foot-q { background: none; border: 0; padding: 0; border-radius: 0; color: var(--ink); font-size: 12px; letter-spacing: .04em; border-bottom: 1px solid var(--ink); cursor: pointer; }
+  .foot-q { background: none; border: 0; padding: 0; border-radius: 0; color: var(--sub); font-size: 12px; font-weight: 400; letter-spacing: 0; line-height: 1.8; cursor: pointer; }
   .grid > .empty { grid-column: 1 / -1; width: 100%; }
 
   /* ── 다이얼로그 ── */
@@ -195,9 +199,9 @@
   .my-section { margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
   .my-section h3 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
   .my-note { margin: 0; font-size: 12.5px; line-height: 1.75; color: var(--sub); }
-  .my-note a, .foot a, .contact a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-  .ig { display: inline-flex; align-items: center; gap: 6px; }
-  .ig-ico { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; flex: none; }
+  .my-note a, .foot a, .contact a { color: var(--sub); font-weight: 400; text-decoration: none; }
+  .ig { white-space: nowrap; }
+  .ig-ico { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; display: inline-block; vertical-align: -2.9px; margin-right: 6px; }
   .my-tab:focus, .my-tab:focus-visible { outline: none; }
   .qa-contact { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
   .qa-form { display: flex; flex-direction: column; gap: 6px; padding-top: 6px; }
