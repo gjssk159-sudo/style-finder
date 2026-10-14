@@ -63,6 +63,7 @@
   label.chk input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
   .filter-box { display: flex; flex-wrap: wrap; align-items: center; gap: 0 26px; border: 1px solid var(--line); padding: 4px 16px 8px; margin-top: 14px; }
   .filter-box label.chk { padding: 13px 0; }
+  .fb-break { display: none; }
   .msel-btn .sws { display: inline-flex; gap: 2px; margin-right: 7px; vertical-align: 1px; }
   .msel-btn .sws i { width: 8px; height: 8px; border: 1px solid rgba(0,0,0,.22); display: block; box-sizing: border-box; }
   .msel-btn .cnt { font-weight: 700; }
@@ -226,7 +227,13 @@
     .brand-combo input { width: 100%; }
     .price-range { flex: 1 1 160px; }
     input[type=number] { width: 100%; min-width: 0; }
-    .filter-box { flex: 1 1 100%; gap: 0 16px; padding: 4px 12px 8px; }
+    .filter-box { flex: 1 1 100%; gap: 0 12px; padding: 4px 12px 6px; }
+    .filter-box .msel-btn, .filter-box select { padding-right: 16px; }
+    .fb-break { display: block; flex: 0 0 100%; height: 0; }
+    .filter-box .brand-combo { flex: 1 1 70px; }
+    .filter-box .price-range { flex: none; gap: 6px; }
+    .filter-box input[type=number] { width: 50px; }
+    .filter-box label.chk { flex: none; gap: 6px; }
     .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0 22px; }
     .chips::-webkit-scrollbar { display: none; }
     .subchips .subrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
@@ -391,6 +398,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <option value="price_asc">가격 낮은순</option>
         <option value="price_desc">가격 높은순</option>
       </select>
+      <span class="fb-break"></span>
       <div class="brand-combo">
         <input type="text" id="brandInput" placeholder="브랜드 전체" autocomplete="off" onfocus="openBrandCombo()" oninput="filterBrandCombo()">
         <div class="brand-combo-list" id="brandComboList"></div>

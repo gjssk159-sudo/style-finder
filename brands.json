@@ -214,20 +214,6 @@
       "notes": "해결됨. 상품 카드 자체는 표준 xans-record 마크업이라 기존 파서 그대로 사용."
     },
     {
-      "id": "cos",
-      "name": "COS",
-      "nameEn": "COS",
-      "type": "brand",
-      "instagram": "cosstores",
-      "shopUrl": "https://www.cos.com/ko-kr",
-      "platform": "custom_enterprise",
-      "discovery": {
-        "method": "tbd"
-      },
-      "status": "deferred",
-      "notes": "H&M 계열. 봇 차단 강함. 파일럿 후순위 — 필요 시 상품 피드 or 구조화 데이터로 접근."
-    },
-    {
       "id": "costperkilo",
       "name": "COST PER KILO",
       "nameEn": "COST PER KILO",
