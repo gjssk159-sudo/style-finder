@@ -9,14 +9,18 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MY SELECT SHOP">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fipjvgglzlvksepdjxjv.supabase.co" crossorigin>
+<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css"></noscript>
 <link rel="preconnect" href="https://i0.wp.com" crossorigin>
 <link rel="preconnect" href="https://i1.wp.com" crossorigin>
 <link rel="preconnect" href="https://i2.wp.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"></noscript>
+<script defer src="./vendor/supabase.js"></script>
 <style>
   * { box-sizing: border-box; }
   :root {
@@ -465,9 +469,9 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
 </dialog>
 
-<script src="./taxonomy-client.js"></script>
-<script src="./config.js"></script>
-<script src="./app.js"></script>
+<script defer src="./taxonomy-client.js"></script>
+<script defer src="./config.js"></script>
+<script defer src="./app.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
