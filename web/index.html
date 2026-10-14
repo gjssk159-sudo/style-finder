@@ -21,17 +21,19 @@
   * { box-sizing: border-box; }
   :root {
     --ink: #111111; --sub: #75716a; --line: #dedbd4; --bg: #f9f8f5; --faint: #eeece6; --paper: #ffffff;
+    --accent: #2fbf8f;
   }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; word-break: keep-all; font-variant-numeric: tabular-nums; }
   button, input, select { font-family: inherit; }
 
   /* ── 헤더: 워드마크 + 텍스트 내비게이션, 얇은 선으로만 구획 ── */
-  header { position: sticky; top: 0; z-index: 10; background: rgba(249,248,245,.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--ink); padding: 18px 40px 0; }
+  header { position: sticky; top: 0; z-index: 10; background: rgba(249,248,245,.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 18px 40px 0; }
+  header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--accent), transparent 55%); opacity: .55; }
   .header-inner { max-width: 1400px; margin: 0 auto; }
   .topbar { display: flex; align-items: center; gap: 30px; padding-bottom: 16px; }
-  .logo { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
-  .logo-mark { display: none; }
+  .logo { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .logo-mark { width: 9px; height: 9px; min-width: 9px; border-radius: 3px; background: var(--accent); }
   .spacer { flex: 1; }
   .nav-links { display: flex; gap: 26px; align-items: center; }
   .nav-links button { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
@@ -46,7 +48,7 @@
   .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 26px; }
   .search-wrap { position: relative; flex: 1 1 100%; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   .search-wrap svg { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .6; }
-  .search-wrap:focus-within { border-bottom-color: var(--ink); }
+  .search-wrap:focus-within { border-bottom-color: var(--accent); }
   input[type=text]#q { width: 100%; padding: 15px 0 15px 30px; border: 0; border-radius: 0; background: transparent; font-size: 15px; letter-spacing: -.01em; }
   input[type=text]#q:focus { outline: none; }
   input[type=text]#q::placeholder { color: #a29e95; }
@@ -58,7 +60,7 @@
   .price-range { display: flex; align-items: center; gap: 8px; flex: none; }
   .hsep { color: var(--sub); font-size: 12px; }
   label.chk { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); white-space: nowrap; cursor: pointer; }
-  label.chk input { accent-color: #111; width: 14px; height: 14px; margin: 0; }
+  label.chk input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
   .row > button { background: var(--ink); color: #fff; border-radius: 0; padding: 9px 22px; font-size: 12px; letter-spacing: .12em; margin-left: auto; }
 
   .msel { position: relative; flex: none; }
@@ -70,7 +72,7 @@
   .msel-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .06em; color: var(--sub); padding: 0 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
   .msel-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
   .msel-item { display: flex; align-items: center; gap: 9px; padding: 8px 0; font-size: 12.5px; cursor: pointer; }
-  .msel-item input { width: 14px; height: 14px; accent-color: #111; margin: 0; flex: none; }
+  .msel-item input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; flex: none; }
   .msel-item .sw { width: 12px; height: 12px; border-radius: 0; border: 1px solid rgba(0,0,0,.25); flex: none; display: block; }
   .brand-combo { position: relative; flex: none; }
   .brand-combo input { width: 150px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 12.5px; color: var(--ink); }
@@ -87,11 +89,11 @@
   /* ── 카테고리: 칩 대신 텍스트 탭(밑줄) ── */
   .chips { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 4px; max-width: 1400px; }
   .chip { padding: 13px 0 11px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--sub); font-size: 12px; font-weight: 600; letter-spacing: .1em; cursor: pointer; white-space: nowrap; }
-  .chip.on { color: var(--ink); border-bottom-color: var(--ink); }
+  .chip.on { color: var(--ink); border-bottom-color: var(--accent); }
   .subchips { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 10px 0 12px; border-top: 1px solid var(--line); }
   .subchips .subrow { display: flex; flex-wrap: wrap; gap: 2px 22px; align-items: baseline; }
   .chip.sub { padding: 4px 0; border-bottom: 1px solid transparent; font-size: 12.5px; font-weight: 400; letter-spacing: -.005em; }
-  .chip.sub.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+  .chip.sub.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
   .chip.sub.tag { color: var(--ink); font-weight: 700; font-size: 10.5px; letter-spacing: .14em; cursor: default; border-bottom-color: transparent; min-width: 64px; }
 
   /* ── 목록 ── */
@@ -117,6 +119,7 @@
   a.card { text-decoration: none; color: inherit; }
   .empty { max-width: 460px; margin: 80px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 38px 12px; }
   .empty-icon { display: none; }
+  .grid > .empty { grid-column: 1 / -1; width: 100%; }
 
   /* ── 다이얼로그 ── */
   dialog { border: 1px solid var(--ink); border-radius: 0; padding: 0; width: min(500px, 92vw); max-height: 82vh; background: var(--paper); color: var(--ink); }
@@ -124,7 +127,7 @@
   .dlg-body { padding: 28px; display: flex; flex-direction: column; gap: 12px; max-height: 82vh; overflow-y: auto; }
   .dlg-body h2 { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .dlg-body input { padding: 11px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; font-size: 14px; background: transparent; }
-  .dlg-body input[type=checkbox] { accent-color: #111; padding: 0; width: 14px; height: 14px; }
+  .dlg-body input[type=checkbox] { accent-color: var(--accent); padding: 0; width: 14px; height: 14px; }
   .dlg-body input:focus { outline: none; border-bottom-color: var(--ink); }
   .dlg-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
   .dlg-row button.secondary { background: none; color: var(--ink); border: 1px solid var(--ink); }
@@ -142,14 +145,14 @@
   .ftab:focus, .fchip:focus, .nav-links button:focus { outline: none; }
   .ftab:focus-visible, .fchip:focus-visible, .nav-links button:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
   .ftab { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 4px 0; font-size: 12.5px; font-weight: 500; color: var(--sub); cursor: pointer; }
-  .ftab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
+  .ftab.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 700; }
   .ftab-add { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
   .folder-manage-row { display: flex; gap: 16px; }
   .folder-filter-row { display: flex; gap: 18px; }
   .folder-selectall-row { display: flex; padding: 0 2px; }
   .folder-selectall-row label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
   .fchip { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 3px 0; font-size: 12px; font-weight: 500; color: var(--sub); cursor: pointer; }
-  .fchip.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
+  .fchip.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 700; }
   .shared-note { font-size: 12.5px; color: var(--sub); }
   .shared-banner-bar { max-width: 1400px; margin: 0 auto 22px; padding: 12px 16px; background: var(--paper); border: 1px solid var(--line); border-left: 2px solid var(--ink); display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 12px; }
   .guide { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: step; }
@@ -314,7 +317,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <header>
   <div class="header-inner">
     <div class="topbar">
-      <p class="logo" onclick="resetAll()">MY SELECT SHOP</p>
+      <p class="logo" onclick="resetAll()"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()">이용 안내</button>
