@@ -213,6 +213,86 @@ async function requestPasswordReset() {
   msg.textContent = '비밀번호 재설정 메일을 보냈어요. 메일함을 확인해주세요.';
 }
 
+// ---------------- 마이페이지 / 문의(Q&A) ----------------
+const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function showMsg(id, kind, text) {
+  const el = document.getElementById(id);
+  el.className = kind;
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+}
+function openMyPage(tab) {
+  if (!currentUser) { openAuthDialog(); return; }
+  document.getElementById('myEmail').textContent = currentUser.email || '';
+  document.getElementById('myNewPw').value = '';
+  document.getElementById('myNewPw2').value = '';
+  showMsg('myMsg', '', '');
+  showMsg('qnaMsg', '', '');
+  setMyTab(tab || 'account');
+  if (!myDialog.open) myDialog.showModal();
+}
+function setMyTab(t) {
+  for (const b of document.querySelectorAll('#myDialog .my-tab')) b.classList.toggle('active', b.dataset.tab === t);
+  document.getElementById('myPaneAccount').classList.toggle('active', t === 'account');
+  document.getElementById('myPaneQna').classList.toggle('active', t === 'qna');
+  if (t === 'qna') loadMyQuestions();
+}
+async function changePassword() {
+  const pw = document.getElementById('myNewPw').value;
+  const pw2 = document.getElementById('myNewPw2').value;
+  if (pw.length < 6) { showMsg('myMsg', 'warn', '새 비밀번호는 6자 이상이어야 해요.'); return; }
+  if (pw !== pw2) { showMsg('myMsg', 'warn', '새 비밀번호 확인이 일치하지 않아요.'); return; }
+  showMsg('myMsg', '', '변경 중…');
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) { showMsg('myMsg', 'warn', /different from the old password/i.test(error.message) ? '지금 쓰는 비밀번호와 달라야 해요.' : error.message); return; }
+  document.getElementById('myNewPw').value = '';
+  document.getElementById('myNewPw2').value = '';
+  showMsg('myMsg', 'ok', '비밀번호를 변경했어요. 다음 로그인부터 새 비밀번호를 사용해주세요.');
+}
+async function sendResetMail() {
+  if (!currentUser?.email) return;
+  showMsg('myMsg', '', '전송 중…');
+  const { error } = await sb.auth.resetPasswordForEmail(currentUser.email, { redirectTo: location.origin + location.pathname });
+  if (error) { showMsg('myMsg', 'warn', error.message); return; }
+  showMsg('myMsg', 'ok', '재설정 메일을 보냈어요. 메일함을 확인해주세요.');
+}
+async function loadMyQuestions() {
+  const list = document.getElementById('qnaList');
+  const { data, error } = await sb.from('qna_posts').select('id,title,body,answer,answered_at,created_at').order('created_at', { ascending: false });
+  if (error) { list.innerHTML = '<p class="my-note" style="padding:8px 0">문의 내역을 불러오지 못했어요.</p>'; return; }
+  if (!data.length) { list.innerHTML = '<p class="my-note" style="padding:8px 0">아직 남긴 문의가 없어요.</p>'; return; }
+  const fmt = (t) => new Date(t).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  list.innerHTML = data.map((q) => `
+    <div class="qna-item">
+      <div class="qna-head"><span class="qna-title">${escHtml(q.title)}</span><span class="qna-status ${q.answer ? 'done' : ''}">${q.answer ? '답변 완료' : '답변 대기'}</span></div>
+      <span class="qna-date">${fmt(q.created_at)}</span>
+      <div class="qna-body">${escHtml(q.body)}</div>
+      ${q.answer ? `<div class="qna-answer"><b>운영진 답변 · ${fmt(q.answered_at || q.created_at)}</b>${escHtml(q.answer)}</div>` : ''}
+      <div class="qna-actions"><button class="linklike" onclick="deleteQuestion(${q.id})">삭제</button></div>
+    </div>`).join('');
+}
+async function submitQuestion() {
+  const title = document.getElementById('qnaTitle').value.trim();
+  const body = document.getElementById('qnaBody').value.trim();
+  if (!title || !body) { showMsg('qnaMsg', 'warn', '제목과 내용을 모두 입력해주세요.'); return; }
+  showMsg('qnaMsg', '', '등록 중…');
+  const { error } = await sb.from('qna_posts').insert({ user_id: currentUser.id, title, body });
+  if (error) {
+    showMsg('qnaMsg', 'warn', /row-level security|violates/i.test(error.message) ? '문의는 하루 10개까지 남길 수 있어요. 내일 다시 시도해주세요.' : error.message);
+    return;
+  }
+  document.getElementById('qnaTitle').value = '';
+  document.getElementById('qnaBody').value = '';
+  showMsg('qnaMsg', 'ok', '문의를 등록했어요. 운영진이 확인하고 답변을 남겨드려요.');
+  loadMyQuestions();
+}
+async function deleteQuestion(id) {
+  if (!(await askConfirm('이 문의를 삭제할까요?'))) return;
+  const { error } = await sb.from('qna_posts').delete().eq('id', id);
+  if (error) { showMsg('qnaMsg', 'warn', error.message); return; }
+  loadMyQuestions();
+}
+
 function authErrorMessage(error, mode) {
   const m = error.message || '';
   if (/invalid login credentials/i.test(m)) return '이메일 또는 비밀번호가 올바르지 않아요.';
