@@ -35,14 +35,13 @@
   .logo { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .logo-mark { width: 9px; height: 9px; min-width: 9px; border-radius: 3px; background: var(--accent); }
   .spacer { flex: 1; }
-  .nav-links { display: flex; gap: 26px; align-items: center; }
-  .nav-links button { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
-  .nav-links button.primary { border-bottom-color: var(--ink); }
+  .nav-links { display: flex; gap: 16px; align-items: center; }
+  .nav-links button { display: inline-flex; align-items: center; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
   #authArea { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--sub); }
   #authArea .who { color: var(--ink); font-size: 12px; letter-spacing: .02em; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #authArea button { background: none; color: var(--ink); border: 1px solid var(--ink); border-radius: 0; padding: 6px 16px; font-size: 12px; letter-spacing: .06em; }
   #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
-  .nav-links button svg { width: 13px; height: 13px; margin-right: 6px; vertical-align: -2px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-links button svg { width: 13px; height: 13px; margin-right: 5px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   #authArea button.linklike, #authArea .who { font-size: 11px; }
   button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
@@ -60,9 +59,10 @@
   input[type=number]::placeholder { color: #a29e95; }
   .price-range { display: flex; align-items: center; gap: 8px; flex: none; }
   .hsep { color: var(--sub); font-size: 12px; }
-  label.chk { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); white-space: nowrap; cursor: pointer; }
+  label.chk { margin-top: 14px; display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); white-space: nowrap; cursor: pointer; }
   label.chk input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
-  .row > button { background: var(--ink); color: #fff; border-radius: 0; padding: 9px 22px; font-size: 12px; letter-spacing: .12em; margin-left: auto; }
+  .filter-box { display: flex; flex-wrap: wrap; align-items: center; gap: 0 26px; border: 1px solid var(--line); padding: 4px 16px 8px; margin-top: 14px; }
+  .row > button { background: var(--ink); color: #fff; border-radius: 0; padding: 9px 22px; font-size: 12px; letter-spacing: .12em; margin: 14px 0 0 auto; }
 
   .msel { position: relative; flex: none; }
   .msel-btn { background: transparent; color: var(--ink); border: 0; border-radius: 0; padding: 13px 18px 13px 0; font-size: 12.5px; font-weight: 500; letter-spacing: .01em; max-width: 180px; text-align: left; position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
@@ -213,7 +213,7 @@
     header { position: relative; padding: 14px 16px 0; }
     .topbar { flex-wrap: wrap; gap: 12px 16px; padding-bottom: 12px; }
     .logo { font-size: 13px; letter-spacing: .24em; }
-    .nav-links { order: 3; flex-basis: 100%; gap: 22px; }
+    .nav-links { order: 3; flex-basis: 100%; gap: 16px; }
     #authArea .who { display: none; }
     .row { gap: 0 20px; }
     input[type=text]#q { font-size: 16px; } /* 16px 미만이면 iOS에서 포커스 시 자동 확대됨 */
@@ -224,8 +224,7 @@
     .brand-combo input { width: 100%; }
     .price-range { flex: 1 1 160px; }
     input[type=number] { width: 100%; min-width: 0; }
-    .row > button { margin: 14px 0 0 auto; }
-    label.chk { margin-top: 14px; }
+    .filter-box { flex: 1 1 100%; gap: 0 20px; }
     .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0 22px; }
     .chips::-webkit-scrollbar { display: none; }
     .subchips .subrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
@@ -381,6 +380,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
+      <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
       <select id="size"><option value="">사이즈 전체</option></select>
       <select id="sort">
@@ -398,6 +398,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <input type="number" id="priceMin" placeholder="최소가">
         <span class="hsep">~</span>
         <input type="number" id="priceMax" placeholder="최대가">
+      </div>
       </div>
       <label class="chk"><input type="checkbox" id="inStock">품절 제외</label>
       <button onclick="go()">검색</button>
