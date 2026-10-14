@@ -1246,6 +1246,8 @@ async function renderCurrentPage() {
   if (colors.length) parts.push('색상: ' + colors.map((c) => window.StyleFinderTaxonomy.COLOR_LABELS[c] || c).join(', '));
   if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
   meta.textContent = parts.join('  ·  ');
+  const subCount = document.getElementById('subCount');
+  if (subCount) subCount.textContent = lastTotal.toLocaleString('ko-KR') + '개'; // 세부 카테고리 줄이 개수 줄을 덮으므로 거기에도 표시
 
   if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없어요.<br>필터를 줄이거나 다른 검색어로 찾아보세요.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
   const sig = sigOf(data);
@@ -1389,14 +1391,13 @@ function renderChips() {
     T.GROUPS.map((g) => `<span class="chip ${on.includes(g) ? 'on' : ''}" onclick="toggleGroup('${g.id}')">${g.label}</span>`).join('');
   const sub = document.getElementById('subChips');
   const rows = on.filter((g) => g.children.length > 1);
-  // 줄 자리는 항상 비워두고(레이아웃이 밀리지 않게) 내용만 바꾼다. 고른 카테고리가 없을 때만 안내 문구를 보여줌.
+  if (!rows.length) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
   sub.style.display = 'flex';
-  if (!rows.length) { sub.innerHTML = catSel.length ? '' : '<span class="sub-hint">카테고리를 고르면 세부 항목이 여기에 나와요</span>'; return; }
   sub.innerHTML = rows.map((g) =>
     `<span class="subrow"><span class="chip sub tag">${g.label}</span>` +
     `<span class="chip sub ${catSel.includes(g.id) ? 'on' : ''}" onclick="selectWholeGroup('${g.id}')">전체</span>` +
     g.children.map((id) => `<span class="chip sub ${catSel.includes(id) ? 'on' : ''}" onclick="toggleLeaf('${id}')">${T.labelOf(id)}</span>`).join('') +
-    '</span>').join('');
+    '</span>').join('') + `<span class="sub-count" id="subCount">${lastTotal ? lastTotal.toLocaleString('ko-KR') + '개' : ''}</span>`;
 }
 
 function afterCategoryChange() {
