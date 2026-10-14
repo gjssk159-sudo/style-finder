@@ -260,8 +260,8 @@ async function sendResetMail() {
 async function loadMyQuestions() {
   const list = document.getElementById('qnaList');
   const { data, error } = await sb.from('qna_posts').select('id,title,body,answer,answered_at,created_at').order('created_at', { ascending: false });
-  if (error) { list.innerHTML = '<p class="my-note" style="padding:8px 0">문의 내역을 불러오지 못했어요.</p>'; return; }
-  if (!data.length) { list.innerHTML = '<p class="my-note" style="padding:8px 0">아직 남긴 문의가 없어요.</p>'; return; }
+  if (error) { list.innerHTML = '<p class="my-note" style="padding:8px 0">질문 내역을 불러오지 못했어요.</p>'; return; }
+  if (!data.length) { list.innerHTML = '<p class="my-note" style="padding:8px 0">아직 남긴 질문이 없어요.</p>'; return; }
   const fmt = (t) => new Date(t).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   list.innerHTML = data.map((q) => `
     <div class="qna-item">
@@ -279,16 +279,16 @@ async function submitQuestion() {
   showMsg('qnaMsg', '', '등록 중…');
   const { error } = await sb.from('qna_posts').insert({ user_id: currentUser.id, title, body });
   if (error) {
-    showMsg('qnaMsg', 'warn', /row-level security|violates/i.test(error.message) ? '문의는 하루 10개까지 남길 수 있어요. 내일 다시 시도해주세요.' : error.message);
+    showMsg('qnaMsg', 'warn', /row-level security|violates/i.test(error.message) ? '질문은 하루 10개까지 남길 수 있어요. 내일 다시 시도해주세요.' : error.message);
     return;
   }
   document.getElementById('qnaTitle').value = '';
   document.getElementById('qnaBody').value = '';
-  showMsg('qnaMsg', 'ok', '문의를 등록했어요. 운영진이 확인하고 답변을 남겨드려요.');
+  showMsg('qnaMsg', 'ok', '질문을 등록했어요. 운영진이 확인하고 답변을 남겨드려요.');
   loadMyQuestions();
 }
 async function deleteQuestion(id) {
-  if (!(await askConfirm('이 문의를 삭제할까요?'))) return;
+  if (!(await askConfirm('이 질문을 삭제할까요?'))) return;
   const { error } = await sb.from('qna_posts').delete().eq('id', id);
   if (error) { showMsg('qnaMsg', 'warn', error.message); return; }
   loadMyQuestions();

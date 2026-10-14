@@ -196,18 +196,24 @@
   .my-section h3 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
   .my-note { margin: 0; font-size: 12.5px; line-height: 1.75; color: var(--sub); }
   .my-note a, .foot a, .contact a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-  .contact { border: 1px solid var(--line); border-left: 2px solid var(--accent); padding: 12px 14px; font-size: 13px; line-height: 1.75; background: var(--paper); }
-  .contact b { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; }
-  .qna-list { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
-  .qna-item { padding: 14px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+  .ig { display: inline-flex; align-items: center; gap: 6px; }
+  .ig-ico { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; flex: none; }
+  .my-tab:focus, .my-tab:focus-visible { outline: none; }
+  .qa-contact { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .qa-form { display: flex; flex-direction: column; gap: 6px; padding-top: 6px; }
+  .qa-form textarea { min-height: 88px; }
+  .qa-mine { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .qa-mine h3 { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: var(--sub); }
+  .qna-list { display: flex; flex-direction: column; }
+  .qna-item { padding: 14px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px; }
   .qna-head { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
-  .qna-title { font-size: 14px; font-weight: 700; word-break: break-word; }
-  .qna-status { font-size: 10.5px; letter-spacing: .1em; white-space: nowrap; color: var(--sub); }
+  .qna-title { font-size: 13.5px; font-weight: 700; word-break: break-word; }
+  .qna-status { font-size: 10.5px; letter-spacing: .06em; white-space: nowrap; color: var(--sub); }
   .qna-status.done { color: var(--ink); }
   .qna-status.done::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 2px; margin-right: 6px; }
   .qna-date { font-size: 11px; color: var(--sub); letter-spacing: .04em; }
   .qna-body { font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; color: #3a3833; }
-  .qna-answer { margin-top: 4px; padding: 10px 12px; background: var(--faint); font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .qna-answer { margin-top: 6px; padding: 2px 0 2px 12px; border-left: 2px solid var(--accent); font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
   .qna-answer b { display: block; font-size: 10.5px; letter-spacing: .14em; margin-bottom: 4px; }
   .qna-actions { display: flex; justify-content: flex-end; }
   .guide { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: step; }
@@ -432,8 +438,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 </main>
 <footer class="foot">
   <div class="foot-inner">
-    <p>운영 문의: <a href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener">@woosobb</a></p>
-    <button class="foot-q" onclick="openMyPage('qna')">문의</button>
+    <p>운영 문의: <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>@woosobb</a></p>
+    <button class="foot-q" onclick="openMyPage('qna')">Q&amp;A</button>
   </div>
 </footer>
 
@@ -481,12 +487,12 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <h2>마이페이지</h2>
     <div class="my-tabs">
       <button class="my-tab active" data-tab="account" onclick="setMyTab('account')">계정</button>
-      <button class="my-tab" data-tab="qna" onclick="setMyTab('qna')">문의</button>
+      <button class="my-tab" data-tab="qna" onclick="setMyTab('qna')">Q&amp;A</button>
     </div>
 
     <div class="my-pane active" id="myPaneAccount">
       <div class="my-field"><label>아이디 (이메일)</label><div class="val" id="myEmail"></div></div>
-      <p class="my-note">아이디는 가입할 때 쓴 이메일이에요. 이메일을 변경하고 싶다면 아래 문의에서 요청해 주세요.</p>
+      <p class="my-note">아이디는 가입할 때 쓴 이메일이에요. 이메일을 변경하고 싶다면 Q&amp;A에서 요청해 주세요.</p>
       <div class="my-section">
         <h3>비밀번호 변경</h3>
         <input type="password" id="myNewPw" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password">
@@ -502,18 +508,14 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     </div>
 
     <div class="my-pane" id="myPaneQna">
-      <div class="contact">
-        <b>운영 문의</b>
-        서비스 이용 중 궁금한 점이나 오류 제보는 아래에 남겨 주세요. 빠른 확인이 필요하면 인스타그램 <a href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener">@woosobb</a> 로 DM 주세요.
-      </div>
-      <div class="my-section" style="margin-top:4px">
-        <h3>새 문의</h3>
+      <p class="my-note qa-contact">운영 문의는 인스타그램 DM으로도 받아요. <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>@woosobb</a></p>
+      <div class="qa-form">
         <input type="text" id="qnaTitle" maxlength="100" placeholder="제목" autocomplete="off">
-        <textarea id="qnaBody" maxlength="2000" placeholder="문의 내용을 적어주세요 (2000자 이내)"></textarea>
-        <div class="dlg-row" style="margin-top:2px"><button onclick="submitQuestion()">문의 등록</button></div>
+        <textarea id="qnaBody" maxlength="2000" placeholder="질문 내용 (2000자 이내)"></textarea>
+        <div class="dlg-row" style="margin-top:0"><button onclick="submitQuestion()">등록</button></div>
       </div>
-      <div class="my-section">
-        <h3>내 문의 내역</h3>
+      <div class="qa-mine">
+        <h3>내 질문</h3>
         <div class="qna-list" id="qnaList"><p class="my-note" style="padding:8px 0">불러오는 중…</p></div>
       </div>
       <div id="qnaMsg"></div>
@@ -535,7 +537,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <li><div><b>내 폴더 꾸리기</b><span>"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있어요.</span></div></li>
       <li><div><b>검색하기</b><span>내 폴더에 담은 브랜드 안에서만 검색돼요. "블랙 후드티"처럼 자연스럽게 검색하면 색상과 카테고리를 알아서 인식해요.</span></div></li>
       <li><div><b>폴더 공유하기</b><span>폴더의 "공유 링크 복사"로 링크를 만들면, 로그인하지 않은 사람도 그 폴더를 볼 수 있어요.</span></div></li>
-      <li><div><b>문의하기</b><span>"마이페이지 > 문의"에 질문을 남기면 운영진이 답변을 달아드려요. 빠른 확인이 필요하면 인스타그램 @woosobb 로 DM 주세요.</span></div></li>
+      <li><div><b>Q&amp;A</b><span>"마이페이지 > Q&amp;A"에 질문을 남기면 운영진이 답변을 달아드려요. 빠른 확인이 필요하면 인스타그램 @woosobb 로 DM 주세요.</span></div></li>
       <li><div><b>자동 업데이트</b><span>등록 직후 한 번 바로 수집되고, 그 뒤로는 매일 새벽 자동으로 다시 수집돼서 품절과 신상품이 계속 반영돼요.</span></div></li>
     </ol>
     <div class="dlg-row">
