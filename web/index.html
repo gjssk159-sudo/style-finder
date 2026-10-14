@@ -32,8 +32,8 @@
   header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, var(--ink) 0, var(--ink) 18%, rgba(17,17,17,.35) 52%, rgba(17,17,17,0) 100%); }
   .header-inner { max-width: 1400px; margin: 0 auto; }
   .topbar { display: flex; align-items: center; gap: 30px; padding-bottom: 16px; }
-  .logo { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
-  .logo-mark { width: 9px; height: 9px; min-width: 9px; border-radius: 3px; background: var(--accent); }
+  .logo { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .logo-mark { width: 13px; height: 13px; min-width: 13px; border-radius: 4px; background: var(--accent); }
   .spacer { flex: 1; }
   .nav-links { display: flex; gap: 16px; align-items: center; }
   .nav-links button { display: inline-flex; align-items: center; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
@@ -96,6 +96,7 @@
   .chip.on { color: var(--ink); }
   .chip.on::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 8px 1px 0; background: var(--accent); border-radius: 2px; vertical-align: middle; }
   .subchips { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 10px 0 12px; border-top: 1px solid var(--line); }
+  .sub-hint { font-size: 11.5px; line-height: 28px; color: var(--sub); letter-spacing: .01em; white-space: nowrap; }
   .subchips .subrow { display: flex; flex-wrap: wrap; gap: 2px 22px; align-items: baseline; }
   .chip.sub { padding: 4px 0; border-bottom: 1px solid transparent; font-size: 12.5px; font-weight: 400; letter-spacing: -.005em; }
   .chip.sub.on { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
@@ -217,8 +218,9 @@
 
   @media (max-width: 700px) {
     header { position: relative; padding: 14px 16px 0; }
-    .topbar { flex-wrap: wrap; gap: 12px 16px; padding-bottom: 12px; }
-    .logo { font-size: 13px; letter-spacing: .24em; }
+    .topbar { flex-wrap: wrap; gap: 12px 8px; padding-bottom: 12px; }
+    .logo { font-size: 16px; letter-spacing: .16em; gap: 9px; }
+    .logo-mark { width: 11px; height: 11px; min-width: 11px; border-radius: 3px; }
     .nav-links { order: 3; flex-basis: 100%; gap: 16px; }
     #authArea .who { display: none; }
     .row { gap: 0 20px; }
@@ -416,7 +418,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       </div>
     </div>
     <div class="chips" id="chips"></div>
-    <div class="chips subchips" id="subChips" style="display:none"></div>
+    <div class="chips subchips" id="subChips"><span class="sub-hint">카테고리를 고르면 세부 항목이 여기에 나와요</span></div>
   </div>
 </header>
 <script>document.querySelectorAll("header input, header select").forEach(function (e) { e.setAttribute("autocomplete", "off"); });</script>
