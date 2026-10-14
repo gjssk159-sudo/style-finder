@@ -42,7 +42,8 @@
   #authArea .who { color: var(--ink); font-size: 12px; letter-spacing: .02em; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #authArea button { background: none; color: var(--ink); border: 1px solid var(--ink); border-radius: 0; padding: 6px 16px; font-size: 12px; letter-spacing: .06em; }
   #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
-  #authArea button.linklike.my { color: var(--ink); }
+  .nav-links button svg { width: 13px; height: 13px; margin-right: 6px; vertical-align: -2px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  #authArea button.linklike, #authArea .who { font-size: 11px; }
   button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
   /* ── 검색 + 필터: 박스 없이 밑줄만 ── */
@@ -87,8 +88,8 @@
   button:active { opacity: .8; }
 
   /* ── 카테고리: 칩 대신 텍스트 탭(밑줄) ── */
-  .chips { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 4px; max-width: 1400px; }
-  .chip { padding: 13px 0 11px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--sub); font-size: 12px; font-weight: 600; letter-spacing: .1em; cursor: pointer; white-space: nowrap; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 0; max-width: 1400px; }
+  .chip { padding: 12px 0 10px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--sub); font-size: 12px; font-weight: 600; letter-spacing: .1em; cursor: pointer; white-space: nowrap; }
   .chip.on { color: var(--ink); }
   .chip.on::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 8px 1px 0; background: var(--accent); border-radius: 2px; vertical-align: middle; }
   .subchips { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 10px 0 12px; border-top: 1px solid var(--line); }
@@ -223,7 +224,8 @@
     .brand-combo input { width: 100%; }
     .price-range { flex: 1 1 160px; }
     input[type=number] { width: 100%; min-width: 0; }
-    .row > button { margin: 8px 0 12px auto; }
+    .row > button { margin: 14px 0 0 auto; }
+    label.chk { margin-top: 14px; }
     .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0 22px; }
     .chips::-webkit-scrollbar { display: none; }
     .subchips .subrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
@@ -368,9 +370,9 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <p class="logo" onclick="resetAll()"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
       <div class="nav-links">
-        <button onclick="aboutDialog.showModal()">이용 안내</button>
-        <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
-        <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">브랜드 등록</button>
+        <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
+        <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
+        <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8.5v7M8.5 12h7"/></svg><span class="lbl">브랜드 등록</span></button>
       </div>
       <span id="authArea"></span>
     </div>

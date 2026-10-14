@@ -507,9 +507,10 @@ function renderSharedBanner() {
 function updateFolderNavLabel() {
   const btn = document.getElementById('folderNavBtn');
   if (!btn) return;
-  if (sharedView) { btn.textContent = sharedView.name; return; }
+  const lbl = btn.querySelector('.lbl') || btn;
+  if (sharedView) { lbl.textContent = sharedView.name; return; }
   const f = myFolders.find((x) => x.id === currentFolderId);
-  btn.textContent = f ? f.name : '내 폴더';
+  lbl.textContent = f ? f.name : '내 폴더';
 }
 
 function renderFolderTabs() {
