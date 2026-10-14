@@ -1185,6 +1185,18 @@ function whenFirstScreenImagesReady(cap = 3000) {
   });
 }
 
+// 새 목록의 첫 줄 사진을 미리 받아두고(최대 cap ms) 교체해서, 카드가 회색 빈 박스로 나타났다 채워지는 걸 줄인다.
+function preloadFirstImages(rows, n = 4, cap = 800) {
+  return new Promise((resolve) => {
+    const urls = rows.slice(0, n).map((g) => (/^https?:/i.test(g.image || '') ? thumbUrl(g.image) : null)).filter(Boolean);
+    if (!urls.length) return resolve();
+    let left = urls.length;
+    const done = () => { if (--left <= 0) resolve(); };
+    setTimeout(resolve, cap);
+    for (const u of urls) { const im = new Image(); im.onload = im.onerror = done; im.src = u; }
+  });
+}
+
 async function renderCurrentPage() {
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
@@ -1214,6 +1226,10 @@ async function renderCurrentPage() {
   grid.classList.add('loading');
   const { data, error, count } = await query;
   if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림(loading 표시는 최신 요청이 끝낼 때 해제)
+  if (!error && data.length && grid.querySelector('.card') && sigOf(data) !== renderedSig) {
+    await preloadFirstImages(data);
+    if (mySeq !== renderSeq) return;
+  }
   grid.classList.remove('loading');
   if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
 

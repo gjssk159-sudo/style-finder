@@ -125,11 +125,14 @@
   .empty { max-width: 460px; margin: 80px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 38px 12px; }
   .empty-icon { display: none; }
   ::selection { background: var(--accent); color: #fff; }
+  * { -webkit-tap-highlight-color: transparent; }
+  .card, .card * , button, .chip { -webkit-user-select: none; user-select: none; }
+  .card img::selection, .card .imgwrap::selection { background: transparent; }
   /* 품절 상품은 가격도 흐리게 + 취소선 */
   .card:has(.imgwrap.sold) .price { color: var(--sub); text-decoration: line-through; text-decoration-thickness: 1px; font-weight: 400; }
   /* 필터를 바꿔 새로 불러오는 동안 기존 목록을 살짝 흐리게(빈 화면으로 번쩍이지 않게) */
   #grid { transition: opacity .15s ease; }
-  #grid.loading { opacity: .4; pointer-events: none; }
+  #grid.loading { opacity: .8; transition-delay: .3s; }
   /* 페이지 이동 */
   .more-wrap { display: flex; justify-content: center; align-items: baseline; gap: 28px; }
   #pageLabel { font-size: 12px; letter-spacing: .12em; color: var(--sub); margin: 0; font-variant-numeric: tabular-nums; }
