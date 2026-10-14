@@ -1452,7 +1452,11 @@ function colorLabel(id) { return window.StyleFinderTaxonomy.COLOR_LABELS[id] || 
 function updateColorBtn() {
   const btn = document.getElementById('colorBtn');
   if (!btn) return;
-  btn.textContent = !colorSel.length ? '색상 전체' : colorSel.length === 1 ? colorLabel(colorSel[0]) : `${colorLabel(colorSel[0])} 외 ${colorSel.length - 1}`;
+  if (!colorSel.length) btn.textContent = '색상 전체';
+  else {
+    const sw = colorSel.slice(0, 3).map((id) => `<i style="background:${COLOR_SWATCH[id] || '#ccc'}"></i>`).join('');
+    btn.innerHTML = `<span class="sws">${sw}</span>` + (colorSel.length === 1 ? colorLabel(colorSel[0]) : `색상 <span class="cnt">${colorSel.length}</span>`);
+  }
   btn.classList.toggle('on', colorSel.length > 0);
 }
 function renderColorPanel() {
@@ -1485,7 +1489,9 @@ async function loadFacetSelectors() {
 }
 
 // ---------------- 초기화 ----------------
-document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 'Enter') { clearTimeout(qTimer); go(); } });
+let qTimer = null;
+document.getElementById('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(go, 600); }); // 검색 버튼이 없으니 입력을 멈추면 자동으로 검색
 document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth(); });
 for (const id of ['size', 'brand', 'sort', 'inStock']) document.getElementById(id).addEventListener('change', () => { if (id === 'size') pendingSize = ''; go(); });
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
