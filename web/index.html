@@ -42,6 +42,7 @@
   #authArea .who { color: var(--ink); font-size: 12px; letter-spacing: .02em; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #authArea button { background: none; color: var(--ink); border: 1px solid var(--ink); border-radius: 0; padding: 6px 16px; font-size: 12px; letter-spacing: .06em; }
   #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
+  #authArea button.linklike.my { color: var(--ink); }
   button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
   /* ── 검색 + 필터: 박스 없이 밑줄만 ── */
@@ -369,7 +370,6 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()">이용 안내</button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
-      <button id="myPageBtn" onclick="openMyPage()">마이페이지</button>
         <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">브랜드 등록</button>
       </div>
       <span id="authArea"></span>

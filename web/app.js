@@ -160,6 +160,7 @@ function renderAuthArea() {
   if (currentUser) {
     el.innerHTML = `
       <span class="who" title="${currentUser.email}">${currentUser.email.split('@')[0]}</span>
+      <button class="linklike my" onclick="openMyPage()">마이페이지</button>
       <button class="linklike" onclick="signOut()">로그아웃</button>`;
   } else {
     el.innerHTML = '<button onclick="openAuthDialog()">로그인</button>';
