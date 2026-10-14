@@ -1057,7 +1057,7 @@ function updatePager() {
   // 페이지 수(1/6페이지)와 상품 범위(61-120/319개) 둘 다 단위를 붙여서 명확하게 표시.
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, lastTotal);
-  document.getElementById('pageLabel').textContent = `${currentPage}/${totalPages}페이지 · ${start}-${end}/${lastTotal}개`;
+  document.getElementById('pageLabel').innerHTML = `<b>${currentPage}</b> / ${totalPages.toLocaleString('ko-KR')} &nbsp;·&nbsp; ${start.toLocaleString('ko-KR')}–${end.toLocaleString('ko-KR')} / ${lastTotal.toLocaleString('ko-KR')}`;
 }
 
 // ---------------- 홈 화면 즉시 표시 ----------------
@@ -1129,12 +1129,14 @@ async function renderCurrentPage() {
   const offset = (currentPage - 1) * PAGE_SIZE;
   const { query, categories, colors, keywords } = buildQuery(offset, PAGE_SIZE);
   const mySeq = ++renderSeq;
+  grid.classList.add('loading');
   const { data, error, count } = await query;
-  if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림
+  if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림(loading 표시는 최신 요청이 끝낼 때 해제)
+  grid.classList.remove('loading');
   if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
 
   lastTotal = count || 0;
-  const parts = [`${lastTotal}개`];
+  const parts = [`${lastTotal.toLocaleString('ko-KR')}개`];
   if (categories.length) {
     const T = window.StyleFinderTaxonomy;
     const names = catSel.length
