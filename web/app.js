@@ -1223,7 +1223,8 @@ async function renderCurrentPage() {
   const offset = (currentPage - 1) * PAGE_SIZE;
   const { query, categories, colors, keywords } = buildQuery(offset, PAGE_SIZE);
   const mySeq = ++renderSeq;
-  grid.classList.add('loading');
+  // 부팅 중(캐시로 먼저 그린 화면을 서버 결과로 확인하는 단계)에는 흐리게 하지 않는다 — 처음 열 때 회색으로 깜빡이던 원인
+  if (bootComplete) grid.classList.add('loading');
   const { data, error, count } = await query;
   if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림(loading 표시는 최신 요청이 끝낼 때 해제)
   if (!error && data.length && grid.querySelector('.card') && sigOf(data) !== renderedSig) {
