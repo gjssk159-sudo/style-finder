@@ -158,9 +158,8 @@ const won = (n) => (n == null ? '' : '₩' + n.toLocaleString('ko-KR'));
 function renderAuthArea() {
   const el = document.getElementById('authArea');
   if (currentUser) {
-    const initial = (currentUser.email || '?')[0].toUpperCase();
     el.innerHTML = `
-      <span class="avatar" title="${currentUser.email}">${initial}</span>
+      <span class="who" title="${currentUser.email}">${currentUser.email.split('@')[0]}</span>
       <button class="linklike" onclick="signOut()">로그아웃</button>`;
   } else {
     el.innerHTML = '<button onclick="openAuthDialog()">로그인</button>';
@@ -414,7 +413,7 @@ function renderSharedBanner() {
   if (!el) return;
   if (sharedView) {
     el.style.display = 'flex';
-    el.innerHTML = `<span>📁 <b>${sharedView.name}</b> 폴더를 보는 중이에요 (다른 사람과 공유됨)</span>
+    el.innerHTML = `<span><b>${sharedView.name}</b> 폴더를 보는 중이에요 (다른 사람과 공유됨)</span>
       <button class="linklike" onclick="exitSharedView()">내 폴더로 돌아가기</button>`;
     if (addBtn) addBtn.style.display = 'none';
   } else {
@@ -427,9 +426,9 @@ function renderSharedBanner() {
 function updateFolderNavLabel() {
   const btn = document.getElementById('folderNavBtn');
   if (!btn) return;
-  if (sharedView) { btn.textContent = `📁 ${sharedView.name}`; return; }
+  if (sharedView) { btn.textContent = sharedView.name; return; }
   const f = myFolders.find((x) => x.id === currentFolderId);
-  btn.textContent = f ? `📁 ${f.name}` : '내 폴더';
+  btn.textContent = f ? f.name : '내 폴더';
 }
 
 function renderFolderTabs() {
@@ -1022,8 +1021,7 @@ function cardsHtml(data) {
       const url = (g.offer && g.offer[0] && g.offer[0].url) || '#';
       const tags = (g.categories || [])
         .map((c) => {
-          const { bg, fg } = tagColor(c);
-          return `<span class="tag" style="background:${bg};color:${fg}">${window.StyleFinderTaxonomy.labelOf(c)}</span>`;
+          return `<span class="tag">${window.StyleFinderTaxonomy.labelOf(c)}</span>`;
         })
         .join('');
       const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
@@ -1113,7 +1111,7 @@ async function renderCurrentPage() {
 
   if (!currentUser && !sharedView) {
     meta.textContent = '';
-    grid.innerHTML = '<div class="empty"><span class="empty-icon">✨</span>로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
+    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     renderedSig = '';
     return;
@@ -1121,8 +1119,8 @@ async function renderCurrentPage() {
   if (myFolderIds.length === 0) {
     meta.textContent = '';
     grid.innerHTML = sharedView
-      ? '<div class="empty"><span class="empty-icon">📭</span>이 폴더는 비어있어요.</div>'
-      : '<div class="empty"><span class="empty-icon">📂</span>내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
+      ? '<div class="empty">이 폴더는 비어있어요.</div>'
+      : '<div class="empty">내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     renderedSig = '';
     return;
@@ -1148,7 +1146,7 @@ async function renderCurrentPage() {
   if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
   meta.textContent = parts.join('  ·  ');
 
-  if (!data.length) { grid.innerHTML = '<div class="empty"><span class="empty-icon">🔎</span>결과 없음</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
+  if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없어요.<br>필터를 줄이거나 다른 검색어로 찾아보세요.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
   const sig = sigOf(data);
   if (sig !== renderedSig) { // 캐시로 먼저 그린 화면과 내용이 같으면 DOM을 그대로 둔다(사진 재요청·깜빡임·스크롤 튐 방지)
     grid.innerHTML = cardsHtml(data);

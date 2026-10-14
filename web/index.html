@@ -16,187 +16,188 @@
 <link rel="preconnect" href="https://i0.wp.com" crossorigin>
 <link rel="preconnect" href="https://i1.wp.com" crossorigin>
 <link rel="preconnect" href="https://i2.wp.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"></noscript>
 <script defer src="./vendor/supabase.js"></script>
 <style>
   * { box-sizing: border-box; }
   :root {
-    --ink: #161616; --sub: #8a8a8a; --line: #eaeaea; --bg: #fafaf9; --faint: #f3f2f0;
-    --accent: #2fbf8f; --accent-soft: #e2f7ef;
-    --card-shadow: 0 1px 2px rgba(20,20,20,.04);
-    --hover-shadow: 0 12px 28px rgba(20,20,20,.10);
+    --ink: #111111; --sub: #75716a; --line: #dedbd4; --bg: #f9f8f5; --faint: #eeece6; --paper: #ffffff;
   }
-  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: linear-gradient(180deg, #fdfbfa 0%, var(--bg) 420px); -webkit-font-smoothing: antialiased; word-break: keep-all; }
-  header { position: sticky; top: 0; background: rgba(250,250,249,.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); padding: 18px 32px 16px; z-index: 10; }
-  header::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--accent), transparent 55%); opacity: .4; }
-  .header-inner { max-width: 1320px; margin: 0 auto; }
-  .topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-  .logo { margin: 0; display: flex; align-items: center; gap: 8px; font-family: 'Space Grotesk', 'Pretendard Variable', sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); cursor: pointer; }
-  .logo:hover { opacity: .8; }
-  .logo-mark { width: 9px; height: 9px; min-width: 9px; border-radius: 3px; background: var(--accent); }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; word-break: keep-all; font-variant-numeric: tabular-nums; }
+  button, input, select { font-family: inherit; }
+
+  /* ── 헤더: 워드마크 + 텍스트 내비게이션, 얇은 선으로만 구획 ── */
+  header { position: sticky; top: 0; z-index: 10; background: rgba(249,248,245,.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--ink); padding: 18px 40px 0; }
+  .header-inner { max-width: 1400px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; gap: 30px; padding-bottom: 16px; }
+  .logo { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .logo-mark { display: none; }
   .spacer { flex: 1; }
-  .nav-links { display: flex; gap: 8px; margin-bottom: 14px; }
-  .nav-links button { background: #fff; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; font-weight: 500; letter-spacing: -0.01em; cursor: pointer; padding: 8px 15px; border-radius: 20px; transition: border-color .15s, background .15s; }
-  .nav-links button:hover { border-color: var(--ink); background: var(--faint); }
-  .nav-links button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .nav-links button.primary:hover { opacity: .85; background: var(--ink); }
-  #authArea { font-size: 12.5px; color: var(--sub); display: flex; align-items: center; gap: 10px; }
-  #authArea button { padding: 8px 15px; font-size: 12.5px; border-radius: 20px; }
-  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600; cursor: default; }
-  button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
-  button.linklike:hover { color: var(--ink); }
-  .row { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
-  .search-wrap { position: relative; flex: 1; min-width: 240px; }
-  .search-wrap svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .4; }
-  input[type=text]#q { width: 100%; padding: 13px 16px 13px 40px; border: 1px solid var(--line); border-radius: 11px; font-size: 14.5px; font-family: inherit; background: #fff; box-shadow: var(--card-shadow); transition: box-shadow .15s, border-color .15s; }
-  input[type=text]#q:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(22,22,22,.06); }
-  input[type=number] { width: 98px; padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; }
-  .price-range { display: flex; align-items: center; gap: 6px; flex: none; }
-  .hsep { color: var(--sub); font-size: 12.5px; }
-  select { padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; color: var(--ink); max-width: 150px; }
+  .nav-links { display: flex; gap: 26px; align-items: center; }
+  .nav-links button { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
+  .nav-links button.primary { border-bottom-color: var(--ink); }
+  #authArea { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--sub); }
+  #authArea .who { color: var(--ink); font-size: 12px; letter-spacing: .02em; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #authArea button { background: none; color: var(--ink); border: 1px solid var(--ink); border-radius: 0; padding: 6px 16px; font-size: 12px; letter-spacing: .06em; }
+  #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
+  button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ── 검색 + 필터: 박스 없이 밑줄만 ── */
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 26px; }
+  .search-wrap { position: relative; flex: 1 1 100%; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .search-wrap svg { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: .6; }
+  .search-wrap:focus-within { border-bottom-color: var(--ink); }
+  input[type=text]#q { width: 100%; padding: 15px 0 15px 30px; border: 0; border-radius: 0; background: transparent; font-size: 15px; letter-spacing: -.01em; }
+  input[type=text]#q:focus { outline: none; }
+  input[type=text]#q::placeholder { color: #a29e95; }
+  select { appearance: none; -webkit-appearance: none; border: 0; border-radius: 0; background: transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23111' stroke-width='1.2'/></svg>") no-repeat right 2px center; padding: 13px 18px 13px 0; font-size: 12.5px; font-weight: 500; letter-spacing: .01em; color: var(--ink); cursor: pointer; max-width: 160px; }
+  select:focus { outline: none; }
+  input[type=number] { width: 74px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 12.5px; color: var(--ink); }
+  input[type=number]:focus { outline: none; border-bottom-color: var(--ink); }
+  input[type=number]::placeholder { color: #a29e95; }
+  .price-range { display: flex; align-items: center; gap: 8px; flex: none; }
+  .hsep { color: var(--sub); font-size: 12px; }
+  label.chk { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); white-space: nowrap; cursor: pointer; }
+  label.chk input { accent-color: #111; width: 14px; height: 14px; margin: 0; }
+  .row > button { background: var(--ink); color: #fff; border-radius: 0; padding: 9px 22px; font-size: 12px; letter-spacing: .12em; margin-left: auto; }
 
   .msel { position: relative; flex: none; }
-  .msel-btn { background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 11px; padding: 12px 30px 12px 12px; font-size: 13px; font-weight: 400; max-width: 170px; text-align: left; position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .msel-btn::after { content: ''; position: absolute; right: 12px; top: 50%; width: 6px; height: 6px; border-right: 1.5px solid #888; border-bottom: 1.5px solid #888; transform: translateY(-70%) rotate(45deg); }
-  .msel-btn:hover { opacity: 1; border-color: #bbb; }
-  .msel-btn.on { border-color: var(--ink); font-weight: 600; }
-  .msel-panel { position: absolute; top: calc(100% + 6px); left: 0; width: 280px; max-width: calc(100vw - 32px); max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 36px rgba(20,20,20,.16); z-index: 40; display: none; padding: 10px 12px 12px; }
+  .msel-btn { background: transparent; color: var(--ink); border: 0; border-radius: 0; padding: 13px 18px 13px 0; font-size: 12.5px; font-weight: 500; letter-spacing: .01em; max-width: 180px; text-align: left; position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .msel-btn::after { content: ''; position: absolute; right: 2px; top: 50%; width: 5px; height: 5px; border-right: 1.2px solid var(--ink); border-bottom: 1.2px solid var(--ink); transform: translateY(-70%) rotate(45deg); }
+  .msel-btn.on { text-decoration: underline; text-underline-offset: 5px; }
+  .msel-panel { position: absolute; top: 100%; left: 0; width: 300px; max-width: calc(100vw - 32px); max-height: 360px; overflow-y: auto; background: var(--paper); border: 1px solid var(--ink); border-radius: 0; z-index: 40; display: none; padding: 12px 16px 14px; }
   .msel-panel.open { display: block; }
-  .msel-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--sub); padding: 2px 2px 8px; }
-  .msel-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
-  .msel-item { display: flex; align-items: center; gap: 8px; padding: 8px 6px; border-radius: 8px; font-size: 13px; cursor: pointer; }
-  .msel-item:hover { background: var(--faint); }
-  .msel-item input { width: 16px; height: 16px; accent-color: #161616; margin: 0; flex: none; }
-  .msel-item .sw { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,.16); flex: none; display: block; }
-  .subchips { flex-direction: column; gap: 6px; }
-  .subchips .subrow { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
-  .chip.sub.tag { background: var(--ink); color: #fff; cursor: default; font-weight: 600; }
-  .chip.sub.tag:hover { box-shadow: none; }
+  .msel-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: .06em; color: var(--sub); padding: 0 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  .msel-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .msel-item { display: flex; align-items: center; gap: 9px; padding: 8px 0; font-size: 12.5px; cursor: pointer; }
+  .msel-item input { width: 14px; height: 14px; accent-color: #111; margin: 0; flex: none; }
+  .msel-item .sw { width: 12px; height: 12px; border-radius: 0; border: 1px solid rgba(0,0,0,.25); flex: none; display: block; }
   .brand-combo { position: relative; flex: none; }
-  .brand-combo input { width: 150px; padding: 12px 11px; border: 1px solid var(--line); border-radius: 11px; font-size: 13px; font-family: inherit; background: #fff; color: var(--ink); }
-  .brand-combo input:focus { outline: none; border-color: var(--ink); }
-  .brand-combo-list { position: absolute; top: calc(100% + 4px); left: 0; min-width: 220px; max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 12px 28px rgba(20,20,20,.12); z-index: 20; display: none; }
+  .brand-combo input { width: 150px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 12.5px; color: var(--ink); }
+  .brand-combo input:focus { outline: none; border-bottom-color: var(--ink); }
+  .brand-combo input::placeholder { color: var(--ink); }
+  .brand-combo-list { position: absolute; top: 100%; left: 0; min-width: 240px; max-height: 280px; overflow-y: auto; background: var(--paper); border: 1px solid var(--ink); border-radius: 0; z-index: 20; display: none; }
   .brand-combo-list.open { display: block; }
-  .brand-combo-item { padding: 9px 14px; font-size: 13px; cursor: pointer; }
-  .brand-combo-item:hover { background: var(--faint); }
-  .brand-combo-empty { padding: 9px 14px; font-size: 12.5px; color: var(--sub); }
-  input[type=number]:focus, select:focus { outline: none; border-color: var(--ink); }
-  button { padding: 12px 22px; border: 0; border-radius: 11px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s, transform .1s; }
-  button:hover { opacity: .82; }
-  button:active { transform: scale(.98); }
-  label.chk { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
-  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 16px; max-width: 1320px; }
-  .chip { padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 11.5px; letter-spacing: -0.01em; cursor: pointer; transition: background .12s, color .12s, border-color .12s, box-shadow .12s; }
-  .chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: var(--hover-shadow); }
-  .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .chip.sub { background: var(--faint); border-color: transparent; color: var(--sub); }
-  .chip.sub:hover { background: var(--ink); color: #fff; }
-  .chip.sub.on { background: var(--ink); color: #fff; }
-  .subchips { margin-top: 8px; }
-  main { padding: 26px 32px 60px; }
-  .meta-row { max-width: 1320px; margin: 0 auto 20px; }
-  .meta { display: inline-flex; align-items: center; gap: 6px; color: var(--sub); font-size: 12.5px; letter-spacing: -0.01em; background: #fff; border: 1px solid var(--line); padding: 7px 15px; border-radius: 999px; box-shadow: var(--card-shadow); }
+  .brand-combo-item { padding: 10px 14px; font-size: 12.5px; cursor: pointer; border-bottom: 1px solid var(--line); }
+  .brand-combo-empty { padding: 10px 14px; font-size: 12.5px; color: var(--sub); }
+
+  button { padding: 11px 22px; border: 0; border-radius: 0; background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 500; font-family: inherit; letter-spacing: .06em; cursor: pointer; }
+  button:active { opacity: .8; }
+
+  /* ── 카테고리: 칩 대신 텍스트 탭(밑줄) ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 4px; max-width: 1400px; }
+  .chip { padding: 13px 0 11px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--sub); font-size: 12px; font-weight: 600; letter-spacing: .1em; cursor: pointer; white-space: nowrap; }
+  .chip.on { color: var(--ink); border-bottom-color: var(--ink); }
+  .subchips { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 10px 0 12px; border-top: 1px solid var(--line); }
+  .subchips .subrow { display: flex; flex-wrap: wrap; gap: 2px 22px; align-items: baseline; }
+  .chip.sub { padding: 4px 0; border-bottom: 1px solid transparent; font-size: 12.5px; font-weight: 400; letter-spacing: -.005em; }
+  .chip.sub.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+  .chip.sub.tag { color: var(--ink); font-weight: 700; font-size: 10.5px; letter-spacing: .14em; cursor: default; border-bottom-color: transparent; min-width: 64px; }
+
+  /* ── 목록 ── */
+  main { padding: 22px 40px 90px; }
+  .meta-row { max-width: 1400px; margin: 0 auto 22px; }
+  .meta { color: var(--sub); font-size: 12px; letter-spacing: .02em; }
   .meta:empty { display: none; }
-  .grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 24px 16px; }
+  .grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 38px 20px; }
   .card { position: relative; display: flex; flex-direction: column; }
-  .card .imgwrap { position: relative; overflow: hidden; border-radius: 10px; background: linear-gradient(135deg, #f5f3f1, #ece9e6); aspect-ratio: 3/4; box-shadow: var(--card-shadow); transition: box-shadow .25s ease; }
-  .card:hover .imgwrap { box-shadow: var(--hover-shadow); }
-  .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
-  .card:hover img { transform: scale(1.045); }
-  .badge { position: absolute; top: 10px; left: 10px; background: #fff; color: var(--ink); font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em; padding: 4px 9px; border-radius: 6px; box-shadow: var(--card-shadow); }
-  .card .body { padding: 13px 2px 0; display: flex; flex-direction: column; gap: 3px; }
-  .brand { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
-  .title { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .price { font-size: 13.5px; font-weight: 700; margin-top: 4px; letter-spacing: -0.01em; }
-  .tags { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .tag { font-size: 10.5px; color: var(--sub); background: var(--faint); border-radius: 5px; padding: 2px 8px; }
-  .sold img { opacity: .4; }
-  .multi { color: var(--sub); font-size: 11px; margin-top: 4px; }
+  .card .imgwrap { position: relative; overflow: hidden; background: var(--faint); aspect-ratio: 3/4; }
+  .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: opacity .25s ease; }
+  .card:hover img { opacity: .9; }
+  .badge { position: absolute; left: 0; bottom: 0; background: var(--ink); color: #fff; font-size: 10px; font-weight: 600; letter-spacing: .14em; padding: 5px 10px; border-radius: 0; }
+  .card .body { padding: 12px 0 0; display: flex; flex-direction: column; gap: 3px; }
+  .brand { font-size: 11px; color: var(--ink); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+  .title { font-size: 12.5px; font-weight: 400; color: #3a3833; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .price { font-size: 12.5px; font-weight: 600; margin-top: 5px; }
+  .tags { margin-top: 6px; display: flex; flex-wrap: wrap; align-items: center; }
+  .tag { font-size: 10.5px; color: var(--sub); letter-spacing: .01em; }
+  .tag + .tag::before { content: '·'; margin: 0 6px; }
+  .sold img { opacity: .35; filter: grayscale(.7); }
+  .multi { color: var(--sub); font-size: 10.5px; margin-top: 3px; }
   a.card { text-decoration: none; color: inherit; }
-  .empty { max-width: 420px; margin: 70px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13.5px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 40px 32px; box-shadow: var(--card-shadow); }
-  .empty-icon { display: block; font-size: 30px; margin-bottom: 10px; }
-  dialog { border: 0; border-radius: 18px; padding: 0; width: min(480px, 92vw); max-height: 80vh; box-shadow: 0 24px 70px rgba(20,20,20,.16); }
-  dialog::backdrop { background: rgba(15,15,15,.45); backdrop-filter: blur(2px); }
-  .dlg-body { padding: 24px; display: flex; flex-direction: column; gap: 11px; max-height: 80vh; overflow-y: auto; font-family: inherit; }
-  .dlg-body h2 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.02em; font-weight: 700; }
-  .dlg-body input { padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; font-size: 14px; font-family: inherit; background: var(--faint); }
-  .dlg-body input:focus { outline: none; border-color: var(--ink); background: #fff; }
-  .dlg-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
-  .dlg-row button.secondary { background: var(--faint); color: var(--ink); }
-  .dlg-row button.secondary:hover { opacity: 1; background: var(--line); }
-  .more-wrap { max-width: 1320px; margin: 36px auto 0; text-align: center; }
-  .more-wrap button.secondary { background: #fff; color: var(--ink); padding: 13px 30px; border: 1px solid var(--line); box-shadow: var(--card-shadow); }
-  .more-wrap button.secondary:hover { opacity: 1; background: var(--faint); }
-  #addResult, #folderMsg, #authMsg { font-size: 12.5px; padding: 10px 12px; border-radius: 9px; display: none; }
-  #addResult.ok, #folderMsg.ok, #authMsg.ok { display: block; background: #eef7ee; color: #2a6b2a; }
-  #addResult.warn, #folderMsg.warn, #authMsg.warn { display: block; background: #fdf3e7; color: #92400e; }
-  .folderList { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; border: 1px solid var(--line); border-radius: 11px; padding: 6px; }
-  .folderRow { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 13px; }
-  .folderRow:hover { background: var(--faint); }
+  .empty { max-width: 460px; margin: 80px auto; text-align: center; color: var(--sub); line-height: 1.9; font-size: 13px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 38px 12px; }
+  .empty-icon { display: none; }
+
+  /* ── 다이얼로그 ── */
+  dialog { border: 1px solid var(--ink); border-radius: 0; padding: 0; width: min(500px, 92vw); max-height: 82vh; background: var(--paper); color: var(--ink); }
+  dialog::backdrop { background: rgba(17,17,17,.4); }
+  .dlg-body { padding: 28px; display: flex; flex-direction: column; gap: 12px; max-height: 82vh; overflow-y: auto; }
+  .dlg-body h2 { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .dlg-body input { padding: 11px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; font-size: 14px; background: transparent; }
+  .dlg-body input[type=checkbox] { accent-color: #111; padding: 0; width: 14px; height: 14px; }
+  .dlg-body input:focus { outline: none; border-bottom-color: var(--ink); }
+  .dlg-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+  .dlg-row button.secondary { background: none; color: var(--ink); border: 1px solid var(--ink); }
+  .more-wrap { max-width: 1400px; margin: 48px auto 0; text-align: center; }
+  .more-wrap button.secondary { background: none; color: var(--ink); padding: 4px 0; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; font-size: 12px; letter-spacing: .1em; }
+  .more-wrap button.secondary:disabled { color: #b9b5ab; border-bottom-color: #d8d4cb; cursor: default; }
+  #addResult, #folderMsg, #authMsg { font-size: 12.5px; padding: 8px 0 8px 12px; display: none; border-left: 2px solid var(--ink); }
+  #addResult.ok, #folderMsg.ok, #authMsg.ok { display: block; color: var(--ink); }
+  #addResult.warn, #folderMsg.warn, #authMsg.warn { display: block; color: #8a3b12; border-left-color: #8a3b12; }
+  .folderList { display: flex; flex-direction: column; max-height: 50vh; overflow-y: auto; border-top: 1px solid var(--line); }
+  .folderRow { display: flex; align-items: center; gap: 10px; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
   .folderRow .fname { flex: 1; }
-  .folderRow .fbrand { color: #a1a1aa; font-size: 11px; }
-  .folder-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-  .ftab { background: var(--faint); border: 1px solid transparent; padding: 6px 13px; border-radius: 20px; font-size: 12.5px; font-weight: 500; color: var(--sub); cursor: pointer; }
-  .ftab.active { color: #fff; background: var(--ink); font-weight: 600; }
-  .ftab-add { background: #fff; border: 1px dashed var(--line); color: var(--sub); }
-  .ftab-add:hover { border-color: var(--ink); color: var(--ink); }
-  .folder-manage-row { display: flex; gap: 14px; }
-  .folder-filter-row { display: flex; gap: 6px; }
+  .folderRow .fbrand { color: #a29e95; font-size: 11px; }
+  .folder-tabs { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  .ftab:focus, .fchip:focus, .nav-links button:focus { outline: none; }
+  .ftab:focus-visible, .fchip:focus-visible, .nav-links button:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+  .ftab { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 4px 0; font-size: 12.5px; font-weight: 500; color: var(--sub); cursor: pointer; }
+  .ftab.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
+  .ftab-add { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .folder-manage-row { display: flex; gap: 16px; }
+  .folder-filter-row { display: flex; gap: 18px; }
   .folder-selectall-row { display: flex; padding: 0 2px; }
-  .folder-selectall-row label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--sub); cursor: pointer; }
-  .fchip { background: var(--faint); border: 1px solid transparent; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; color: var(--sub); cursor: pointer; }
-  .fchip.active { color: #fff; background: var(--ink); font-weight: 600; }
+  .folder-selectall-row label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .fchip { background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 3px 0; font-size: 12px; font-weight: 500; color: var(--sub); cursor: pointer; }
+  .fchip.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
   .shared-note { font-size: 12.5px; color: var(--sub); }
-  .shared-banner-bar { max-width: 1320px; margin: 0 auto 20px; padding: 11px 16px; background: #fff8e6; border: 1px solid #f3dfa0; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 12px; }
+  .shared-banner-bar { max-width: 1400px; margin: 0 auto 22px; padding: 12px 16px; background: var(--paper); border: 1px solid var(--line); border-left: 2px solid var(--ink); display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 12px; }
+  .guide { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: step; }
+  .guide li { counter-increment: step; display: grid; grid-template-columns: 34px 1fr; gap: 0 4px; padding: 13px 0; border-top: 1px solid var(--line); }
+  .guide li::before { content: counter(step, decimal-leading-zero); font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--sub); padding-top: 2px; }
+  .guide b { display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+  .guide span { display: block; font-size: 13px; line-height: 1.7; color: #4a4741; }
+  .lead { font-size: 13px; color: var(--sub); margin: 0; line-height: 1.7; }
 
   @media (max-width: 700px) {
-    /* 폰에서는 헤더가 화면에 계속 고정돼 있으면 상품 볼 공간이 거의 안 남아서 고정을 풀고,
-       패딩/폰트도 화면에 맞게 줄여서 덜 빽빽하게 보이도록. */
-    header { position: relative; padding: 14px 16px 12px; }
-    .topbar { margin-bottom: 10px; }
-    .logo { font-size: 19px; }
-    .nav-links { flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .nav-links button { padding: 7px 12px; font-size: 12px; }
-    .row { gap: 8px; }
-    .search-wrap { flex-basis: 100%; }
+    header { position: relative; padding: 14px 16px 0; }
+    .topbar { flex-wrap: wrap; gap: 12px 16px; padding-bottom: 12px; }
+    .logo { font-size: 13px; letter-spacing: .24em; }
+    .nav-links { order: 3; flex-basis: 100%; gap: 22px; }
+    #authArea .who { display: none; }
+    .row { gap: 0 20px; }
     input[type=text]#q { font-size: 16px; } /* 16px 미만이면 iOS에서 포커스 시 자동 확대됨 */
-    select, input[type=number] { font-size: 16px; flex: 1 1 auto; min-width: 0; }
-    .brand-combo { flex: 1 1 auto; min-width: 0; }
-    .brand-combo input { width: 100%; font-size: 16px; }
-    .price-range { flex: 1 1 auto; }
-    .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin-top: 12px; padding-bottom: 2px; }
+    select, input[type=number], .brand-combo input, .msel-btn { font-size: 16px; }
+    .msel-btn { max-width: none; }
+    select { max-width: none; }
+    .brand-combo { flex: 1 1 140px; min-width: 0; }
+    .brand-combo input { width: 100%; }
+    .price-range { flex: 1 1 160px; }
+    input[type=number] { width: 100%; min-width: 0; }
+    .row > button { margin: 8px 0 12px auto; }
+    .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 0 22px; }
     .chips::-webkit-scrollbar { display: none; }
-    .chip { white-space: nowrap; flex: none; }
-    .msel-btn { font-size: 16px; max-width: none; }
     .subchips .subrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
     .subchips .subrow::-webkit-scrollbar { display: none; }
-    main { padding: 18px 16px 40px; }
-    .grid { grid-template-columns: repeat(2, 1fr); gap: 18px 10px; }
-    .dlg-body { padding: 20px; }
+    .chip, .chip.sub { flex: none; }
+    main { padding: 18px 16px 60px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 28px 10px; }
+    .dlg-body { padding: 22px 20px; }
     .dlg-body input { font-size: 16px; }
   }
-  /* 터치 기기에선 :hover가 마지막으로 탭한 곳에 계속 남아서(칩을 껐는데도 검게 보임) hover 효과를 끈다 */
-  @media (hover: none) {
-    .chip:hover { background: #fff; color: var(--ink); border-color: var(--line); box-shadow: none; }
-    .chip.sub:hover { background: var(--faint); color: var(--sub); border-color: transparent; }
-    .chip.on:hover, .chip.sub.on:hover, .chip.sub.tag:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-    button:hover { opacity: 1; }
-    .nav-links button:hover { border-color: var(--line); background: #fff; }
-    .nav-links button.primary:hover { background: var(--ink); border-color: var(--ink); opacity: 1; }
-    .card:hover .imgwrap { box-shadow: var(--card-shadow); }
-    .card:hover img { transform: none; }
-    .msel-btn:hover { border-color: var(--line); }
-    .msel-btn.on:hover { border-color: var(--ink); }
-    .msel-item:hover, .brand-combo-item:hover, .folderRow:hover { background: transparent; }
+  /* 터치 기기에선 :hover가 마지막으로 탭한 곳에 남지 않게, hover 효과는 마우스 환경에서만 */
+  @media (hover: hover) {
+    .nav-links button:hover { border-bottom-color: var(--ink); }
+    .chip:hover { color: var(--ink); }
+    .msel-item:hover, .brand-combo-item:hover, .folderRow:hover { background: var(--faint); }
+    .ftab:hover, .fchip:hover { color: var(--ink); }
+    .more-wrap button.secondary:hover:not(:disabled) { opacity: .6; }
   }
 </style><style id="intro-css">
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
 html.intro-on, html.intro-on body { overflow: hidden; }
-#intro { position: fixed; inset: 0; z-index: 9999; background: #fafaf9 linear-gradient(180deg, #fdfbfa 0%, #fafaf9 420px); color: #121212; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; }
+#intro { position: fixed; inset: 0; z-index: 9999; background: #f9f8f5; color: #111; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; }
 #intro.out { opacity: 0; transform: scale(1.015); transition: opacity .35s cubic-bezier(.4,0,.2,1), transform .35s cubic-bezier(.4,0,.2,1); pointer-events: none; }
 #intro .in-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 8vw; transform: translateY(var(--oy, -7px)); }
 #intro .in-col { width: min(78vw, 340px); }
@@ -313,14 +314,14 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <header>
   <div class="header-inner">
     <div class="topbar">
-      <p class="logo" onclick="resetAll()" style="cursor:pointer"><span class="logo-mark"></span>MY SELECT SHOP</p>
+      <p class="logo" onclick="resetAll()">MY SELECT SHOP</p>
       <span class="spacer"></span>
+      <div class="nav-links">
+        <button onclick="aboutDialog.showModal()">이용 안내</button>
+        <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
+        <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">브랜드 등록</button>
+      </div>
       <span id="authArea"></span>
-    </div>
-    <div class="nav-links">
-      <button onclick="aboutDialog.showModal()">이용 안내</button>
-      <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()">내 폴더</button>
-      <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()">+ 브랜드 등록</button>
     </div>
     <div class="row">
       <div class="search-wrap">
@@ -403,21 +404,15 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <dialog id="aboutDialog">
   <div class="dlg-body">
     <h2>MY SELECT SHOP 이용 안내</h2>
-    <p style="font-size:13px;color:#71717a;margin:0">광고 없이, 내가 좋아하는 인디 브랜드들만 모아서 한 번에 검색하는 사이트예요.</p>
-    <div style="font-size:13.5px;line-height:1.75;color:var(--ink)">
-      <p style="margin:14px 0 3px;font-weight:700">1. 로그인 / 회원가입</p>
-      <p style="margin:0;color:#52525b">이메일 + 비밀번호로 가입하면 바로 사용할 수 있어요. 이메일 확인 절차 없이 바로 로그인돼요.</p>
-      <p style="margin:14px 0 3px;font-weight:700">2. 브랜드 등록</p>
-      <p style="margin:0;color:#52525b">"+ 브랜드 등록"에서 쇼핑몰 URL을 넣으면 자동으로 판별해서 등록되고, 1~2분 안에 상품도 바로 수집돼요.</p>
-      <p style="margin:14px 0 3px;font-weight:700">3. 내 폴더 꾸리기</p>
-      <p style="margin:0;color:#52525b">"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있고, "전체 선택"으로 검색된 브랜드를 한 번에 담을 수도 있어요.</p>
-      <p style="margin:14px 0 3px;font-weight:700">4. 검색하기</p>
-      <p style="margin:0;color:#52525b">내 폴더에 담은 브랜드 안에서만 검색돼요. "블랙 후드티"처럼 자연스럽게 검색하면 색상·카테고리를 알아서 인식해요.</p>
-      <p style="margin:14px 0 3px;font-weight:700">5. 폴더 공유하기</p>
-      <p style="margin:0;color:#52525b">폴더의 "공유 링크 복사"로 링크를 만들면, 로그인하지 않은 사람도 그 폴더를 볼 수 있어요.</p>
-      <p style="margin:14px 0 3px;font-weight:700">6. 자동 업데이트</p>
-      <p style="margin:0;color:#52525b">등록 직후 한 번 바로 수집되고, 그 뒤로는 매일 새벽 자동으로 다시 수집돼서 품절·신상품이 계속 반영돼요.</p>
-    </div>
+    <p class="lead">광고 없이, 내가 좋아하는 인디 브랜드들만 모아서 한 번에 검색하는 사이트예요.</p>
+    <ol class="guide">
+      <li><div><b>로그인 / 회원가입</b><span>이메일과 비밀번호로 가입하면 바로 사용할 수 있어요. 이메일 확인 절차 없이 바로 로그인돼요.</span></div></li>
+      <li><div><b>브랜드 등록</b><span>"브랜드 등록"에서 쇼핑몰 URL을 넣으면 자동으로 판별해서 등록되고, 1~2분 안에 상품도 바로 수집돼요.</span></div></li>
+      <li><div><b>내 폴더 꾸리기</b><span>"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있어요.</span></div></li>
+      <li><div><b>검색하기</b><span>내 폴더에 담은 브랜드 안에서만 검색돼요. "블랙 후드티"처럼 자연스럽게 검색하면 색상과 카테고리를 알아서 인식해요.</span></div></li>
+      <li><div><b>폴더 공유하기</b><span>폴더의 "공유 링크 복사"로 링크를 만들면, 로그인하지 않은 사람도 그 폴더를 볼 수 있어요.</span></div></li>
+      <li><div><b>자동 업데이트</b><span>등록 직후 한 번 바로 수집되고, 그 뒤로는 매일 새벽 자동으로 다시 수집돼서 품절과 신상품이 계속 반영돼요.</span></div></li>
+    </ol>
     <div class="dlg-row">
       <button class="secondary" onclick="aboutDialog.close()">닫기</button>
     </div>
