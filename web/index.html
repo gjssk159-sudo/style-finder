@@ -36,17 +36,18 @@
   .logo-mark { width: 13px; height: 13px; min-width: 13px; border-radius: 4px; background: var(--accent); }
   .spacer { flex: 1; }
   .nav-links { display: flex; gap: 16px; align-items: center; }
-  .nav-links button { display: inline-flex; align-items: center; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
+  .nav-links button { display: inline-block; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
   #authArea { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--sub); }
   #authArea .who { color: var(--ink); font-size: 12px; letter-spacing: .02em; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #authArea button { background: none; color: var(--ink); border: 1px solid var(--ink); border-radius: 0; padding: 6px 16px; font-size: 12px; letter-spacing: .06em; }
   #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
-  .nav-links button svg { width: 13px; height: 13px; margin-right: 5px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-links button svg { display: inline-block; width: 13px; height: 13px; margin-right: 5px; vertical-align: -3px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   #authArea button.linklike, #authArea .who { font-size: 11px; }
+  /* 글꼴 기준선(baseline)에 맞춰 정렬 — 기기마다 줄 높이/글꼴이 달라도 아이콘이 글자 가운데에 오도록 아이콘별 미세 보정 */
+  .nav-links button:nth-child(1) svg { vertical-align: -2.3px; transform: translateY(.4px); }
+  .nav-links button:nth-child(2) svg { vertical-align: -1.8px; transform: translateY(.1px); }
+  .nav-links button:nth-child(3) svg { vertical-align: -2.05px; transform: translateY(.1px); }
   /* 아이콘 잉크 중심을 글자 잉크 중심에 맞추는 미세 보정(실측) */
-  .nav-links button:nth-child(1) svg { transform: translateY(-.5px); }
-  .nav-links button:nth-child(2) svg { transform: translateY(-1px); }
-  .nav-links button:nth-child(3) svg { transform: translateY(-.75px); }
   button.linklike { background: none; border: 0; color: var(--sub); font-size: 12px; font-weight: 500; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 
   /* ── 검색 + 필터: 박스 없이 밑줄만 ── */
