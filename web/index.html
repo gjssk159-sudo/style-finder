@@ -155,13 +155,14 @@
 
   /* ── 다이얼로그 ── */
 
-  /* ── 브랜드 현황 ── */
-  .brand-stats { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .brand-stats > div { padding: 14px 0 13px; display: flex; flex-direction: column; gap: 3px; }
-  .brand-stats > div + div { padding-left: 16px; border-left: 1px solid var(--line); }
-  .brand-stats .n { font-size: 22px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-  .brand-stats .l { font-size: 11.5px; color: var(--sub); }
-  .brand-stats .sub { font-size: 11px; color: var(--sub); }
+  /* ── 브랜드 현황(내 폴더 창) ── */
+  .stat-row { display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stat-tile { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; background: none; color: var(--ink); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 0; padding: 14px 0 12px; text-align: left; letter-spacing: 0; cursor: pointer; }
+  .stat-tile + .stat-tile { padding-left: 16px; border-left: 1px solid var(--line); }
+  .stat-tile.active { border-bottom-color: var(--accent); }
+  .stat-tile .n { font-size: 22px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .stat-tile .l { font-size: 11.5px; font-weight: 400; color: var(--sub); }
+  .stat-tile.active .l { color: var(--ink); }
   .brand-stats-line { margin: 0; font-size: 12.5px; color: var(--ink); }
   #myMsg, #qnaMsg { font-size: 12.5px; padding: 8px 0 8px 12px; display: none; border-left: 2px solid var(--ink); }
   #myMsg.ok, #qnaMsg.ok { display: block; color: var(--ink); }
@@ -549,7 +550,6 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <div class="dlg-body">
     <h2>마이페이지</h2>
     <div class="my-pane active" id="myPaneAccount">
-      <div class="brand-stats" id="myBrandStats"></div>
       <div class="my-field"><label>아이디 (이메일)</label><div class="val" id="myEmail"></div></div>
       <p class="my-note">아이디는 가입할 때 쓴 이메일이에요. 이메일을 변경하고 싶다면 오른쪽 아래 Q&amp;A 버튼으로 요청해 주세요.</p>
       <div class="my-section">
@@ -619,9 +619,9 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <button class="linklike" id="deleteFolderBtn" onclick="deleteFolder()">삭제</button>
       <button class="linklike" onclick="copyShareLink()">공유 링크 복사</button>
     </div>
-    <div class="folder-filter-row" id="folderFilterRow">
-      <button class="fchip active" data-filter="all" onclick="setFolderListFilter('all')">전체 브랜드</button>
-      <button class="fchip" data-filter="mine" onclick="setFolderListFilter('mine')">내가 등록한 브랜드</button>
+    <div class="stat-row" id="folderFilterRow">
+      <button type="button" class="stat-tile active" data-filter="all" onclick="setFolderListFilter('all')"><span class="n" id="statAll">–</span><span class="l">등록된 브랜드</span></button>
+      <button type="button" class="stat-tile" data-filter="mine" onclick="setFolderListFilter('mine')"><span class="n" id="statMine">–</span><span class="l">내가 등록한 브랜드</span></button>
     </div>
     <input type="text" id="folderSearch" placeholder="브랜드 검색…" oninput="renderFolderList()">
     <div class="folder-selectall-row" id="folderSelectAllRow">

@@ -224,22 +224,20 @@ function showMsg(id, kind, text) {
 }
 // 등록된 브랜드 / 내가 추가한 브랜드 현황 (브랜드 목록은 부팅 때 이미 받아둠)
 function brandStats() {
-  const ready = allBrands.filter((b) => b.status === 'ready').length;
-  const mine = currentUser ? allBrands.filter((b) => b.added_by === currentUser.id) : [];
-  const waiting = mine.filter((b) => b.status !== 'ready').length;
-  return { ready, mine: mine.length, waiting };
+  const mine = currentUser ? allBrands.filter((b) => b.added_by === currentUser.id).length : 0;
+  return { total: allBrands.length, mine };
 }
 function renderBrandStats() {
   const s = brandStats();
   const fmtN = (n) => n.toLocaleString('ko-KR');
-  const my = document.getElementById('myBrandStats');
-  if (my) my.innerHTML =
-    '<div><span class="n">' + fmtN(s.ready) + '</span><span class="l">등록된 브랜드</span></div>' +
-    '<div><span class="n">' + fmtN(s.mine) + '</span><span class="l">내가 추가한 브랜드' + (s.waiting ? ' <span class="sub">· 수집 대기 ' + s.waiting + '</span>' : '') + '</span></div>';
+  const all = document.getElementById('statAll');
+  const mine = document.getElementById('statMine');
+  if (all) all.textContent = fmtN(s.total);
+  if (mine) mine.textContent = fmtN(s.mine);
   const add = document.getElementById('addBrandStats');
   if (add) add.textContent = currentUser
-    ? '지금까지 등록된 브랜드 ' + fmtN(s.ready) + '개 · 내가 추가한 브랜드 ' + fmtN(s.mine) + '개'
-    : '지금까지 등록된 브랜드 ' + fmtN(s.ready) + '개';
+    ? '지금까지 등록된 브랜드 ' + fmtN(s.total) + '개 · 내가 등록한 브랜드 ' + fmtN(s.mine) + '개'
+    : '지금까지 등록된 브랜드 ' + fmtN(s.total) + '개';
 }
 function openAddDialog() {
   renderBrandStats();
@@ -251,7 +249,6 @@ function openMyPage() {
   document.getElementById('myNewPw').value = '';
   document.getElementById('myNewPw2').value = '';
   showMsg('myMsg', '', '');
-  renderBrandStats();
   if (!myDialog.open) myDialog.showModal();
 }
 async function signOutFromMy() {
@@ -586,7 +583,7 @@ async function loadAllBrands() {
 let folderListFilter = 'all'; // 'all' | 'mine' — 폴더 다이얼로그 브랜드 목록 필터
 function setFolderListFilter(f) {
   folderListFilter = f;
-  for (const btn of document.querySelectorAll('#folderFilterRow .fchip')) {
+  for (const btn of document.querySelectorAll('#folderFilterRow .stat-tile')) {
     btn.classList.toggle('active', btn.dataset.filter === f);
   }
   renderFolderList();
@@ -748,6 +745,7 @@ function currentFilteredBrands() {
 }
 
 function renderFolderList() {
+  renderBrandStats();
   const q = foldAccents(document.getElementById('folderSearch').value || '');
   const list = document.getElementById('folderList');
   const filterRow = document.getElementById('folderFilterRow');
