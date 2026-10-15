@@ -32,7 +32,8 @@
   header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, var(--ink) 0, var(--ink) 18%, rgba(17,17,17,.35) 52%, rgba(17,17,17,0) 100%); }
   .header-inner { max-width: 1400px; margin: 0 auto; position: relative; }
   .topbar { display: flex; align-items: center; gap: 30px; padding-bottom: 16px; }
-  .logo { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 34px; font-weight: 500; line-height: 1; letter-spacing: -.045em; word-spacing: -.02em; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .logo { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 23px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); text-shadow: 2px 2px 0 var(--accent); cursor: pointer; white-space: nowrap; }
+  .logo-mark { width: 15px; height: 15px; min-width: 15px; border-radius: 4px; background: var(--accent); }
   .spacer { flex: 1; }
   .nav-links { display: flex; gap: 16px; align-items: center; }
   .nav-links button { display: inline-block; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
@@ -262,7 +263,8 @@
   @media (max-width: 700px) {
     header { position: relative; padding: 14px 16px 0; }
     .topbar { flex-wrap: wrap; gap: 12px 8px; padding-bottom: 12px; }
-    .logo { font-size: 27px; }
+    .logo { font-size: 17px; letter-spacing: .14em; gap: 9px; text-shadow: 1.5px 1.5px 0 var(--accent); }
+    .logo-mark { width: 11px; height: 11px; min-width: 11px; border-radius: 3px; }
     .nav-links { order: 3; flex-basis: 100%; gap: 16px; }
     #authArea .who { display: none; }
     .row { gap: 0 20px; }
@@ -422,7 +424,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <header>
   <div class="header-inner">
     <div class="topbar">
-      <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-word">My Select Shop</span></p>
+      <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
