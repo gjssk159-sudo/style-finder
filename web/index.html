@@ -9,6 +9,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MY SELECT SHOP">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fipjvgglzlvksepdjxjv.supabase.co" crossorigin>
 <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.css" onload="this.onload=null;this.rel='stylesheet'">
@@ -32,8 +35,8 @@
   header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, var(--ink) 0, var(--ink) 18%, rgba(17,17,17,.35) 52%, rgba(17,17,17,0) 100%); }
   .header-inner { max-width: 1400px; margin: 0 auto; position: relative; }
   .topbar { display: flex; align-items: center; gap: 30px; padding-bottom: 16px; }
-  .logo { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
-  .logo-mark { width: 13px; height: 13px; min-width: 13px; border-radius: 4px; background: var(--accent); }
+  .logo { margin: 0; display: flex; align-items: baseline; gap: 2px; font-family: 'Instrument Serif', 'Times New Roman', Georgia, serif; font-size: 32px; font-weight: 400; line-height: 1; letter-spacing: -.01em; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-left: 3px; flex: none; }
   .spacer { flex: 1; }
   .nav-links { display: flex; gap: 16px; align-items: center; }
   .nav-links button { display: inline-block; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
@@ -163,7 +166,8 @@
   .stat-tile .n { font-size: 22px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .stat-tile .l { font-size: 11.5px; font-weight: 400; color: var(--sub); }
   .stat-tile.active .l { color: var(--ink); }
-  .brand-stats-line { margin: 0; font-size: 12.5px; color: var(--ink); }
+  .add-note { margin: 0; padding: 2px 0 2px 12px; border-left: 2px solid var(--ink); font-size: 12.5px; line-height: 1.75; color: var(--sub); }
+  .add-note b { display: block; color: var(--ink); font-size: 11.5px; letter-spacing: .08em; margin-bottom: 2px; }
   #myMsg, #qnaMsg { font-size: 12.5px; padding: 8px 0 8px 12px; display: none; border-left: 2px solid var(--ink); }
   #myMsg.ok, #qnaMsg.ok { display: block; color: var(--ink); }
   #myMsg.warn, #qnaMsg.warn { display: block; color: #8a3b12; border-left-color: #8a3b12; }
@@ -263,8 +267,8 @@
   @media (max-width: 700px) {
     header { position: relative; padding: 14px 16px 0; }
     .topbar { flex-wrap: wrap; gap: 12px 8px; padding-bottom: 12px; }
-    .logo { font-size: 16px; letter-spacing: .16em; gap: 9px; }
-    .logo-mark { width: 11px; height: 11px; min-width: 11px; border-radius: 3px; }
+    .logo { font-size: 28px; }
+    .logo-dot { width: 6px; height: 6px; }
     .nav-links { order: 3; flex-basis: 100%; gap: 16px; }
     #authArea .who { display: none; }
     .row { gap: 0 20px; }
@@ -424,7 +428,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <header>
   <div class="header-inner">
     <div class="topbar">
-      <p class="logo" onclick="resetAll()"><span class="logo-mark"></span>MY SELECT SHOP</p>
+      <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-word">My Select Shop</span><i class="logo-dot"></i></p>
       <span class="spacer"></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
@@ -595,8 +599,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <dialog id="addDialog">
   <div class="dlg-body">
     <h2>브랜드 등록</h2>
-    <p class="brand-stats-line" id="addBrandStats"></p>
     <p style="font-size:13px;color:#71717a;margin:0">쇼핑몰 URL을 입력해주세요. 등록되면 1~2분 안에 상품도 바로 수집돼요.</p>
+    <p class="add-note"><b>등록이 어려운 곳</b>SPA 브랜드나 편집샵·종합몰처럼 여러 브랜드를 함께 파는 곳은 등록하기 어려워요. 한 브랜드가 직접 운영하는 공식 쇼핑몰 주소만 넣어 주세요.</p>
     <input type="text" id="addUrl" placeholder="쇼핑몰 URL (예: brand.com)">
     <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);cursor:pointer">
       <input type="checkbox" id="addToMyFolder" checked style="width:16px;height:16px">등록 후 내 폴더에도 추가

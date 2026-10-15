@@ -234,13 +234,8 @@ function renderBrandStats() {
   const mine = document.getElementById('statMine');
   if (all) all.textContent = fmtN(s.total);
   if (mine) mine.textContent = fmtN(s.mine);
-  const add = document.getElementById('addBrandStats');
-  if (add) add.textContent = currentUser
-    ? '지금까지 등록된 브랜드 ' + fmtN(s.total) + '개 · 내가 등록한 브랜드 ' + fmtN(s.mine) + '개'
-    : '지금까지 등록된 브랜드 ' + fmtN(s.total) + '개';
 }
 function openAddDialog() {
-  renderBrandStats();
   addDialog.showModal();
 }
 function openMyPage() {
