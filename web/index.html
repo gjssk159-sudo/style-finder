@@ -154,6 +154,37 @@
   .grid > .empty { grid-column: 1 / -1; width: 100%; }
 
   /* ── 다이얼로그 ── */
+
+  /* ── 브랜드 현황 ── */
+  .brand-stats { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .brand-stats > div { padding: 14px 0 13px; display: flex; flex-direction: column; gap: 3px; }
+  .brand-stats > div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+  .brand-stats .n { font-size: 22px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .brand-stats .l { font-size: 11.5px; color: var(--sub); }
+  .brand-stats .sub { font-size: 11px; color: var(--sub); }
+  .brand-stats-line { margin: 0; font-size: 12.5px; color: var(--ink); }
+  #myMsg, #qnaMsg { font-size: 12.5px; padding: 8px 0 8px 12px; display: none; border-left: 2px solid var(--ink); }
+  #myMsg.ok, #qnaMsg.ok { display: block; color: var(--ink); }
+  #myMsg.warn, #qnaMsg.warn { display: block; color: #8a3b12; border-left-color: #8a3b12; }
+  /* ── 플로팅 Q&A ── */
+  .qa-fab { position: fixed; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 48px; height: 48px; padding: 0; border-radius: 14px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,.16); }
+  .qa-fab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .qa-fab .close, .qa-fab[aria-expanded="true"] .chat { display: none; }
+  .qa-fab[aria-expanded="true"] .close { display: block; }
+  .qa-panel { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 59; width: min(380px, calc(100vw - 32px)); max-height: min(620px, calc(100vh - 120px)); max-height: min(620px, calc(100dvh - 120px)); background: var(--paper); border: 1px solid var(--ink); display: none; flex-direction: column; }
+  .qa-panel.open { display: flex; }
+  .qa-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 12px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; letter-spacing: .14em; }
+  .qa-x { background: none; color: var(--sub); padding: 0; font-size: 12px; font-weight: 400; letter-spacing: 0; }
+  .qa-scroll { overflow-y: auto; padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .qa-hello { margin: 0; font-size: 13.5px; line-height: 1.7; }
+  .qa-guest { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+  #qaUser { display: none; flex-direction: column; gap: 12px; }
+  .qa-panel.authed #qaUser { display: flex; }
+  .qa-panel.authed .qa-guest { display: none; }
+  .qa-panel input[type=text] { width: 100%; padding: 11px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 14px; color: var(--ink); }
+  .qa-panel input[type=text]:focus { outline: none; border-bottom-color: var(--ink); }
+  .qa-panel textarea { min-height: 88px; }
+  @media (max-width: 700px) { .qa-panel input[type=text], .qa-panel textarea { font-size: 16px; } }
   dialog { border: 1px solid var(--ink); border-radius: 0; padding: 0; width: min(500px, 92vw); max-height: 82vh; background: var(--paper); color: var(--ink); }
   dialog::backdrop { background: rgba(17,17,17,.4); }
   .dlg-body { padding: 28px; display: flex; flex-direction: column; gap: 12px; max-height: 82vh; overflow-y: auto; }
@@ -397,7 +428,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
-        <button class="primary" id="addBrandBtn" onclick="addDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8.5v7M8.5 12h7"/></svg><span class="lbl">브랜드 등록</span></button>
+        <button class="primary" id="addBrandBtn" onclick="openAddDialog()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8.5v7M8.5 12h7"/></svg><span class="lbl">브랜드 등록</span></button>
       </div>
       <span id="authArea"></span>
     </div>
@@ -444,9 +475,36 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <footer class="foot">
   <div class="foot-inner">
     <p>운영 문의: <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>@woosobb</a></p>
-    <button class="foot-q" onclick="openMyPage('qna')">Q&amp;A</button>
   </div>
 </footer>
+
+<button class="qa-fab" id="qaFab" type="button" aria-label="Q&A" aria-expanded="false" onclick="toggleQa()">
+  <svg class="chat" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>
+  <svg class="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+<section class="qa-panel" id="qaPanel" aria-label="Q&A">
+  <div class="qa-head"><span>Q&amp;A</span><button type="button" class="qa-x" aria-label="닫기" onclick="toggleQa(false)">닫기</button></div>
+  <div class="qa-scroll">
+    <p class="qa-hello">궁금한 점이나 오류 제보를 남겨 주세요.<br>운영진이 확인하고 답변을 남겨드려요.</p>
+    <p class="my-note qa-contact">빠른 확인이 필요하면 인스타그램 DM으로 <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>@woosobb</a></p>
+    <div id="qaGuest" class="qa-guest">
+      <p class="my-note">로그인하면 질문을 남기고 답변을 확인할 수 있어요.</p>
+      <div><button type="button" onclick="toggleQa(false); openAuthDialog()">로그인</button></div>
+    </div>
+    <div id="qaUser">
+      <div class="qa-form">
+        <input type="text" id="qnaTitle" maxlength="100" placeholder="제목" autocomplete="off">
+        <textarea id="qnaBody" maxlength="2000" placeholder="질문 내용 (2000자 이내)"></textarea>
+        <div class="dlg-row" style="margin-top:0"><button onclick="submitQuestion()">등록</button></div>
+      </div>
+      <div id="qnaMsg"></div>
+      <div class="qa-mine">
+        <h3>내 질문</h3>
+        <div class="qna-list" id="qnaList"><p class="my-note" style="padding:8px 0">불러오는 중…</p></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <dialog id="promptDialog">
   <div class="dlg-body">
@@ -490,14 +548,10 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <dialog id="myDialog">
   <div class="dlg-body">
     <h2>마이페이지</h2>
-    <div class="my-tabs">
-      <button class="my-tab active" data-tab="account" onclick="setMyTab('account')">계정</button>
-      <button class="my-tab" data-tab="qna" onclick="setMyTab('qna')">Q&amp;A</button>
-    </div>
-
     <div class="my-pane active" id="myPaneAccount">
+      <div class="brand-stats" id="myBrandStats"></div>
       <div class="my-field"><label>아이디 (이메일)</label><div class="val" id="myEmail"></div></div>
-      <p class="my-note">아이디는 가입할 때 쓴 이메일이에요. 이메일을 변경하고 싶다면 Q&amp;A에서 요청해 주세요.</p>
+      <p class="my-note">아이디는 가입할 때 쓴 이메일이에요. 이메일을 변경하고 싶다면 오른쪽 아래 Q&amp;A 버튼으로 요청해 주세요.</p>
       <div class="my-section">
         <h3>비밀번호 변경</h3>
         <input type="password" id="myNewPw" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password">
@@ -509,21 +563,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <p class="my-note">가입한 이메일로 재설정 링크를 보내드려요. 로그아웃한 상태에서는 로그인 창의 "비밀번호를 잊으셨나요?"로도 받을 수 있어요.</p>
         <div><button class="linklike" onclick="sendResetMail()">재설정 메일 받기</button></div>
       </div>
+      <div class="my-section"><div><button class="linklike" onclick="signOutFromMy()">로그아웃</button></div></div>
       <div id="myMsg"></div>
-    </div>
-
-    <div class="my-pane" id="myPaneQna">
-      <p class="my-note qa-contact">운영 문의는 인스타그램 DM으로도 받아요. <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>@woosobb</a></p>
-      <div class="qa-form">
-        <input type="text" id="qnaTitle" maxlength="100" placeholder="제목" autocomplete="off">
-        <textarea id="qnaBody" maxlength="2000" placeholder="질문 내용 (2000자 이내)"></textarea>
-        <div class="dlg-row" style="margin-top:0"><button onclick="submitQuestion()">등록</button></div>
-      </div>
-      <div class="qa-mine">
-        <h3>내 질문</h3>
-        <div class="qna-list" id="qnaList"><p class="my-note" style="padding:8px 0">불러오는 중…</p></div>
-      </div>
-      <div id="qnaMsg"></div>
     </div>
 
     <div class="dlg-row">
@@ -542,7 +583,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <li><div><b>내 폴더 꾸리기</b><span>"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있어요.</span></div></li>
       <li><div><b>검색하기</b><span>내 폴더에 담은 브랜드 안에서만 검색돼요. "블랙 후드티"처럼 자연스럽게 검색하면 색상과 카테고리를 알아서 인식해요.</span></div></li>
       <li><div><b>폴더 공유하기</b><span>폴더의 "공유 링크 복사"로 링크를 만들면, 로그인하지 않은 사람도 그 폴더를 볼 수 있어요.</span></div></li>
-      <li><div><b>Q&amp;A</b><span>"마이페이지 > Q&amp;A"에 질문을 남기면 운영진이 답변을 달아드려요. 빠른 확인이 필요하면 인스타그램 @woosobb 로 DM 주세요.</span></div></li>
+      <li><div><b>Q&amp;A</b><span>오른쪽 아래 Q&amp;A 버튼으로 질문을 남기면 운영진이 답변을 달아드려요. 빠른 확인이 필요하면 인스타그램 @woosobb 로 DM 주세요.</span></div></li>
       <li><div><b>자동 업데이트</b><span>등록 직후 한 번 바로 수집되고, 그 뒤로는 매일 새벽 자동으로 다시 수집돼서 품절과 신상품이 계속 반영돼요.</span></div></li>
     </ol>
     <div class="dlg-row">
@@ -554,6 +595,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <dialog id="addDialog">
   <div class="dlg-body">
     <h2>브랜드 등록</h2>
+    <p class="brand-stats-line" id="addBrandStats"></p>
     <p style="font-size:13px;color:#71717a;margin:0">쇼핑몰 URL을 입력해주세요. 등록되면 1~2분 안에 상품도 바로 수집돼요.</p>
     <input type="text" id="addUrl" placeholder="쇼핑몰 URL (예: brand.com)">
     <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);cursor:pointer">

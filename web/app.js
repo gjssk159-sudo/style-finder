@@ -160,11 +160,11 @@ function renderAuthArea() {
   if (currentUser) {
     el.innerHTML = `
       <span class="who" title="${currentUser.email}">${currentUser.email.split('@')[0]}</span>
-      <button class="linklike my" onclick="openMyPage()">마이페이지</button>
-      <button class="linklike" onclick="signOut()">로그아웃</button>`;
+      <button class="linklike my" onclick="openMyPage()">마이페이지</button>`;
   } else {
     el.innerHTML = '<button onclick="openAuthDialog()">로그인</button>';
   }
+  updateQaState();
 }
 
 let authMode = 'signin'; // 'signin' | 'signup'
@@ -222,22 +222,58 @@ function showMsg(id, kind, text) {
   el.textContent = text;
   el.style.display = text ? 'block' : 'none';
 }
-function openMyPage(tab) {
+// 등록된 브랜드 / 내가 추가한 브랜드 현황 (브랜드 목록은 부팅 때 이미 받아둠)
+function brandStats() {
+  const ready = allBrands.filter((b) => b.status === 'ready').length;
+  const mine = currentUser ? allBrands.filter((b) => b.added_by === currentUser.id) : [];
+  const waiting = mine.filter((b) => b.status !== 'ready').length;
+  return { ready, mine: mine.length, waiting };
+}
+function renderBrandStats() {
+  const s = brandStats();
+  const fmtN = (n) => n.toLocaleString('ko-KR');
+  const my = document.getElementById('myBrandStats');
+  if (my) my.innerHTML =
+    '<div><span class="n">' + fmtN(s.ready) + '</span><span class="l">등록된 브랜드</span></div>' +
+    '<div><span class="n">' + fmtN(s.mine) + '</span><span class="l">내가 추가한 브랜드' + (s.waiting ? ' <span class="sub">· 수집 대기 ' + s.waiting + '</span>' : '') + '</span></div>';
+  const add = document.getElementById('addBrandStats');
+  if (add) add.textContent = currentUser
+    ? '지금까지 등록된 브랜드 ' + fmtN(s.ready) + '개 · 내가 추가한 브랜드 ' + fmtN(s.mine) + '개'
+    : '지금까지 등록된 브랜드 ' + fmtN(s.ready) + '개';
+}
+function openAddDialog() {
+  renderBrandStats();
+  addDialog.showModal();
+}
+function openMyPage() {
   if (!currentUser) { openAuthDialog(); return; }
   document.getElementById('myEmail').textContent = currentUser.email || '';
   document.getElementById('myNewPw').value = '';
   document.getElementById('myNewPw2').value = '';
   showMsg('myMsg', '', '');
-  showMsg('qnaMsg', '', '');
-  setMyTab(tab || 'account');
+  renderBrandStats();
   if (!myDialog.open) myDialog.showModal();
 }
-function setMyTab(t) {
-  for (const b of document.querySelectorAll('#myDialog .my-tab')) b.classList.toggle('active', b.dataset.tab === t);
-  document.getElementById('myPaneAccount').classList.toggle('active', t === 'account');
-  document.getElementById('myPaneQna').classList.toggle('active', t === 'qna');
-  if (t === 'qna') loadMyQuestions();
+async function signOutFromMy() {
+  myDialog.close();
+  await signOut();
 }
+// 오른쪽 아래 Q&A 버튼 → 패널 열기/닫기
+function updateQaState() {
+  const panel = document.getElementById('qaPanel');
+  if (!panel) return;
+  panel.classList.toggle('authed', !!currentUser);
+  if (currentUser && panel.classList.contains('open')) loadMyQuestions();
+}
+function toggleQa(force) {
+  const panel = document.getElementById('qaPanel');
+  const fab = document.getElementById('qaFab');
+  const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  fab.setAttribute('aria-expanded', String(open));
+  if (open) { showMsg('qnaMsg', '', ''); updateQaState(); }
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleQa(false); });
 async function changePassword() {
   const pw = document.getElementById('myNewPw').value;
   const pw2 = document.getElementById('myNewPw2').value;
