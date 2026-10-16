@@ -597,22 +597,36 @@ function renderBrandFilter() {
   brandComboOptions = mine.map((b) => b.name);
   const brandInput = document.getElementById('brandInput');
   if (brandInput && document.activeElement !== brandInput) brandInput.value = current || '';
+  syncBrandComboState();
   loadSizeOptions();
 }
 
 // ---------------- 브랜드 검색 콤보(select는 값 저장용으로 숨겨서 그대로 두고, 위에 검색 가능한 입력을 얹음) ----------------
+// "브랜드 전체"를 누르면 전체 목록이 펼쳐지고 글자를 치면 바로 걸러진다. 이미 고른 브랜드가 있어도
+// 누르면 글자가 선택돼 있어서 바로 새로 칠 수 있고, 목록은 전체부터 보여준다.
+function syncBrandComboState() {
+  const v = document.getElementById('brand').value;
+  document.querySelector('.brand-combo')?.classList.toggle('has-value', !!v);
+}
+
 function openBrandCombo() {
-  filterBrandCombo();
+  const input = document.getElementById('brandInput');
+  input.placeholder = '브랜드 검색';
+  filterBrandCombo(true);
   document.getElementById('brandComboList').classList.add('open');
+  input.select();
 }
 
 function closeBrandCombo() {
+  const input = document.getElementById('brandInput');
   document.getElementById('brandComboList').classList.remove('open');
+  input.placeholder = '브랜드 전체';
+  input.value = document.getElementById('brand').value || ''; // 고르지 않고 닫으면 원래 선택으로 되돌림
 }
 
-function filterBrandCombo() {
+function filterBrandCombo(showAll) {
   const list = document.getElementById('brandComboList');
-  const q = foldAccents(document.getElementById('brandInput').value || '');
+  const q = showAll === true ? '' : foldAccents(document.getElementById('brandInput').value || '');
   const matches = brandComboOptions.filter((n) => foldAccents(n).includes(q));
   const allOpt = '<div class="brand-combo-item" data-value="">브랜드 전체</div>';
   list.innerHTML =
@@ -623,17 +637,29 @@ function filterBrandCombo() {
   list.classList.add('open');
 }
 
+function brandComboKey(e) {
+  if (e.key === 'Escape') { closeBrandCombo(); e.target.blur(); return; }
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const q = foldAccents(e.target.value || '');
+  const first = brandComboOptions.find((n) => foldAccents(n).includes(q));
+  pickBrand(q && first ? first : '');
+  e.target.blur();
+}
+
 function pickBrand(name) {
   document.getElementById('brand').value = name;
   document.getElementById('brandInput').value = name || '';
-  closeBrandCombo();
+  document.getElementById('brandComboList').classList.remove('open');
+  document.getElementById('brandInput').placeholder = '브랜드 전체';
+  syncBrandComboState();
   go();
 }
 
 document.addEventListener('click', (e) => {
   const item = e.target.closest('.brand-combo-item');
   if (item) { pickBrand(item.dataset.value); return; }
-  if (!e.target.closest('.brand-combo')) closeBrandCombo();
+  if (!e.target.closest('.brand-combo') && document.getElementById('brandComboList').classList.contains('open')) closeBrandCombo();
 });
 
 // ---------------- 사이즈 필터: 사이트마다 표기가 다 달라서(SMALL/S, 1/2/3, 신발 220~290 등)

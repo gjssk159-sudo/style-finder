@@ -84,7 +84,11 @@
   .msel-item input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; flex: none; }
   .msel-item .sw { width: 12px; height: 12px; border-radius: 0; border: 1px solid rgba(0,0,0,.25); flex: none; display: block; }
   .brand-combo { position: relative; flex: none; }
-  .brand-combo input { width: 150px; padding: 9px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 12.5px; color: var(--ink); }
+  .brand-combo input { width: 150px; padding: 9px 20px 9px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 12.5px; color: var(--ink); }
+  .brand-combo::after { content: ''; position: absolute; right: 3px; top: 50%; width: 5px; height: 5px; border-right: 1.2px solid var(--ink); border-bottom: 1.2px solid var(--ink); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+  .brand-combo.has-value::after { display: none; }
+  .brand-clear { display: none; position: absolute; right: 0; top: 50%; transform: translateY(-50%); background: none; color: var(--sub); padding: 4px 4px 4px 8px; font-size: 18px; line-height: 1; letter-spacing: 0; }
+  .brand-combo.has-value .brand-clear { display: block; }
   .brand-combo input:focus { outline: none; border-bottom-color: var(--ink); }
   .brand-combo input::placeholder { color: var(--ink); }
   .brand-combo-list { position: absolute; top: 100%; left: 0; min-width: 240px; max-height: 280px; overflow-y: auto; background: var(--paper); border: 1px solid var(--ink); border-radius: 0; z-index: 20; display: none; }
@@ -449,7 +453,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       </select>
       <span class="fb-break"></span>
       <div class="brand-combo">
-        <input type="text" id="brandInput" placeholder="브랜드 전체" autocomplete="off" onfocus="openBrandCombo()" oninput="filterBrandCombo()">
+        <input type="text" id="brandInput" placeholder="브랜드 전체" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" onfocus="openBrandCombo()" oninput="filterBrandCombo()" onkeydown="brandComboKey(event)">
+        <button type="button" class="brand-clear" aria-label="브랜드 선택 해제" onclick="pickBrand('')">×</button>
         <div class="brand-combo-list" id="brandComboList"></div>
         <select id="brand" style="display:none"><option value="">브랜드 전체</option></select>
       </div>
