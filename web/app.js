@@ -1013,6 +1013,9 @@ function qs() {
   return p;
 }
 
+// '최신순'은 우리 사이트가 처음 발견한 시각(first_seen_at) 기준. (updated_at은 수집 때마다 전 상품에 새로 찍혀서 마지막으로 적재된 브랜드가 늘 맨 위였음)
+// DB에 컬럼이 아직 없으면(마이그레이션 전) 오류 메시지를 보고 예전 컬럼으로 한 번만 되돌린다.
+let RECENT_COL = 'first_seen_at';
 function buildQuery(offset, count = PAGE_SIZE) {
   const raw = document.getElementById('q').value;
   const { categories: queryCategories, colors: colorsFromQuery, keywords } = window.StyleFinderTaxonomy.parseQuery(raw);
@@ -1034,7 +1037,7 @@ function buildQuery(offset, count = PAGE_SIZE) {
     .in('brand_id', myFolderIds);
 
   // 가격 없는 상품이 낮은순/높은순에서 맨 위로 튀지 않게 null은 항상 뒤로.
-  if (sort === 'recent') query = query.order('updated_at', { ascending: false });
+  if (sort === 'recent') query = query.order(RECENT_COL, { ascending: false });
   else if (sort === 'price_asc') query = query.order('min_price', { ascending: true, nullsFirst: false });
   else if (sort === 'price_desc') query = query.order('max_price', { ascending: false, nullsFirst: false });
   else query = query.order('brand').order('title');
@@ -1324,7 +1327,12 @@ async function renderCurrentPage() {
   const mySeq = ++renderSeq;
   // 부팅 중(캐시로 먼저 그린 화면을 서버 결과로 확인하는 단계)에는 흐리게 하지 않는다 — 처음 열 때 회색으로 깜빡이던 원인
   if (bootComplete) grid.classList.add('loading');
-  const { data, error, count } = await query;
+  let res = await query;
+  if (res.error && RECENT_COL === 'first_seen_at' && /first_seen_at/.test(res.error.message || '')) {
+    RECENT_COL = 'updated_at';
+    res = await buildQuery(offset, PAGE_SIZE).query;
+  }
+  const { data, error, count } = res;
   if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림(loading 표시는 최신 요청이 끝낼 때 해제)
   if (!error && data.length && grid.querySelector('.card') && sigOf(data) !== renderedSig) {
     await preloadFirstImages(data);
@@ -1523,7 +1531,7 @@ function resetAll() {
   document.getElementById('size').value = '';
   document.getElementById('brand').value = '';
   document.getElementById('brandInput').value = '';
-  document.getElementById('sort').value = 'brand';
+  document.getElementById('sort').value = savedSort() || 'brand'; // 로고를 눌러 초기화해도 내가 고정해 둔 정렬은 유지
   document.getElementById('priceMin').value = '';
   document.getElementById('priceMax').value = '';
   document.getElementById('inStock').checked = false;
@@ -1616,7 +1624,13 @@ document.getElementById('q').addEventListener('keydown', (e) => { if (e.key === 
 let qTimer = null;
 document.getElementById('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(go, 600); }); // 검색 버튼이 없으니 입력을 멈추면 자동으로 검색
 document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth(); });
-for (const id of ['size', 'brand', 'sort', 'inStock']) document.getElementById(id).addEventListener('change', () => { if (id === 'size') pendingSize = ''; go(); });
+const SORT_KEY = 'sf_sort';
+function savedSort() { try { const v = localStorage.getItem(SORT_KEY); return ['brand', 'recent', 'price_asc', 'price_desc'].includes(v) ? v : null; } catch { return null; } }
+for (const id of ['size', 'brand', 'sort', 'inStock']) document.getElementById(id).addEventListener('change', () => {
+  if (id === 'size') pendingSize = '';
+  if (id === 'sort') { try { localStorage.setItem(SORT_KEY, document.getElementById('sort').value); } catch {} } // 고른 정렬을 기억해서 다음에 열어도 그대로
+  go();
+});
 for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventListener('change', go);
 
 (async () => {
@@ -1645,7 +1659,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
     document.getElementById('brand').value = initialBrand;
     document.getElementById('brandInput').value = initialBrand;
   }
-  if (initial.get('sort')) document.getElementById('sort').value = initial.get('sort');
+  { const s = initial.get('sort') || savedSort(); if (s) document.getElementById('sort').value = s; }
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
   if (initial.get('priceMax')) document.getElementById('priceMax').value = initial.get('priceMax');
   if (initial.get('inStock')) document.getElementById('inStock').checked = true;
