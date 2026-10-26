@@ -377,7 +377,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   const newId = session?.user?.id || null;
   currentUser = session?.user || null;
   // 첫 세션 감지는 부팅 흐름이 알아서 처리하고, 같은 사람의 재알림은 화면을 건드릴 이유가 없다.
-  if (event === 'INITIAL_SESSION') { lastAuthUserId = newId; return; }
+  if (event === 'INITIAL_SESSION' || lastAuthUserId === undefined) { lastAuthUserId = newId; return; }
   if (newId === lastAuthUserId) return;
   lastAuthUserId = newId;
   renderAuthArea();
@@ -400,12 +400,19 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
 // ---------------- 폴더 (사람마다 최대 3개, 공유 가능) ----------------
 async function loadMyFolders() {
-  const { data, error } = await sb.from('folders').select('id,name,share_id').eq('user_id', currentUser.id).order('created_at');
+  // 폴더 목록과 "내 모든 폴더의 브랜드"를 동시에 받아서(왕복 1번 절약) 현재 폴더 것만 골라 쓴다.
+  const [fRes, ubRes] = await Promise.all([
+    sb.from('folders').select('id,name,share_id').eq('user_id', currentUser.id).order('created_at'),
+    sb.from('user_brands').select('folder_id,brand_id').eq('user_id', currentUser.id),
+  ]);
+  const { data, error } = fRes;
   if (error) { console.error(error); return; }
   myFolders = data;
   if (myFolders.length === 0) { await createFolder(true); return; }
   if (!currentFolderId || !myFolders.some((f) => f.id === currentFolderId)) currentFolderId = myFolders[0].id;
-  await loadFolderBrandIds();
+  if (ubRes.error) { await loadFolderBrandIds(); return; }
+  myFolderIds = ubRes.data.filter((r) => r.folder_id === currentFolderId).map((r) => r.brand_id);
+  try { localStorage.setItem('sf_ids', JSON.stringify({ uid: currentUser?.id, folderId: currentFolderId, ids: myFolderIds })); } catch {}
 }
 
 async function loadFolderBrandIds() {
@@ -1348,6 +1355,10 @@ async function goToPage(page) {
 // 막기 위해 타임스탬프를 같이 저장하고 30분 넘으면 무시한다.
 const SCROLL_STATE_KEY = 'sf_scroll_state';
 const SCROLL_STATE_MAX_AGE_MS = 60 * 60 * 1000;
+// 앱을 새로 열 때(주소에 조건이 없는 일반 진입)는 아주 최근에 보던 화면만 이어서 보여준다.
+// 껐다가 한참 뒤에 다시 들어왔는데 예전에 보던 필터/페이지가 그대로 남아있던 문제 방지.
+const RELAUNCH_MAX_AGE_MS = 10 * 60 * 1000;
+function navType() { try { return performance.getEntriesByType('navigation')[0]?.type || 'navigate'; } catch { return 'navigate'; } }
 
 // 페이지 단위로 바뀌면서 "몇 개를 불러왔었는지"는 이제 URL의 p로 충분히 복원되니, 여기선
 // 그 페이지 안에서 스크롤로 어디까지 내려가 있었는지만 기억하면 된다(상품을 눌러서 나갔다가
@@ -1378,11 +1389,11 @@ addEventListener('scroll', () => {
 }, { passive: true });
 
 // 지금 조건(qs())과 저장해둔 조건이 같을 때만, 저장해둔 스크롤 위치로 옮긴다.
-function readSavedState() {
+function readSavedState(maxAge = SCROLL_STATE_MAX_AGE_MS) {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(SCROLL_STATE_KEY) || 'null'); } catch { saved = null; }
   if (!saved || typeof saved.params !== 'string') return null;
-  if (Date.now() - (saved.savedAt || 0) > SCROLL_STATE_MAX_AGE_MS) return null;
+  if (Date.now() - (saved.savedAt || 0) > maxAge) return null;
   return saved;
 }
 
@@ -1576,7 +1587,8 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   // 다른 앱(유튜브 등)을 쓰다 오면 OS가 이 앱을 메모리에서 내렸다가 다시 띄우는데, 홈 화면 앱은 마지막 주소가 아니라
   // 항상 처음 주소(?없음)로 열려서 3페이지에서 보던 게 1페이지로 돌아가 있었다. 주소에 아무 조건도 없으면
   // 직전에 저장해둔 상태(검색 조건·페이지·스크롤)를 이어서 연다. 첫 렌더가 저장값을 덮어쓰기 전에 미리 읽어둠.
-  const savedAtBoot = readSavedState();
+  const freshOpen = navType() === 'navigate' && ![...initial.keys()].length; // 홈 화면 아이콘/주소로 새로 연 경우
+  const savedAtBoot = readSavedState(freshOpen ? RELAUNCH_MAX_AGE_MS : SCROLL_STATE_MAX_AGE_MS);
   if (![...initial.keys()].length && savedAtBoot && savedAtBoot.params) {
     initial = new URLSearchParams(savedAtBoot.params);
     history.replaceState(0, '', '?' + savedAtBoot.params);
