@@ -109,7 +109,7 @@
   .chip.on::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 8px 1px 0; background: var(--accent); border-radius: 2px; vertical-align: middle; }
   /* 세부 카테고리 줄은 헤더 바로 아래에 겹쳐 뜬다(자리를 차지하지 않아 목록이 밀리지 않음) */
   .subchips { position: absolute; left: 0; right: 0; top: 100%; z-index: 9; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 8px 0 10px; background: var(--bg); border-bottom: 1px solid var(--line); }
-  .sub-count { position: absolute; right: 0; top: 50%; transform: translateY(-50%); padding-left: 14px; background: var(--bg); font-size: 11.5px; color: var(--sub); white-space: nowrap; }
+  .sub-count { position: absolute; right: 0; top: 50%; transform: translateY(-50%); padding: 3px 9px; border-radius: 6px; background: #e7e5df; font-size: 11.5px; font-weight: 600; color: #4a4741; white-space: nowrap; box-shadow: -12px 0 10px 4px var(--bg); font-variant-numeric: tabular-nums; }
   .subchips .subrow { padding-right: 76px; }
   .subchips .subrow { display: flex; flex-wrap: wrap; gap: 2px 22px; align-items: baseline; }
   .chip.sub { padding: 4px 0; border-bottom: 1px solid transparent; font-size: 12.5px; font-weight: 400; letter-spacing: -.005em; }
