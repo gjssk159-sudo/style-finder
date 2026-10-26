@@ -1263,6 +1263,23 @@ function preloadFirstImages(rows, n = 4, cap = 800) {
   });
 }
 
+// ---------------- 스크롤 등장 효과 ----------------
+// 처음 화면에 보이는 카드는 그대로 두고, 그 아래 카드는 화면 아래쪽으로 들어올 때 투명 → 선명으로 나타난다.
+// 사용자가 직접 스크롤/터치하기 시작한 뒤에만 숨김이 켜져서(reveal-on), 뒤로가기 복원이나 첫 로딩에는 영향이 없다.
+const revealIO = ('IntersectionObserver' in window)
+  ? new IntersectionObserver((entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); } }, { rootMargin: '0px 0px -6% 0px' })
+  : null;
+function armReveal(grid) {
+  if (!revealIO) return;
+  const vh = innerHeight;
+  for (const c of grid.querySelectorAll('a.card')) {
+    if (c.getBoundingClientRect().top < vh * 0.94) continue; // 이미 보이는 카드는 효과 없이
+    c.classList.add('pre');
+    revealIO.observe(c);
+  }
+}
+for (const ev of ['wheel', 'touchmove', 'keydown']) addEventListener(ev, () => document.documentElement.classList.add('reveal-on'), { passive: true, once: true });
+
 async function renderCurrentPage() {
   const grid = document.getElementById('grid');
   const meta = document.getElementById('meta');
@@ -1321,6 +1338,7 @@ async function renderCurrentPage() {
     grid.innerHTML = cardsHtml(data);
     hintShopOrigins(data);
     armImageTimeouts(grid);
+    armReveal(grid);
     renderedSig = sig;
   }
   updatePager();
@@ -1633,6 +1651,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
       document.getElementById('grid').innerHTML = cardsHtml(hc.data);
       hintShopOrigins(hc.data);
       armImageTimeouts(document.getElementById('grid'));
+      armReveal(document.getElementById('grid'));
       renderedSig = sigOf(hc.data);
       lastTotal = hc.count || 0;
       document.getElementById('meta').textContent = hc.meta || '';

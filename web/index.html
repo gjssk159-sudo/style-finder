@@ -124,6 +124,10 @@
   .card .imgwrap { position: relative; overflow: hidden; background: var(--faint); aspect-ratio: 3/4; }
   .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: opacity .25s ease; }
   .card:hover img { opacity: .9; }
+  /* 스크롤해서 새로 나타나는 상품은 투명한 상태에서 서서히 선명해진다(데이터가 들어오는 느낌) */
+  .reveal-on .card.pre:not(.in) { opacity: 0; transform: translateY(14px); }
+  .reveal-on .card.pre.in { opacity: 1; transform: none; transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
+  @media (prefers-reduced-motion: reduce) { .reveal-on .card.pre:not(.in) { opacity: 1; transform: none; } }
   .badge { position: absolute; left: 0; bottom: 0; background: var(--ink); color: #fff; font-size: 10px; font-weight: 600; letter-spacing: .14em; padding: 5px 10px; border-radius: 0; }
   .card .body { padding: 12px 0 0; display: flex; flex-direction: column; gap: 3px; }
   .brand { font-size: 11px; color: var(--ink); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
