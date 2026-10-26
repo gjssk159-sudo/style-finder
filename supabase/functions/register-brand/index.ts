@@ -62,6 +62,66 @@ function normalizeUrl(u: string): string | null {
   }
 }
 
+function parseInstagramHandle(input: string): string | null {
+  let s = (input || '').trim();
+  const m = s.match(/instagram\.com\/(?:_u\/)?([A-Za-z0-9._]{1,30})/i);
+  if (m) s = m[1];
+  s = s.replace(/^@/, '').replace(/[/?#].*$/, '');
+  return /^[A-Za-z0-9._]{2,30}$/.test(s) ? s.toLowerCase() : null;
+}
+
+function candidateHosts(handle: string): string[] {
+  const bases = new Set<string>();
+  const squash = (x: string) => x.replace(/[._-]+/g, '');
+  const strip = (x: string) => x.replace(/[._-]?(official|offical|kr|korea|seoul|store|shop|studios?|clothing|archive|brand|world|hub|online|mall|wear|project)$/i, '').replace(/^(official|the)[._-]?/i, '');
+  for (const b of [handle, squash(handle), handle.replace(/[._]+/g, '-')]) {
+    bases.add(b);
+    const s = strip(b);
+    if (s.length >= 3) { bases.add(s); bases.add(squash(s)); }
+  }
+  const tlds = ['com', 'co.kr', 'kr', 'net', 'shop', 'store', 'link', 'co'];
+  const hosts: string[] = [];
+  // 아이디 자체가 도메인 모양(예: aieul.co, 17end.kr)이면 그걸 그대로 먼저 시도
+  if (/^[a-z0-9-]+(.[a-z0-9-]+)*.(com|co.kr|kr|net|co|shop|store|link)$/.test(handle)) hosts.push(handle, `www.${handle}`);
+  // 아이디 끝이 도메인 끝말인 경우(예: buttonynet → buttony.net)
+  const tm = handle.replace(/[._-]+/g, '').match(/^([a-z0-9]{3,})(net|kr|co|com)$/);
+  if (tm) { hosts.push(`${tm[1]}.${tm[2]}`, `www.${tm[1]}.${tm[2]}`); }
+  for (const b of bases) {
+    if (!/^[a-z0-9-]+$/.test(b) || b.startsWith('-') || b.endsWith('-')) continue; // 도메인에 쓸 수 없는 문자(_)가 있으면 제외
+    for (const t of tlds) { hosts.push(`${b}.${t}`, `www.${b}.${t}`); }
+  }
+  return [...new Set(hosts)].slice(0, 80);
+}
+
+// 후보 도메인을 열어서, 페이지에 이 인스타그램 계정으로 가는 링크가 있는 곳만 공식 홈페이지로 인정
+async function resolveInstagramSite(handle: string): Promise<{ url: string; host: string } | null> {
+  const esc = handle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`instagram\\.com/(?:_u/)?${esc}(?![A-Za-z0-9._])`, 'i');
+  const hosts = candidateHosts(handle);
+  const found: { idx: number; origin: string }[] = [];
+  const deadline = Date.now() + 25000;
+  let next = 0;
+  async function worker() {
+    while (next < hosts.length && Date.now() < deadline) {
+      const idx = next++;
+      try {
+        const res = await fetch(`https://${hosts[idx]}/`, {
+          headers: { 'User-Agent': UA, 'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8' },
+          signal: AbortSignal.timeout(5000),
+          redirect: 'follow',
+        });
+        if (!res.ok) continue;
+        const html = (await res.text()).slice(0, 500000);
+        if (re.test(html)) found.push({ idx, origin: new URL(res.url).origin });
+      } catch { /* 열리지 않는 도메인은 건너뜀 */ }
+    }
+  }
+  await Promise.all(Array.from({ length: 10 }, worker));
+  if (!found.length) return null;
+  found.sort((x, y) => x.idx - y.idx);
+  return { url: found[0].origin, host: new URL(found[0].origin).host };
+}
+
 function slugify(hostname: string) {
   return hostname
     .replace(/^www\./, '')
@@ -174,7 +234,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: cors });
 
-  let body: { url?: string };
+  let body: { url?: string; instagram?: string };
   try {
     body = await req.json();
   } catch {
@@ -195,7 +255,23 @@ Deno.serve(async (req: Request) => {
 
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-  const targetUrl = (body.url || '').trim();
+  let targetUrl = (body.url || '').trim();
+  let via: { handle: string; url: string } | null = null;
+  if (!targetUrl && body.instagram) {
+    const handle = parseInstagramHandle(body.instagram);
+    if (!handle) {
+      return Response.json({ ok: false, reason: 'invalid_handle', message: '인스타그램 아이디 형식이 올바르지 않아요.' }, { headers: cors });
+    }
+    const site = await resolveInstagramSite(handle);
+    if (!site) {
+      return Response.json(
+        { ok: false, reason: 'site_not_found', message: `@${handle} 계정의 공식 홈페이지를 찾지 못했어요. 쇼핑몰 주소(URL)로 등록해주세요.` },
+        { headers: cors },
+      );
+    }
+    targetUrl = site.url;
+    via = { handle, url: site.url };
+  }
   if (!targetUrl) {
     return Response.json(
       { ok: false, reason: 'no_url', message: '쇼핑몰 URL을 입력해주세요.' },
@@ -216,7 +292,7 @@ Deno.serve(async (req: Request) => {
   const { data: existing } = await sb.from('brands').select('id, name, status, platform').eq('id', id).maybeSingle();
   if (existing) {
     return Response.json(
-      { ok: true, id: existing.id, name: existing.name, status: existing.status, platform: existing.platform, dispatched: false, alreadyExisted: true },
+      { ok: true, id: existing.id, name: existing.name, status: existing.status, platform: existing.platform, dispatched: false, alreadyExisted: true, via },
       { headers: cors },
     );
   }
@@ -266,7 +342,7 @@ Deno.serve(async (req: Request) => {
   }
 
   return Response.json(
-    { ok: true, id, name: displayName, status: retryOnRunner ? 'pending' : result.status, platform: result.platform, dispatched, alreadyExisted: false },
+    { ok: true, id, name: displayName, status: retryOnRunner ? 'pending' : result.status, platform: result.platform, dispatched, alreadyExisted: false, via },
     { headers: cors },
   );
 });

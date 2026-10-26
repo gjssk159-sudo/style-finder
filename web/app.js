@@ -917,6 +917,8 @@ async function submitAdd() {
   if (sharedView) { out.className = 'warn'; out.textContent = '공유된 폴더에는 추가할 수 없어요. 내 폴더로 돌아가서 추가해주세요.'; out.style.display = 'block'; return; }
   const urlInput = document.getElementById('addUrl').value.trim();
   const addToFolder = document.getElementById('addToMyFolder').checked;
+  // 인스타그램 아이디로 입력했는지: @로 시작, instagram.com 주소, 또는 점이 없는 영문 아이디(URL이면 .com 같은 도메인이 있음)
+  const isInstagram = /^@/.test(urlInput) || /instagram\.com\//i.test(urlInput) || /^[a-z0-9_]{2,30}$/i.test(urlInput);
   if (!urlInput) {
     out.className = 'warn'; out.textContent = '쇼핑몰 URL을 입력해주세요.'; out.style.display = 'block';
     return;
@@ -924,12 +926,12 @@ async function submitAdd() {
 
   out.style.display = 'block';
   out.className = '';
-  out.textContent = '등록 중…';
+  out.textContent = isInstagram ? '인스타그램 계정의 공식 홈페이지를 찾는 중이에요… (최대 30초)' : '등록 중…';
 
   let data, error;
   try {
     ({ data, error } = await sb.functions.invoke('register-brand', {
-      body: { url: urlInput },
+      body: isInstagram ? { instagram: urlInput } : { url: urlInput },
     }));
   } catch (err) {
     error = err;
@@ -939,6 +941,7 @@ async function submitAdd() {
   // 서버가 만든 정확한 이유를 그대로 보여준다 — 폴백의 뭉뚱그린 메시지로 덮어써버리면
   // 실제 원인을 알 수 없게 된다.
   if (error) {
+    if (isInstagram) { out.className = 'warn'; out.textContent = '인스타그램 아이디로 등록하는 중 문제가 생겼어요. 잠시 후 다시 시도하거나 쇼핑몰 주소(URL)로 등록해주세요.'; return; }
     return submitAddFallback(urlInput, addToFolder, out);
   }
   if (!data.ok) {
@@ -955,16 +958,17 @@ async function submitAdd() {
 
   out.className = 'ok';
   const folderNote = addToFolder ? '' : ' (내 폴더에는 추가 안 함)';
+  const viaNote = data.via ? `인스타그램 @${data.via.handle} → ${data.via.url.replace(/^https?:\/\//, '')} 로 찾았어요. ` : '';
   if (data.alreadyExisted) {
-    out.textContent = `이미 등록된 브랜드였어요.${addToFolder ? ' 내 폴더에 바로 추가했어요.' : ''}`;
+    out.textContent = `${viaNote}이미 등록된 브랜드였어요.${addToFolder ? ' 내 폴더에 바로 추가했어요.' : ''}`;
   } else if (data.status === 'ready' && data.dispatched) {
-    out.textContent = `등록 완료! 지금 수집 중이에요, 1~2분 후 검색에 나와요.${folderNote}`;
+    out.textContent = `${viaNote}등록 완료! 지금 수집 중이에요, 1~2분 후 검색에 나와요.${folderNote}`;
   } else if (data.status === 'pending' && data.dispatched) {
-    out.textContent = `등록 완료! 쇼핑몰 종류를 확인하면서 상품을 수집 중이에요, 2~3분 후 검색에 나와요.${folderNote}`;
+    out.textContent = `${viaNote}등록 완료! 쇼핑몰 종류를 확인하면서 상품을 수집 중이에요, 2~3분 후 검색에 나와요.${folderNote}`;
   } else if (data.status === 'ready') {
-    out.textContent = `등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.${folderNote}`;
+    out.textContent = `${viaNote}등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.${folderNote}`;
   } else {
-    out.textContent = `등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 해요. 조금 걸릴 수 있어요.${folderNote}`;
+    out.textContent = `${viaNote}등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 해요. 조금 걸릴 수 있어요.${folderNote}`;
   }
   await loadAllBrands();
 }
