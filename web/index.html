@@ -44,6 +44,8 @@
   #authArea button.linklike { border: 0; padding: 0; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
   .nav-links button svg { display: inline-block; width: 13px; height: 13px; margin-right: 5px; vertical-align: -3px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   #authArea button.linklike, #authArea .who { font-size: 11px; }
+  #authArea .my-btn { display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px 6px 12px; font-weight: 500; }
+  #authArea .my-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   /* 글꼴 기준선(baseline)에 맞춰 정렬 — 기기마다 줄 높이/글꼴이 달라도 아이콘이 글자 가운데에 오도록 아이콘별 미세 보정 */
   .nav-links button:nth-child(1) svg { vertical-align: -2.3px; transform: translateY(.4px); }
   .nav-links button:nth-child(2) svg { vertical-align: -1.8px; transform: translateY(.1px); }
@@ -636,7 +638,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 <dialog id="myDialog">
   <div class="dlg-body">
-    <h2>마이페이지</h2>
+    <h2>Mypage</h2>
     <div class="my-pane active" id="myPaneAccount">
       <div class="my-field"><label>아이디 (이메일)</label><div class="val" id="myEmail"></div></div>
       <p class="my-note">아이디는 가입할 때 쓴 이메일이에요. 이메일을 변경하고 싶다면 오른쪽 아래 Q&amp;A 버튼으로 요청해 주세요.</p>
@@ -670,7 +672,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <li><div><b>브랜드 등록</b><span>쇼핑몰 URL이나 인스타그램 아이디를 넣으면 자동으로 등록돼요.</span></div></li>
       <li><div><b>내 폴더</b><span>원하는 브랜드를 체크하면, 그 브랜드만 검색되는 나만의 폴더가 만들어져요. 최대 3개까지 만들 수 있어요.</span></div></li>
       <li><div><b>검색하기</b><span>원하는 키워드로 자연스럽게 검색해 보세요. 색상과 종류를 알아서 인식해요.</span></div></li>
-      <li><div><b>마이페이지</b><span>비밀번호 변경과 로그아웃은 여기서 해요.</span></div></li>
+      <li><div><b>Mypage</b><span>비밀번호 변경과 로그아웃은 여기서 해요.</span></div></li>
       <li><div><b>폴더 공유</b><span>"공유 링크 복사"로 로그인 없이도 보여줄 수 있어요.</span></div></li>
       <li><div><b>자동 업데이트</b><span>매일 새벽 다시 수집해서 품절과 신상품이 반영돼요.</span></div></li>
     </ol>

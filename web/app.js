@@ -159,8 +159,7 @@ function renderAuthArea() {
   const el = document.getElementById('authArea');
   if (currentUser) {
     el.innerHTML = `
-      <span class="who" title="${currentUser.email}">${currentUser.email.split('@')[0]}</span>
-      <button class="linklike my" onclick="openMyPage()">마이페이지</button>`;
+      <button class="my-btn" onclick="openMyPage()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>Mypage</button>`;
   } else {
     el.innerHTML = '<button onclick="openAuthDialog()">로그인</button>';
   }
