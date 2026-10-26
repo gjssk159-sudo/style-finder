@@ -255,7 +255,22 @@ function updateQaState() {
   const panel = document.getElementById('qaPanel');
   if (!panel) return;
   panel.classList.toggle('authed', !!currentUser);
-  if (currentUser && panel.classList.contains('open')) loadMyQuestions();
+  if (currentUser && panel.classList.contains('open') && panel.dataset.view === 'mine') loadMyQuestions();
+}
+const QA_TITLES = { home: '', compose: '질문하기', mine: '내 질문' };
+function setQaView(v) {
+  const panel = document.getElementById('qaPanel');
+  panel.dataset.view = v;
+  document.getElementById('qaPageTitle').textContent = QA_TITLES[v] || '';
+  for (const b of panel.querySelectorAll('.qa-tabs button')) b.classList.toggle('on', b.dataset.v === v || (v === 'compose' && b.dataset.v === 'home'));
+  const body = panel.querySelector('.qa-body'); if (body) body.scrollTop = 0;
+  if (v === 'mine' && currentUser) loadMyQuestions();
+  if (v === 'compose' && currentUser) setTimeout(() => document.getElementById('qnaTitle')?.focus(), 50);
+}
+function qaStart() {
+  if (!currentUser) { setQaView('compose'); return; } // 로그인 안내가 보이도록
+  showMsg('qnaMsg', '', '');
+  setQaView('compose');
 }
 function toggleQa(force) {
   const panel = document.getElementById('qaPanel');
@@ -263,7 +278,7 @@ function toggleQa(force) {
   const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
   panel.classList.toggle('open', open);
   fab.setAttribute('aria-expanded', String(open));
-  if (open) { showMsg('qnaMsg', '', ''); updateQaState(); }
+  if (open) { showMsg('qnaMsg', '', ''); setQaView('home'); updateQaState(); }
 }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleQa(false); });
 async function changePassword() {
@@ -288,8 +303,8 @@ async function sendResetMail() {
 async function loadMyQuestions() {
   const list = document.getElementById('qnaList');
   const { data, error } = await sb.from('qna_posts').select('id,title,body,answer,answered_at,created_at').order('created_at', { ascending: false });
-  if (error) { list.innerHTML = '<p class="my-note" style="padding:8px 0">질문 내역을 불러오지 못했어요.</p>'; return; }
-  if (!data.length) { list.innerHTML = '<p class="my-note" style="padding:8px 0">아직 남긴 질문이 없어요.</p>'; return; }
+  if (error) { list.innerHTML = '<p class="qa-empty">질문 내역을 불러오지 못했어요.</p>'; return; }
+  if (!data.length) { list.innerHTML = '<p class="qa-empty">아직 남긴 질문이 없어요.<br>홈에서 질문하기를 눌러보세요.</p>'; return; }
   const fmt = (t) => new Date(t).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   list.innerHTML = data.map((q) => `
     <div class="qna-item">
@@ -314,6 +329,7 @@ async function submitQuestion() {
   document.getElementById('qnaBody').value = '';
   showMsg('qnaMsg', 'ok', '질문을 등록했어요. 운영진이 확인하고 답변을 남겨드려요.');
   loadMyQuestions();
+  setTimeout(() => { if (document.getElementById('qaPanel').dataset.view === 'compose') setQaView('mine'); }, 1100);
 }
 async function deleteQuestion(id) {
   if (!(await askConfirm('이 질문을 삭제할까요?'))) return;

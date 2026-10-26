@@ -176,25 +176,72 @@
   #myMsg, #qnaMsg { font-size: 12.5px; padding: 8px 0 8px 12px; display: none; border-left: 2px solid var(--ink); }
   #myMsg.ok, #qnaMsg.ok { display: block; color: var(--ink); }
   #myMsg.warn, #qnaMsg.warn { display: block; color: #8a3b12; border-left-color: #8a3b12; }
+  .qa-panel #qnaMsg { border-left: 0; border-radius: 12px; padding: 10px 14px; background: #f5f4f2; font-size: 13.5px; }
+  .qa-panel #qnaMsg.warn { background: #fbefe9; }
   /* ── 플로팅 Q&A ── */
   .qa-fab { position: fixed; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; width: 48px; height: 48px; padding: 0; border-radius: 14px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,.16); }
   .qa-fab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .qa-fab .close, .qa-fab[aria-expanded="true"] .chat { display: none; }
   .qa-fab[aria-expanded="true"] .close { display: block; }
-  .qa-panel { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 59; width: min(380px, calc(100vw - 32px)); max-height: min(620px, calc(100vh - 120px)); max-height: min(620px, calc(100dvh - 120px)); background: var(--paper); border: 1px solid var(--ink); display: none; flex-direction: column; }
+  /* Q&A 패널: 채널톡 홈 화면처럼 — 위쪽 소프트 그라데이션 헤더 + 둥근 흰 카드 + 큰 검은 버튼 + 하단 탭 */
+  .qa-panel { position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); z-index: 59; width: min(392px, calc(100vw - 32px)); height: min(700px, calc(100vh - 110px)); height: min(700px, calc(100dvh - 110px)); background: #f3f2f0; border-radius: 24px; box-shadow: 0 24px 60px rgba(0,0,0,.24), 0 2px 8px rgba(0,0,0,.08); overflow: hidden; display: none; flex-direction: column; }
   .qa-panel.open { display: flex; }
-  .qa-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 12px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; letter-spacing: .14em; }
-  .qa-x { background: none; color: var(--sub); padding: 0; font-size: 12px; font-weight: 400; letter-spacing: 0; }
-  .qa-scroll { overflow-y: auto; padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 12px; }
-  .qa-hello { margin: 0; font-size: 13.5px; line-height: 1.7; }
-  .qa-guest { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
-  #qaUser { display: none; flex-direction: column; gap: 12px; }
-  .qa-panel.authed #qaUser { display: flex; }
-  .qa-panel.authed .qa-guest { display: none; }
-  .qa-panel input[type=text] { width: 100%; padding: 11px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 14px; color: var(--ink); }
-  .qa-panel input[type=text]:focus { outline: none; border-bottom-color: var(--ink); }
-  .qa-panel textarea { min-height: 88px; }
-  @media (max-width: 700px) { .qa-panel input[type=text], .qa-panel textarea { font-size: 16px; } }
+  .qa-top { position: relative; flex: none; height: 132px; padding: 20px 22px 0; background: linear-gradient(180deg, #e6e4ea 0%, #eeecf0 55%, #f3f2f0 100%); }
+  .qa-top-title { position: absolute; left: 22px; bottom: 26px; right: 22px; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+  .qa-brand { font-size: 28px; font-weight: 800; letter-spacing: -.03em; text-transform: uppercase; line-height: 1; }
+  .qa-page { font-size: 13px; color: var(--sub); }
+  .qa-panel:not([data-view="home"]) .qa-top { height: 72px; }
+  .qa-panel:not([data-view="home"]) .qa-brand { display: none; }
+  .qa-panel:not([data-view="home"]) .qa-page { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+  .qa-round { position: absolute; top: 16px; width: 38px; height: 38px; padding: 0; border-radius: 50%; background: rgba(255,255,255,.7); color: var(--ink); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+  .qa-close { right: 16px; }
+  .qa-back { left: 16px; display: none; }
+  .qa-panel:not([data-view="home"]) .qa-back { display: flex; }
+  .qa-round svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .qa-panel:not([data-view="home"]) .qa-top-title { left: 68px; top: 16px; bottom: auto; height: 38px; justify-content: center; }
+  .qa-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .qa-view { display: none; flex-direction: column; gap: 12px; }
+  .qa-panel[data-view="home"] .qa-home, .qa-panel[data-view="compose"] .qa-compose, .qa-panel[data-view="mine"] .qa-mine-view { display: flex; }
+  .qa-card { background: #fff; border-radius: 22px; padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .qa-hello-card { display: flex; flex-direction: column; gap: 12px; }
+  .qa-who { display: flex; align-items: center; gap: 12px; }
+  .qa-who b { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.01em; text-transform: uppercase; }
+  .qa-who span:not(.qa-avatar) { font-size: 15px; }
+  .qa-avatar { width: 46px; height: 46px; border-radius: 50%; background: #f1efec; display: flex; align-items: center; justify-content: center; flex: none; }
+  .qa-avatar i { width: 14px; height: 14px; border-radius: 4px; background: var(--accent); }
+  .qa-msg { margin: 0; font-size: 15px; line-height: 1.65; color: #2a2926; }
+  .qa-cta { width: 100%; padding: 17px 20px; border-radius: 999px; background: #1e1e22; color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .qa-cta svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .qa-hint { margin: 0; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; color: var(--sub); }
+  .qa-hint svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  .qa-other { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 14px 20px; }
+  .qa-other > span { font-size: 15px; font-weight: 700; color: #8a8782; }
+  .qa-ico-btn { width: 44px; height: 44px; border-radius: 14px; background: #f1efec; color: var(--ink); display: flex; align-items: center; justify-content: center; }
+  .qa-ico-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+  .qa-foot { margin: 4px 0 0; text-align: center; font-size: 12.5px; color: #a09d97; }
+  .qa-needlogin { display: flex; flex-direction: column; gap: 14px; }
+  .qa-needlogin p { margin: 0; font-size: 14.5px; line-height: 1.6; color: #2a2926; }
+  .qa-panel:not(.authed) .qa-authed-only { display: none; }
+  .qa-panel.authed .qa-guest-only { display: none; }
+  .qa-form { display: flex; flex-direction: column; gap: 12px; }
+  .qa-panel input[type=text], .qa-panel textarea { width: 100%; padding: 14px 16px; border: 0; border-radius: 14px; background: #f5f4f2; font-size: 15px; color: var(--ink); font-family: inherit; }
+  .qa-panel input[type=text]:focus, .qa-panel textarea:focus { outline: 2px solid #d9d6d0; background: #fff; }
+  .qa-panel textarea { min-height: 150px; line-height: 1.6; resize: none; }
+  .qa-empty { margin: 0; padding: 28px 0; text-align: center; font-size: 14px; color: #8a8782; background: #fff; border-radius: 22px; }
+  .qa-panel .qna-list { gap: 10px; }
+  .qa-panel .qna-item { background: #fff; border: 0; border-radius: 20px; padding: 16px 18px; }
+  .qa-panel .qna-title { font-size: 14.5px; }
+  .qa-panel .qna-answer { margin-top: 8px; padding: 12px 14px; border-left: 0; border-radius: 14px; background: #f5f4f2; }
+  .qa-tabs { flex: none; display: flex; background: #fff; border-top: 1px solid #ecebe8; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .qa-tabs button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; background: none; color: #a8a5a0; font-size: 12px; font-weight: 600; letter-spacing: 0; }
+  .qa-tabs button.on { color: var(--ink); }
+  .qa-tabs svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+  .qa-tabs button.on svg { fill: currentColor; }
+  @media (max-width: 700px) {
+    .qa-panel { top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+    .qa-fab[aria-expanded="true"] { display: none; }
+    .qa-panel input[type=text], .qa-panel textarea { font-size: 16px; }
+  }
   dialog { border: 1px solid var(--ink); border-radius: 0; padding: 0; width: min(500px, 92vw); max-height: 82vh; background: var(--paper); color: var(--ink); }
   dialog::backdrop { background: rgba(17,17,17,.4); }
   .dlg-body { padding: 28px; display: flex; flex-direction: column; gap: 12px; max-height: 82vh; overflow-y: auto; }
@@ -493,28 +540,59 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <svg class="chat" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>
   <svg class="close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
 </button>
-<section class="qa-panel" id="qaPanel" aria-label="Q&A">
-  <div class="qa-head"><span>Q&amp;A</span><button type="button" class="qa-x" aria-label="닫기" onclick="toggleQa(false)">닫기</button></div>
-  <div class="qa-scroll">
-    <p class="qa-hello">궁금한 점이나 오류 제보를 남겨 주세요.<br>운영진이 확인하고 답변을 남겨드려요.</p>
-    <p class="my-note qa-contact">빠른 확인이 필요하면 인스타그램 DM으로 <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>@woosobb</a></p>
-    <div id="qaGuest" class="qa-guest">
-      <p class="my-note">로그인하면 질문을 남기고 답변을 확인할 수 있어요.</p>
-      <div><button type="button" onclick="toggleQa(false); openAuthDialog()">로그인</button></div>
+<section class="qa-panel" id="qaPanel" data-view="home" aria-label="Q&amp;A">
+  <div class="qa-top">
+    <button type="button" class="qa-round qa-back" aria-label="뒤로" onclick="setQaView('home')"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="toggleQa(false)"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="qa-top-title">
+      <span class="qa-brand">MY SELECT SHOP</span>
+      <span class="qa-page" id="qaPageTitle"></span>
     </div>
-    <div id="qaUser">
-      <div class="qa-form">
-        <input type="text" id="qnaTitle" maxlength="100" placeholder="제목" autocomplete="off">
-        <textarea id="qnaBody" maxlength="2000" placeholder="질문 내용 (2000자 이내)"></textarea>
-        <div class="dlg-row" style="margin-top:0"><button onclick="submitQuestion()">등록</button></div>
+  </div>
+
+  <div class="qa-body">
+    <!-- 홈 -->
+    <div class="qa-view qa-home">
+      <div class="qa-card qa-hello-card">
+        <div class="qa-who"><span class="qa-avatar"><i></i></span><div><b>MY SELECT SHOP</b><span>안녕하세요 :)</span></div></div>
+        <p class="qa-msg">궁금한 점이나 오류 제보를 남겨 주세요.<br>운영진이 확인하고 답변을 남겨드려요.</p>
+        <button type="button" class="qa-cta" onclick="qaStart()">질문하기 <svg viewBox="0 0 24 24"><path d="M21 3L3 10.5l7 2.5 2.5 7z"/><path d="M10 13L21 3"/></svg></button>
+        <p class="qa-hint"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>답변은 '내 질문'에서 확인할 수 있어요</p>
       </div>
-      <div id="qnaMsg"></div>
-      <div class="qa-mine">
-        <h3>내 질문</h3>
-        <div class="qna-list" id="qnaList"><p class="my-note" style="padding:8px 0">불러오는 중…</p></div>
+      <div class="qa-card qa-other"><span>다른 방법으로 문의</span><a class="qa-ico-btn" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener" aria-label="인스타그램 DM"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg></a></div>
+      <p class="qa-foot">인스타그램 woosobb 로 DM 주셔도 돼요</p>
+    </div>
+
+    <!-- 질문하기 -->
+    <div class="qa-view qa-compose">
+      <div class="qa-card qa-guest-only qa-needlogin">
+        <p>로그인하면 질문을 남기고 답변을 확인할 수 있어요.</p>
+        <button type="button" class="qa-cta" onclick="toggleQa(false); openAuthDialog()">로그인</button>
+      </div>
+      <div class="qa-card qa-authed-only qa-form">
+        <input type="text" id="qnaTitle" maxlength="100" placeholder="제목" autocomplete="off">
+        <textarea id="qnaBody" maxlength="2000" placeholder="질문 내용을 적어주세요 (2000자 이내)"></textarea>
+        <div id="qnaMsg"></div>
+        <button type="button" class="qa-cta" onclick="submitQuestion()">질문 등록 <svg viewBox="0 0 24 24"><path d="M21 3L3 10.5l7 2.5 2.5 7z"/><path d="M10 13L21 3"/></svg></button>
+      </div>
+    </div>
+
+    <!-- 내 질문 -->
+    <div class="qa-view qa-mine-view">
+      <div class="qa-card qa-guest-only qa-needlogin">
+        <p>로그인하면 내가 남긴 질문과 답변을 볼 수 있어요.</p>
+        <button type="button" class="qa-cta" onclick="toggleQa(false); openAuthDialog()">로그인</button>
+      </div>
+      <div class="qa-authed-only">
+        <div class="qna-list" id="qnaList"><p class="qa-empty">불러오는 중…</p></div>
       </div>
     </div>
   </div>
+
+  <nav class="qa-tabs" aria-label="Q&amp;A 메뉴">
+    <button type="button" data-v="home" class="on" onclick="setQaView('home')"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8.5a.5.5 0 01-.5.5H15v-6H9v6H4.5a.5.5 0 01-.5-.5z"/></svg><span>홈</span></button>
+    <button type="button" data-v="mine" onclick="setQaView('mine')"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z"/></svg><span>내 질문</span></button>
+  </nav>
 </section>
 
 <dialog id="promptDialog">
@@ -588,14 +666,13 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <h2>MY SELECT SHOP 이용 안내</h2>
     <p class="lead">광고 없이, 내가 좋아하는 인디 브랜드들만 모아서 한 번에 검색하는 사이트예요.</p>
     <ol class="guide">
-      <li><div><b>로그인 / 회원가입</b><span>이메일과 비밀번호로 가입하면 바로 사용할 수 있어요. 이메일 확인 절차 없이 바로 로그인돼요.</span></div></li>
-      <li><div><b>브랜드 등록</b><span>"브랜드 등록"에서 쇼핑몰 URL이나 인스타그램 아이디(@brand)를 넣으면 자동으로 판별해서 등록되고, 1~2분 안에 상품도 바로 수집돼요. 인스타그램 아이디는 그 계정의 공식 홈페이지를 찾아서 등록해요. SPA 브랜드, 편집샵, 종합몰은 등록이 어려워요.</span></div></li>
-      <li><div><b>내 폴더 꾸리기</b><span>"내 폴더"에서 원하는 브랜드를 체크해서 나만의 폴더를 만드세요. 폴더는 최대 3개까지 만들 수 있어요. 위의 "등록된 브랜드"와 "내가 등록한 브랜드" 숫자를 누르면 해당 브랜드 목록을 볼 수 있어요.</span></div></li>
-      <li><div><b>검색하기</b><span>내 폴더에 담은 브랜드 안에서만 검색돼요. "블랙 후드티"처럼 자연스럽게 검색하면 색상과 카테고리를 알아서 인식해요. 색상, 사이즈, 가격, 품절 제외는 바꾸는 즉시 적용되고, "브랜드 전체" 칸을 눌러 브랜드 이름으로도 찾을 수 있어요.</span></div></li>
-      <li><div><b>마이페이지</b><span>오른쪽 위 "마이페이지"에서 비밀번호를 바꾸거나 로그아웃할 수 있어요.</span></div></li>
-      <li><div><b>폴더 공유하기</b><span>폴더의 "공유 링크 복사"로 링크를 만들면, 로그인하지 않은 사람도 그 폴더를 볼 수 있어요.</span></div></li>
-      <li><div><b>Q&amp;A</b><span>오른쪽 아래 Q&amp;A 버튼으로 질문을 남기면 운영진이 답변을 달아드려요. 빠른 확인이 필요하면 인스타그램 @woosobb 로 DM 주세요.</span></div></li>
-      <li><div><b>자동 업데이트</b><span>등록 직후 한 번 바로 수집되고, 그 뒤로는 매일 새벽 자동으로 다시 수집돼서 품절과 신상품이 계속 반영돼요.</span></div></li>
+      <li><div><b>로그인 / 회원가입</b><span>이메일과 비밀번호로 바로 가입할 수 있어요.</span></div></li>
+      <li><div><b>브랜드 등록</b><span>쇼핑몰 URL이나 인스타그램 아이디를 넣으면 자동으로 등록돼요.</span></div></li>
+      <li><div><b>내 폴더</b><span>원하는 브랜드를 체크해서 폴더를 만들어요. 최대 3개까지예요.</span></div></li>
+      <li><div><b>검색하기</b><span>내 폴더의 브랜드 안에서 "블랙 후드티"처럼 검색해요.</span></div></li>
+      <li><div><b>마이페이지</b><span>비밀번호 변경과 로그아웃은 여기서 해요.</span></div></li>
+      <li><div><b>폴더 공유</b><span>"공유 링크 복사"로 로그인 없이도 보여줄 수 있어요.</span></div></li>
+      <li><div><b>자동 업데이트</b><span>매일 새벽 다시 수집해서 품절과 신상품이 반영돼요.</span></div></li>
     </ol>
     <div class="dlg-row">
       <button class="secondary" onclick="aboutDialog.close()">닫기</button>
