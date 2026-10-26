@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { classify } from './lib/taxonomy.js';
+import { classifyItem } from './lib/taxonomy.js';
 import { classifyGender } from './lib/gender.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -16,7 +16,7 @@ for (const f of readdirSync(outDir).filter((f) => f.endsWith('.json'))) {
   const items = JSON.parse(readFileSync(path, 'utf8'));
   let changed = 0;
   for (const it of items) {
-    const next = classify(it.title, it.raw_category);
+    const next = classifyItem(it.title, it.raw_category);
     const nextGender = classifyGender(it.title, it.raw_category);
     if (JSON.stringify(next) !== JSON.stringify(it.categories) || nextGender !== it.gender) changed++;
     it.categories = next;

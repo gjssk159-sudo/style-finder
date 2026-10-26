@@ -151,3 +151,60 @@ export function classify(title, ...rest) {
   if (fromTitle) return [fromTitle];
   return [fromRest || 'etc'];
 }
+
+// ───────────────────────── 쇼핑몰 자체 카테고리 우선 분류 ─────────────────────────
+// 상품명만 보면 "ZIP-UP HOODIE", "CARDIGAN", "VEST"를 아우터로 보지만 쇼핑몰은 TOPS에 넣어둔 경우가 많다.
+// 쇼핑몰이 TOPS/OUTER/BOTTOM/ACC/HATS 같이 "종류"를 분명히 말해주면 그 구분(그룹)을 따르고,
+// 세부 종류는 상품명으로 고른다. 시즌/세일/에피소드/소재(denim)/태그처럼 종류가 아닌 카테고리는 무시.
+// 단, 신발·가방·모자·소품은 상품명이 객관적이라(스카프가 TOPS에 들어있는 등 쇼핑몰 실수) 상품명이 이기게 둔다.
+const SITE_TYPE_PATTERNS = [
+  ['shoes', /(^|[^a-z])(shoes?|sneakers?|boots?|sandals?|footwear)([^a-z]|$)|신발|슈즈|스니커즈|부츠|샌들/i],
+  ['bag', /(^|[^a-z])(bags?|backpacks?|totes?)([^a-z]|$)|가방|백팩|토트/i],
+  ['cap', /(^|[^a-z])(hats?|caps?|beanies?|headwear)([^a-z]|$)|모자|비니/i],
+  ['acc', /(^|[^a-z])(acc|accessor(y|ies)|jewel(ry|lery)|socks?|belts?|wallets?|eyewear)([^a-z]|$)|악세서리|액세서리|양말|벨트|지갑|주얼리/i],
+  ['dress_skirt', /(^|[^a-z])(skirts?|dress(es)?|one-?pieces?)([^a-z]|$)|원피스|스커트|치마/i],
+  ['outer', /(^|[^a-z])(outers?|outerwears?|jackets?|coats?|jumpers?|paddings?|blousons?)([^a-z]|$)|아우터|자켓|재킷|코트|패딩|점퍼/i],
+  ['bottom', /(^|[^a-z])(bottoms?|pants|trousers|slacks|jeans|shorts)([^a-z]|$)|하의|바지|팬츠|슬랙스|청바지/i],
+  ['top', /(^|[^a-z])(tops?|tees?|t-?shirts?|shirts?|sweats?|sweatshirts?|hood(ie|y|ies)?|knits?|sweaters?)([^a-z]|$)|상의|탑$|티셔츠|셔츠|니트|맨투맨|후드/i],
+];
+const SOFT_GROUPS = new Set(['top', 'outer', 'bottom', 'dress_skirt']);
+const groupOfLeaf = (id) => (GROUPS.find((g) => g.children.includes(id)) || {}).id || null;
+
+// 같은 뜻의 다른 그룹 카테고리로 옮길 때(쇼핑몰이 TOPS에 넣은 지퍼 후드/카디건/조끼 등)
+const EQUIV = {
+  top: { hoodie_zipup: 'hoodie', cardigan: 'knit', vest: 'sleeveless_top', padding_vest: 'sleeveless_top', fleece: 'sweatshirt', track_jacket: 'sweatshirt', jacket: 'shirt', blouson: 'shirt', blazer: 'shirt', coat: 'shirt', trench: 'shirt' },
+  outer: { hoodie: 'hoodie_zipup', sweatshirt: 'fleece', knit: 'cardigan', shirt: 'jacket', sleeveless_top: 'vest' },
+};
+const DEFAULT_LEAF = { top: 'tshirt', outer: 'jacket', bottom: 'pants', dress_skirt: 'onepiece', shoes: 'shoes', bag: 'bag', cap: 'hat', acc: 'acc' };
+
+// 쇼핑몰 카테고리 경로("홈 > Shop > Tees > S/S Tee")의 뒤쪽(가장 구체적인)부터 종류를 말하는 마디를 찾는다.
+function siteGroup(raw) {
+  if (!raw) return null;
+  const segs = String(raw).split(/\s*[>|]\s*/).map((s) => s.trim()).filter(Boolean).reverse();
+  for (const seg of segs) {
+    if (seg.length > 40) continue; // 태그 나열(콤마가 많은 긴 문자열)은 카테고리가 아님
+    const parts = seg.split(/\s*,\s*/);
+    for (const part of parts) {
+      for (const [group, re] of SITE_TYPE_PATTERNS) if (re.test(part)) return group;
+    }
+  }
+  return null;
+}
+
+export function classifyItem(title, raw) {
+  const site = siteGroup(raw);
+  if (!site) return classify(title, raw); // 쇼핑몰 카테고리가 종류를 말해주지 않으면 기존 방식
+  const byTitle = classify(title, '')[0];
+  const tGroup = byTitle ? groupOfLeaf(byTitle) : null;
+  if (byTitle && byTitle !== 'etc' && tGroup === site) return [byTitle];
+  // 상품명이 명백한 소품·가방·신발·모자면(쇼핑몰이 의류 쪽에 넣어둔 경우, 또는 소품 안에서 칸이 다른 경우) 상품명을 따른다
+  if (tGroup && !SOFT_GROUPS.has(tGroup) && tGroup !== 'etc') return [byTitle];
+  const g = GROUPS.find((x) => x.id === site);
+  if (!g) return classify(title, raw);
+  // 쇼핑몰이 정한 그룹 안에서 가장 알맞은 세부를 고른다
+  const mapped = (EQUIV[site] || {})[byTitle];
+  if (mapped && g.children.includes(mapped)) return [mapped];
+  const fromRaw = classifyText(String(raw).split(/\s*>\s*/).pop());
+  if (fromRaw && g.children.includes(fromRaw)) return [fromRaw];
+  return [DEFAULT_LEAF[site] && g.children.includes(DEFAULT_LEAF[site]) ? DEFAULT_LEAF[site] : g.children[0]];
+}

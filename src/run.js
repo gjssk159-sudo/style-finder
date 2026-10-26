@@ -8,7 +8,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { classify } from './lib/taxonomy.js';
+import { classifyItem } from './lib/taxonomy.js';
 import { classifyGender } from './lib/gender.js';
 import { collectShopify } from './adapters/shopify.js';
 import { collectCafe24 } from './adapters/cafe24.js';
@@ -90,7 +90,7 @@ async function runOne(source) {
   for (const it of items) {
     it.source_id = source.id;
     it.source_type = source.type;
-    it.categories = classify(it.title, it.raw_category);
+    it.categories = classifyItem(it.title, it.raw_category);
     it.gender = classifyGender(it.title, it.raw_category);
     it.fetched_at = new Date().toISOString();
     if (it.categories.length) classified++;
