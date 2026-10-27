@@ -1488,10 +1488,37 @@ addEventListener('focus', () => restoreScrollIfMatching());
 //  - 하위 칩은 눌러서 켜고 끄는 토글(후드 + 반팔티 처럼 여러 개). 하나도 안 남으면 다시 그룹 전체로 돌아간다.
 //  - 이미 선택된 상위 칩을 다시 누르면 그 그룹(과 그 하위 선택)이 해제된다.
 const groupById = (id) => window.StyleFinderTaxonomy.GROUPS.find((g) => g.id === id);
-const groupOfLeaf = (leaf) => window.StyleFinderTaxonomy.GROUPS.find((g) => g.children.includes(leaf));
-function selectedGroups() {
+// 대분류(TOP/OUTER/BOTTOM…)는 한 번에 하나만 선택된다. 같은 대분류 안의 세부 카테고리만 여러 개 고를 수 있다.
+function subInfo(id) {
+  for (const g of window.StyleFinderTaxonomy.GROUPS) {
+    const sub = (g.subs || []).find((x) => x.id === id || x.children.includes(id)); // 옛 주소의 세부(leaf) id도 인식
+    if (sub) return { g, sub };
+  }
+  return null;
+}
+function selectedGroup() {
   const T = window.StyleFinderTaxonomy;
-  return T.GROUPS.filter((g) => catSel.includes(g.id) || g.children.some((c) => catSel.includes(c)));
+  for (const id of catSel) {
+    const g = groupById(id) || (subInfo(id) || {}).g;
+    if (g) return g;
+  }
+  return null;
+}
+function selectedGroups() { const g = selectedGroup(); return g ? [g] : []; }
+// 주소/저장값에서 읽은 카테고리를 규칙에 맞게 정리: 첫 대분류 하나만, 세부는 그 안의 것만, 옛 세부(leaf)는 새 세부로 변환
+function normalizeCatSel(ids) {
+  let gid = null; const subs = []; let whole = false;
+  for (const id of ids) {
+    const g = groupById(id);
+    const info = g ? null : subInfo(id);
+    const cur = g || (info && info.g);
+    if (!cur) continue;
+    if (!gid) gid = cur.id;
+    if (cur.id !== gid) continue;
+    if (g) whole = true; else if (!subs.includes(info.sub.id)) subs.push(info.sub.id);
+  }
+  if (!gid) return [];
+  return whole || !subs.length ? [gid] : subs;
 }
 
 function renderChips() {
@@ -1501,13 +1528,13 @@ function renderChips() {
     `<span class="chip ${catSel.length ? '' : 'on'}" onclick="clearCategories()">ALL</span>` +
     T.GROUPS.map((g) => `<span class="chip ${on.includes(g) ? 'on' : ''}" onclick="toggleGroup('${g.id}')">${g.label}</span>`).join('');
   const sub = document.getElementById('subChips');
-  const rows = on.filter((g) => g.children.length > 1);
+  const rows = on.filter((g) => (g.subs || []).length > 1);
   if (!rows.length) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
   sub.style.display = 'flex';
   sub.innerHTML = rows.map((g) =>
     `<span class="subrow"><span class="chip sub tag">${g.label}</span>` +
     `<span class="chip sub ${catSel.includes(g.id) ? 'on' : ''}" onclick="selectWholeGroup('${g.id}')">전체</span>` +
-    g.children.map((id) => `<span class="chip sub ${catSel.includes(id) ? 'on' : ''}" onclick="toggleLeaf('${id}')">${T.labelOf(id)}</span>`).join('') +
+    g.subs.map((sb) => `<span class="chip sub ${catSel.includes(sb.id) ? 'on' : ''}" onclick="toggleSub('${sb.id}')">${sb.label}</span>`).join('') +
     '</span>').join('') + `<span class="sub-count" id="subCount">${lastTotal ? lastTotal.toLocaleString('ko-KR') + '개' : ''}</span>`;
 }
 
@@ -1546,26 +1573,24 @@ function resetAll() {
 function toggleGroup(gid) {
   const g = groupById(gid);
   if (!g) return;
-  if (selectedGroups().includes(g)) catSel = catSel.filter((id) => id !== g.id && !g.children.includes(id));
-  else catSel = [...catSel, g.id];
+  // 이미 선택된 대분류를 다시 누르면 해제, 다른 대분류를 누르면 그쪽으로 바뀐다(둘이 같이 선택되지 않음)
+  catSel = selectedGroup() === g ? [] : [g.id];
   afterCategoryChange();
 }
 
 function selectWholeGroup(gid) {
   const g = groupById(gid);
   if (!g) return;
-  catSel = [...catSel.filter((id) => !g.children.includes(id) && id !== g.id), g.id];
+  catSel = [g.id];
   afterCategoryChange();
 }
 
-function toggleLeaf(leaf) {
-  const g = groupOfLeaf(leaf);
-  if (!g) return;
-  let next = catSel.slice();
-  if (next.includes(g.id)) next = next.filter((id) => id !== g.id); // 그룹 전체 선택 상태에서 하위를 누르면 그 하나부터 시작
-  next = next.includes(leaf) ? next.filter((id) => id !== leaf) : [...next, leaf];
-  // 하위를 전부 해제하면(=취소) 그룹 선택 자체가 풀려 칩이 원래대로 돌아간다
-  catSel = next;
+function toggleSub(sid) {
+  const info = subInfo(sid);
+  if (!info) return;
+  let next = catSel.filter((id) => id !== info.g.id && (info.g.subs || []).some((x) => x.id === id)); // 같은 대분류의 세부만 유지
+  next = next.includes(info.sub.id) ? next.filter((id) => id !== info.sub.id) : [...next, info.sub.id];
+  catSel = next.length ? next : [info.g.id]; // 세부를 전부 해제하면 그 대분류 전체로 돌아간다
   afterCategoryChange();
 }
 
@@ -1662,7 +1687,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (initial.get('priceMin')) document.getElementById('priceMin').value = initial.get('priceMin');
   if (initial.get('priceMax')) document.getElementById('priceMax').value = initial.get('priceMax');
   if (initial.get('inStock')) document.getElementById('inStock').checked = true;
-  catSel = (initial.get('cat') || '').split(',').filter(Boolean);
+  catSel = (initial.get('cat') || '').split(',').filter(Boolean); // 분류표를 받은 뒤 아래에서 규칙에 맞게 정리
   if (initial.get('p')) currentPage = Math.max(1, parseInt(initial.get('p'), 10) || 1);
 
   // 서로 독립적인 초기 요청들(사전 로드, 브랜드 목록, 로그인 세션)을 동시에 보내서
@@ -1670,7 +1695,9 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   const taxonomyP = window.StyleFinderTaxonomy.loadTaxonomy();
   const brandsP = loadAllBrands(); // brands는 누구나 읽기 가능 — 로그인 전에도 공유 폴더 열람/검색 매칭에 필요
   const sessionP = sb.auth.getSession();
-  await taxonomyP; // 태그 이름(카테고리 라벨)이 필요하니 가벼운 taxonomy.json만 먼저 기다림
+  await taxonomyP;
+  catSel = normalizeCatSel(catSel); // 주소의 카테고리를 "대분류 하나 + 그 안의 세부" 규칙으로 정리(옛 주소의 세부 id도 변환)
+  // 태그 이름(카테고리 라벨)이 필요하니 가벼운 taxonomy.json만 먼저 기다림
 
   // 직전에 본 첫 화면이 저장돼 있고 같은 조건이면 서버 응답을 기다리지 않고 바로 그린다.
   let paintedFromCache = false;

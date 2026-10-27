@@ -12,15 +12,25 @@ import { sleep } from '../lib/http.js';
 
 const CATEGORY_CONCURRENCY = 4;
 
+
+// 쇼핑몰 메뉴에 보이는 카테고리 이름 — 우리 분류의 1순위 근거. 새 상품/세일/베스트 같은 종류가 아닌 이름은 제외.
+const NON_TYPE_LABEL = /(best|new|sale|hot|event|special|collab|sold ?out|season|restock|lookbook|coupon|%|신상|세일|이벤트|베스트|예약|기획)/i;
+function cleanLabel(text) {
+  const t = String(text || '').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  return t && t.length <= 30 && !NON_TYPE_LABEL.test(t) ? t : null;
+}
+
 export async function collectImweb(source, { limit = Infinity } = {}) {
   const base = source.shopUrl.replace(/\/$/, '');
 
   // 홈이 아직 하이드레이션되기 전에 링크를 읽으면 0개로 나오는 일이 있어(실측: earthjigu·bordr·studiosalloy가
   // 한국 PC에서도 2초 만에 0개) 몇 번 더 시도한다.
   let categoryHrefs = [];
+  const labels = new Map(); // 카테고리 경로 -> 메뉴 이름
+  const catsOf = new Map(); // 상품 idx -> 들어있는 카테고리 이름들
   for (let attempt = 0; attempt < 4 && categoryHrefs.length === 0; attempt++) {
     if (attempt > 0) await sleep(3000 * attempt);
-    categoryHrefs = await discoverCategories(base);
+    categoryHrefs = await discoverCategories(base, labels);
   }
   if (categoryHrefs.length === 0) {
     console.warn(`  ? ${base} 카테고리 링크를 하나도 못 찾음`);
@@ -77,7 +87,10 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
       let found = 0;
       for (const c of cards) {
         const idx = c.href.match(/idx=(\d+)/)?.[1] || c.href.match(/\/(\d+)\/?$/)?.[1];
-        if (!idx || items.has(idx)) continue;
+        if (!idx) continue;
+        const lab = labels.get(catHref);
+        if (lab) { if (!catsOf.has(idx)) catsOf.set(idx, new Set()); catsOf.get(idx).add(lab); }
+        if (items.has(idx)) continue;
         found++;
         items.set(idx, toItem(c, idx, base, source));
       }
@@ -90,6 +103,10 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
     }
   }, CATEGORY_CONCURRENCY);
 
+  for (const [idx, it] of items) {
+    const labs = catsOf.get(idx);
+    if (labs && labs.size) it.raw_category = [...labs].join(' > ');
+  }
   return [...items.values()].slice(0, Number.isFinite(limit) ? limit : undefined);
 }
 
@@ -99,7 +116,7 @@ export async function collectImweb(source, { limit = Infinity } = {}) {
 // 전부 후보로 시도한다 (진짜 카테고리가 아니면 상품이 0개 나와서 자연히 스킵됨).
 const NON_CATEGORY = /^(login|logout|shop_cart|cart|faq|home|mypage|join|order|board|event|notice|search|member|about|contact|terms|privacy|shipping|stockist|site_join)/i;
 
-async function discoverCategories(base) {
+async function discoverCategories(base, labelsOut = new Map()) {
   // 여기서 실패하면 브랜드 전체가 통째로 죽으므로(카테고리 자체를 못 찾음), 일시적
   // 타임아웃/네트워크 에러는 몇 번 재시도한다.
   let page, context;
@@ -117,13 +134,15 @@ async function discoverCategories(base) {
   try {
     // 메뉴 링크가 하이드레이션/스플래시 화면 뒤에 뜨는 사이트가 있어서(studiosalloy) 링크가 충분히 생길 때까지 기다린다.
     await page.waitForFunction(() => document.querySelectorAll('a[href]').length > 10, null, { timeout: 20000 }).catch(() => {});
-    const hrefs = await page.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
+    const links = await page.$$eval('a[href]', (as) => as.map((a) => [a.getAttribute('href'), a.textContent]));
     const out = new Set();
-    for (const h of hrefs) {
+    for (const [h, text] of links) {
       if (!h || /^(#|javascript|mailto|tel|http)/i.test(h)) continue;
       const path = h.split('?')[0].replace(/^\/+|\/+$/g, '');
       if (!path || path.includes('.') || NON_CATEGORY.test(path)) continue;
       out.add('/' + path);
+      const lab = cleanLabel(text);
+      if (lab && !labelsOut.has('/' + path)) labelsOut.set('/' + path, lab);
     }
     return [...out];
   } finally {

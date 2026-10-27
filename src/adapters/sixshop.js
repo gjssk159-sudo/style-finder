@@ -16,12 +16,21 @@ import { renderPage } from '../lib/browser.js';
 const CATEGORY_RE = /^\/c[a-z0-9]{20,}$/i;
 const PRODUCT_LINK_RE = /\/products?\/([a-z0-9_-]+)/i;
 
+
+// 쇼핑몰 메뉴에 보이는 카테고리 이름 — 우리 분류의 1순위 근거. 새 상품/세일/베스트 같은 종류가 아닌 이름은 제외.
+const NON_TYPE_LABEL = /(best|new|sale|hot|event|special|collab|sold ?out|season|restock|lookbook|coupon|%|신상|세일|이벤트|베스트|예약|기획)/i;
+function cleanLabel(text) {
+  const t = String(text || '').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
+  return t && t.length <= 30 && !NON_TYPE_LABEL.test(t) ? t : null;
+}
+
 export async function collectSixshop(source, { limit = Infinity } = {}) {
   const base = source.shopUrl.replace(/\/$/, '');
 
-  const categoryPaths = source.discovery?.categoryPaths?.length
-    ? source.discovery.categoryPaths
-    : await discoverCategories(base);
+  const labels = new Map(); // 카테고리 경로 -> 메뉴 이름
+  const catsOf = new Map(); // 상품 id -> 들어있는 카테고리 이름들
+  const discovered = await discoverCategories(base, labels);
+  const categoryPaths = source.discovery?.categoryPaths?.length ? source.discovery.categoryPaths : discovered;
   if (categoryPaths.length === 0) return [];
 
   const items = new Map(); // product id -> item
@@ -63,7 +72,10 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
       let found = 0;
       for (const c of cards) {
         const id = c.href.match(PRODUCT_LINK_RE)?.[1];
-        if (!id || items.has(id)) continue;
+        if (!id) continue;
+        const lab = labels.get(catPath);
+        if (lab) { if (!catsOf.has(id)) catsOf.set(id, new Set()); catsOf.get(id).add(lab); }
+        if (items.has(id)) continue;
         found++;
         items.set(id, toItem(c, id, base, source));
       }
@@ -76,10 +88,14 @@ export async function collectSixshop(source, { limit = Infinity } = {}) {
     }
   }
 
+  for (const [id, it] of items) {
+    const labs = catsOf.get(id);
+    if (labs && labs.size) it.raw_category = [...labs].join(' > ');
+  }
   return [...items.values()].slice(0, Number.isFinite(limit) ? limit : undefined);
 }
 
-async function discoverCategories(base) {
+async function discoverCategories(base, labelsOut = new Map()) {
   // 여기서 실패하면 브랜드 전체가 통째로 죽으므로, 일시적 타임아웃/네트워크 에러는 재시도한다.
   let page, context;
   let lastErr;
@@ -94,8 +110,14 @@ async function discoverCategories(base) {
   }
   if (lastErr) throw lastErr;
   try {
-    const hrefs = await page.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
-    return [...new Set(hrefs.filter((h) => h && CATEGORY_RE.test(h)))];
+    const links = await page.$$eval('a[href]', (as) => as.map((a) => [a.getAttribute('href'), a.textContent]));
+    for (const [h, text] of links) {
+      if (!h) continue;
+      const path = h.split('?')[0];
+      const lab = cleanLabel(text);
+      if (lab && !labelsOut.has(path)) labelsOut.set(path, lab);
+    }
+    return [...new Set(links.map((l) => l[0]).filter((h) => h && CATEGORY_RE.test(h)))];
   } finally {
     await context.close();
   }

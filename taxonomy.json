@@ -18,6 +18,40 @@
         "shirt",
         "knit",
         "sleeveless_top"
+      ],
+      "subs": [
+        {
+          "id": "top_sweat",
+          "label": "후드/맨투맨",
+          "children": [
+            "hoodie",
+            "sweatshirt"
+          ]
+        },
+        {
+          "id": "top_tee",
+          "label": "티셔츠",
+          "children": [
+            "tshirt",
+            "longsleeve_tee",
+            "polo",
+            "sleeveless_top"
+          ]
+        },
+        {
+          "id": "top_shirt",
+          "label": "셔츠/블라우스",
+          "children": [
+            "shirt"
+          ]
+        },
+        {
+          "id": "top_knit",
+          "label": "니트",
+          "children": [
+            "knit"
+          ]
+        }
       ]
     },
     {
@@ -47,6 +81,56 @@
         "long_padding",
         "vest",
         "padding_vest"
+      ],
+      "subs": [
+        {
+          "id": "outer_jacket",
+          "label": "재킷",
+          "children": [
+            "jacket",
+            "blouson",
+            "leather_jacket",
+            "trucker",
+            "windbreaker",
+            "blazer",
+            "field_jacket",
+            "track_jacket"
+          ]
+        },
+        {
+          "id": "outer_coat",
+          "label": "코트",
+          "children": [
+            "coat",
+            "trench",
+            "fur"
+          ]
+        },
+        {
+          "id": "outer_padding",
+          "label": "패딩",
+          "children": [
+            "padding",
+            "long_padding"
+          ]
+        },
+        {
+          "id": "outer_cardigan",
+          "label": "카디건/집업",
+          "children": [
+            "cardigan",
+            "hoodie_zipup",
+            "fleece"
+          ]
+        },
+        {
+          "id": "outer_vest",
+          "label": "베스트",
+          "children": [
+            "vest",
+            "padding_vest"
+          ]
+        }
       ]
     },
     {
@@ -68,6 +152,36 @@
         "shorts",
         "leggings",
         "jumpsuit"
+      ],
+      "subs": [
+        {
+          "id": "bottom_denim",
+          "label": "데님 팬츠",
+          "children": [
+            "denim"
+          ]
+        },
+        {
+          "id": "bottom_pants",
+          "label": "팬츠",
+          "children": [
+            "jogger",
+            "slacks",
+            "cargo",
+            "nylon",
+            "cotton",
+            "pants",
+            "leggings",
+            "jumpsuit"
+          ]
+        },
+        {
+          "id": "bottom_shorts",
+          "label": "숏 팬츠",
+          "children": [
+            "shorts"
+          ]
+        }
       ]
     },
     {
@@ -84,6 +198,26 @@
         "skirt",
         "mini_skirt",
         "midi_skirt"
+      ],
+      "subs": [
+        {
+          "id": "ds_dress",
+          "label": "원피스",
+          "children": [
+            "onepiece",
+            "mini_dress",
+            "midi_dress"
+          ]
+        },
+        {
+          "id": "ds_skirt",
+          "label": "스커트",
+          "children": [
+            "skirt",
+            "mini_skirt",
+            "midi_skirt"
+          ]
+        }
       ]
     },
     {
@@ -99,6 +233,31 @@
         "boots",
         "sandals",
         "shoes"
+      ],
+      "subs": [
+        {
+          "id": "shoes_sneakers",
+          "label": "스니커즈",
+          "children": [
+            "sneakers"
+          ]
+        },
+        {
+          "id": "shoes_formal",
+          "label": "구두/부츠",
+          "children": [
+            "dress_shoes",
+            "boots"
+          ]
+        },
+        {
+          "id": "shoes_etc",
+          "label": "샌들/기타",
+          "children": [
+            "sandals",
+            "shoes"
+          ]
+        }
       ]
     },
     {
@@ -116,6 +275,33 @@
         "waist_bag",
         "pouch",
         "bag"
+      ],
+      "subs": [
+        {
+          "id": "bag_back",
+          "label": "백팩",
+          "children": [
+            "backpack"
+          ]
+        },
+        {
+          "id": "bag_cross",
+          "label": "크로스/숄더",
+          "children": [
+            "crossbody",
+            "shoulder_bag",
+            "waist_bag"
+          ]
+        },
+        {
+          "id": "bag_tote",
+          "label": "토트/기타",
+          "children": [
+            "tote",
+            "pouch",
+            "bag"
+          ]
+        }
       ]
     },
     {
@@ -131,6 +317,25 @@
         "bucket_hat",
         "beret_hunting",
         "hat"
+      ],
+      "subs": [
+        {
+          "id": "cap_cap",
+          "label": "캡",
+          "children": [
+            "cap",
+            "beret_hunting"
+          ]
+        },
+        {
+          "id": "cap_hat",
+          "label": "비니/햇",
+          "children": [
+            "beanie",
+            "bucket_hat",
+            "hat"
+          ]
+        }
       ]
     },
     {
@@ -151,6 +356,34 @@
         "eyewear",
         "wallet",
         "acc"
+      ],
+      "subs": [
+        {
+          "id": "acc_wear",
+          "label": "양말/머플러/장갑",
+          "children": [
+            "socks",
+            "muffler",
+            "glove"
+          ]
+        },
+        {
+          "id": "acc_jewel",
+          "label": "주얼리/안경",
+          "children": [
+            "jewelry",
+            "eyewear"
+          ]
+        },
+        {
+          "id": "acc_etc",
+          "label": "벨트/지갑/기타",
+          "children": [
+            "belt",
+            "wallet",
+            "acc"
+          ]
+        }
       ]
     },
     {

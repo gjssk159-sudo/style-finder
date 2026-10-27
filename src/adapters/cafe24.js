@@ -30,6 +30,7 @@ const absUrl = (base, href) => {
 };
 
 export async function collectCafe24(source, { limit = Infinity } = {}) {
+  const catsOut = new Map(); // 상품번호 -> 쇼핑몰 카테고리 이름들
   const base = source.shopUrl.replace(/\/$/, '');
   const sitemapPath = source.discovery?.path || '/sitemap.xml';
 
@@ -61,7 +62,7 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
       const idOf = (u) => u.match(/product_no=(\d+)/i)?.[1] || u.match(/\/product\/[^/?#]+\/(\d+)/i)?.[1] || u;
       const known = new Set(productUrls.map(idOf));
       const stopAt = Number.isFinite(limit) ? limit * 4 : Infinity;
-      const viaCats = await discoverViaCategories(base, { stopAt });
+      const viaCats = await discoverViaCategories(base, { stopAt, catsOut });
       const extra = viaCats.filter((u) => !known.has(idOf(u)));
       if (extra.length) {
         console.log(`  카테고리 크롤링으로 sitemap에 없는 상품 ${extra.length}개 추가`);
@@ -73,7 +74,7 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
   } else {
     console.log('  sitemap 없음 → 카테고리 크롤링으로 전환');
     const stopAt = Number.isFinite(limit) ? limit * 4 : Infinity;
-    productUrls = await discoverViaCategories(base, { stopAt });
+    productUrls = await discoverViaCategories(base, { stopAt, catsOut });
     console.log(`  카테고리 크롤링: ${productUrls.length} products`);
   }
 
@@ -115,7 +116,12 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
         }
         if (r.status === 404 || !r.text) return;
         const item = parseProductPage(r.text, url, source);
-        if (item) results.push(item);
+        if (item) {
+          // 상품 페이지에 경로(breadcrumb)가 없어도, 쇼핑몰 메뉴의 어느 카테고리에 들어있는지로 raw_category를 채운다
+          const labs = catsOut.get(productIdOf(url) || item.external_id);
+          if (labs && labs.size) item.raw_category = [...labs, item.raw_category].filter(Boolean).join(' > ');
+          results.push(item);
+        }
         if (pass > 0) await sleep(300);
       },
       PASSES[pass].concurrency,
@@ -171,9 +177,20 @@ function withPage(href, page) {
   return href.includes('?') ? `${href}&page=${page}` : `${href}${href.endsWith('/') ? '' : '/'}?page=${page}`;
 }
 
-export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt = Infinity } = {}) {
+// 쇼핑몰이 상품을 어떤 카테고리에 넣어뒀는지(메뉴 이름)를 우리 카테고리 분류의 1순위 근거로 쓴다.
+// 새 상품/세일/베스트 같은 '종류가 아닌' 메뉴 이름은 걸러서 기록한다.
+const NON_TYPE_LABEL = /(best|new|sale|hot|event|special|collab|sold ?out|season|restock|lookbook|coupon|%|신상|세일|이벤트|베스트|예약|기획)/i;
+export const productIdOf = (u) => String(u).match(/product_no=(\d+)/i)?.[1] || String(u).match(/\/product\/[^/?#]+\/(\d+)/i)?.[1] || null;
+
+export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt = Infinity, catsOut = null } = {}) {
   const seedPages = [base + '/', base + '/product/list.html', base + '/index.html'];
   const categoryHrefs = new Set();
+  const categoryLabel = new Map(); // href -> 메뉴에 보이는 카테고리 이름
+  const noteLabel = (href, text) => {
+    // 메뉴 이름 뒤에 붙는 상품 개수/재고 표시("TOP (12)", "ALL (In Stock)")는 지운다
+    const t = String(text || '').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
+    if (t && t.length <= 30 && !NON_TYPE_LABEL.test(t) && !categoryLabel.has(href)) categoryLabel.set(href, t);
+  };
 
   for (const p of seedPages) {
     try {
@@ -183,7 +200,7 @@ export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt 
       $('a[href]').each((_, a) => {
         const href = $(a).attr('href') || '';
         const path = href.split('#')[0];
-        if (CATEGORY_HREF_RE.test(path)) categoryHrefs.add(path.replace(/&page=\d+/i, ''));
+        if (CATEGORY_HREF_RE.test(path)) { const k = path.replace(/&page=\d+/i, ''); categoryHrefs.add(k); noteLabel(k, $(a).text()); }
       });
     } catch {
       /* skip */
@@ -197,11 +214,11 @@ export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt 
     try {
       const { renderPage } = await import('../lib/browser.js');
       const { page, context } = await renderPage(base + '/');
-      const hrefs = await page.$$eval('a[href]', (as) => as.map((a) => a.getAttribute('href')));
+      const links = await page.$$eval('a[href]', (as) => as.map((a) => [a.getAttribute('href'), a.textContent]));
       await context.close();
-      for (const href of hrefs) {
+      for (const [href, text] of links) {
         const path = (href || '').split('#')[0];
-        if (CATEGORY_HREF_RE.test(path)) categoryHrefs.add(path.replace(/&page=\d+/i, ''));
+        if (CATEGORY_HREF_RE.test(path)) { const k = path.replace(/&page=\d+/i, ''); categoryHrefs.add(k); noteLabel(k, text); }
       }
       if (categoryHrefs.size) console.log(`  GNB가 JS 렌더라 브라우저로 최상위 카테고리 ${categoryHrefs.size}개 찾음`);
     } catch (err) {
@@ -221,7 +238,7 @@ export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt 
         $$('a[href]').each((_, a) => {
           const href = $$(a).attr('href') || '';
           const path = href.split('#')[0];
-          if (CATEGORY_HREF_RE.test(path)) categoryHrefs.add(path.replace(/&page=\d+/i, ''));
+          if (CATEGORY_HREF_RE.test(path)) { const k = path.replace(/&page=\d+/i, ''); categoryHrefs.add(k); noteLabel(k, $$(a).text()); }
         });
       } catch {
         /* skip */
@@ -263,6 +280,9 @@ export async function discoverViaCategories(base, { maxPagesPerCat = 60, stopAt 
             const canon = canonicalProductUrl(abs);
             if (!products.has(canon)) found++;
             products.add(canon);
+            const lab = categoryLabel.get(catHref);
+            const pid = productIdOf(canon);
+            if (catsOut && lab && pid) { if (!catsOut.has(pid)) catsOut.set(pid, new Set()); catsOut.get(pid).add(lab); }
           }
         });
 

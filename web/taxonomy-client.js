@@ -64,13 +64,13 @@ let CATEGORIES = [];
 let GROUPS = [];
 function applyTaxonomy(data) {
   CATEGORIES = data.categories;
-  GROUPS = data.groups || [];
+  GROUPS = (data.groups || []).map((g) => ({ ...g, subs: g.subs && g.subs.length ? g.subs : g.children.map((c) => ({ id: c, label: (data.categories.find((x) => x.id === c) || {}).label || c, children: [c] })) }));
 }
 // 분류표는 거의 안 바뀌니 저장해둔 걸 바로 쓰고(첫 화면을 기다리게 하지 않음), 최신본은 뒤에서 받아 갱신한다.
 async function loadTaxonomy() {
   let cached = null;
-  try { cached = JSON.parse(localStorage.getItem('sf_tax') || 'null'); } catch {}
-  const fresh = fetch('./taxonomy.json').then((r) => r.json()).then((data) => { try { localStorage.setItem('sf_tax', JSON.stringify(data)); } catch {} return data; });
+  try { cached = JSON.parse(localStorage.getItem('sf_tax2') || 'null'); } catch {}
+  const fresh = fetch('./taxonomy.json').then((r) => r.json()).then((data) => { try { localStorage.setItem('sf_tax2', JSON.stringify(data)); } catch {} return data; });
   if (cached && Array.isArray(cached.categories) && cached.categories.length) {
     applyTaxonomy(cached);
     fresh.then(applyTaxonomy).catch(() => {});
@@ -86,13 +86,17 @@ function expandSelection(sel) {
   const out = new Set();
   for (const id of list) {
     const g = GROUPS.find((x) => x.id === id);
-    if (g) g.children.forEach((c) => out.add(c));
+    if (g) { g.children.forEach((c) => out.add(c)); continue; }
+    const sub = GROUPS.flatMap((x) => x.subs).find((x) => x.id === id);
+    if (sub) sub.children.forEach((c) => out.add(c));
     else if (CATEGORIES.some((c) => c.id === id)) out.add(id);
   }
   return [...out];
 }
 
 function labelOf(id) {
+  const sub = GROUPS.flatMap((x) => x.subs).find((x) => x.id === id);
+  if (sub) return sub.label;
   const c = CATEGORIES.find((x) => x.id === id);
   return c ? c.label : id;
 }
