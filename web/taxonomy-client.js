@@ -138,23 +138,142 @@ function resolveColorToken(token) {
   return COLOR_MAP[s] || QUERY_COLOR_ALIASES[s] || null;
 }
 
-// 자연어 검색어 -> { categories, colors, keywords(나머지는 브랜드/상품명 텍스트 매칭용) }
+// ── 한/영 호환 검색 ──
+// 같은 뜻의 한국어/영어 표기를 한 묶음으로 둔다. 어느 쪽으로 검색해도 묶음 전체로 상품명을 찾는다.
+// (한 글자 표기는 너무 넓게 걸려서 넣지 않음)
+const BILINGUAL = [
+  ['polo', '폴로', '폴로티', '폴로셔츠', '카라티', '피케', 'pique'],
+  ['hoodie', '후드', '후디', '후드티'],
+  ['sweatshirt', '맨투맨', '스웨트셔츠', '스웻셔츠', 'sweat'],
+  ['knit', '니트', 'sweater', '스웨터'],
+  ['cardigan', '가디건', '카디건'],
+  ['denim', '데님', 'jean', 'jeans', '청바지'],
+  ['cargo', '카고'],
+  ['pants', 'trousers', 'trouser', '팬츠', '바지', '슬랙스', 'slacks'],
+  ['shorts', '쇼츠', '반바지', '숏팬츠'],
+  ['longsleeve', 'long sleeve', 'long-sleeve', '롱슬리브', '긴팔', '긴팔티'],
+  ['tee', 't-shirt', 'tshirt', 't shirt', '티셔츠', '반팔', '반팔티'],
+  ['shirt', 'shirts', '셔츠', 'blouse', '블라우스'],
+  ['jacket', '자켓', '재킷'],
+  ['coat', '코트'],
+  ['padding', 'puffer', '패딩', '푸퍼'],
+  ['vest', '베스트', '조끼', 'gilet'],
+  ['skirt', '스커트', '치마'],
+  ['dress', '원피스', '드레스', 'onepiece'],
+  ['bag', '가방'],
+  ['tote', '토트', '에코백'],
+  ['backpack', '백팩'],
+  ['cap', '볼캡', '캡', '야구모자'],
+  ['beanie', '비니'],
+  ['hat', '햇', '모자'],
+  ['scarf', 'muffler', '스카프', '머플러', '목도리'],
+  ['sneakers', 'sneaker', '스니커즈', '운동화'],
+  ['boots', 'boot', '부츠'],
+  ['loafer', 'loafers', '로퍼'],
+  ['wallet', '지갑'],
+  ['belt', '벨트'],
+  ['socks', 'sock', '양말'],
+  ['gloves', 'glove', '장갑'],
+  ['sunglasses', 'eyewear', '선글라스', '안경'],
+  ['leather', '레더', '가죽'],
+  ['wool', '양모'],
+  ['cotton', '코튼'],
+  ['linen', '린넨', '리넨'],
+  ['nylon', '나일론'],
+  ['fleece', '플리스', '후리스', '뽀글이'],
+  ['corduroy', '코듀로이', '골덴', '코르덴'],
+  ['suede', '스웨이드'],
+  ['cashmere', '캐시미어'],
+  ['mohair', '모헤어'],
+  ['velvet', '벨벳', '벨루어'],
+  ['mesh', '메쉬', '매쉬'],
+  ['stripe', 'striped', '스트라이프', '줄무늬'],
+  ['check', 'plaid', '체크', '플래드'],
+  ['logo', '로고'],
+  ['vintage', '빈티지'],
+  ['washed', '워시드', '워싱'],
+  ['oversized', 'oversize', '오버사이즈', '오버핏'],
+  ['zip-up', 'zipup', 'zip up', '집업', '지퍼'],
+  ['hooded', '후디드'],
+  ['bomber', '봄버', '블루종', 'blouson', 'ma-1'],
+  ['trench', '트렌치'],
+  ['jogger', 'joggers', '조거', '트레이닝'],
+  ['sandals', 'sandal', '샌들', '슬리퍼'],
+];
+const normTok = (x) => String(x || '').toLowerCase().replace(/[\s\-_/]+/g, '');
+const BI_INDEX = new Map(); // 정규화한 표기 -> 묶음 번호들
+BILINGUAL.forEach((grp, i) => grp.forEach((w) => { const k = normTok(w); if (!BI_INDEX.has(k)) BI_INDEX.set(k, new Set()); BI_INDEX.get(k).add(i); }));
+const okVariant = (v) => (/[가-힣]/.test(v) ? v.length >= 2 : v.length >= 3);
+const SPECIAL = /[,()"\\]/;
+
+// 한 검색어가 상품명에서 어떤 표기들로 나타날 수 있는지(한/영 호환). 검색어 자신은 항상 포함.
+function variantsOf(token, cats) {
+  const out = new Set([token]);
+  const groups = BI_INDEX.get(normTok(token));
+  if (groups) for (const gi of groups) for (const w of BILINGUAL[gi]) if (okVariant(w)) out.add(w);
+  for (const cid of cats || []) {
+    const c = CATEGORIES.find((x) => x.id === cid);
+    if (!c) continue;
+    for (const k of [...(c.keywords || []), c.label]) if (k && okVariant(k) && (k.length >= 4 || /[가-힣]/.test(k))) out.add(k);
+  }
+  return [...out].filter((v) => !SPECIAL.test(v)).slice(0, 16);
+}
+
+// 띄어쓰기 때문에 쪼개진 표현("long sleeve", "polo shirt")은 한 덩어리로 먼저 찾는다
+function phraseMatch(tokens, i) {
+  for (const n of [3, 2]) {
+    if (i + n > tokens.length) continue;
+    const phrase = tokens.slice(i, i + n).join(' ');
+    if (resolveCategoryToken(phrase).length || BI_INDEX.has(normTok(phrase))) return { n, phrase };
+  }
+  return null;
+}
+
+// "블랙폴로"처럼 색상이 앞에 붙어 있는 한국어 한 단어를 색상 + 나머지로 나눈다
+function splitColorPrefix(token) {
+  const keys = Object.keys(COLOR_MAP).filter((k) => /[가-힣]/.test(k) && k.length >= 2).sort((a, b) => b.length - a.length);
+  for (const k of keys) {
+    if (token.startsWith(k) && token.length > k.length) {
+      const rest = token.slice(k.length);
+      if (resolveCategoryToken(rest).length || BI_INDEX.has(normTok(rest))) return [k, rest];
+    }
+  }
+  return null;
+}
+
+// 자연어 검색어 -> { categories, colors, keywords, terms }
+//  - categories/colors/keywords: 예전과 같은 형태(칩 표시·안내 문구에 사용)
+//  - terms: 검색어 하나하나의 { text, cats, variants } — 검색할 때 카테고리와 상품명(한/영 표기)을 함께 본다
 function parseQuery(raw) {
   const cleaned = stripFillers((raw || '').trim());
-  const tokens = cleaned.split(/\s+/).filter(Boolean);
+  let tokens = cleaned.split(/\s+/).filter(Boolean);
   let categories = [];
   let colors = [];
   const keywords = [];
-  for (const t of tokens) {
-    const c = resolveCategoryToken(t);
-    const col = resolveColorToken(t);
-    if (c.length) categories.push(...c);
+  const terms = [];
+  for (let i = 0; i < tokens.length; i++) {
+    let t = tokens[i];
+    const ph = phraseMatch(tokens, i);
+    if (ph) { t = ph.phrase; i += ph.n - 1; }
+    let c = resolveCategoryToken(t);
+    let col = resolveColorToken(t);
+    if (!c.length && !col) {
+      const sp = splitColorPrefix(t);
+      if (sp) { tokens.splice(i + 1, 0, sp[1]); t = sp[0]; col = resolveColorToken(t); c = []; }
+    }
+    if (c.length) { categories.push(...c); terms.push({ text: t, cats: c, variants: variantsOf(t, c) }); }
     else if (col) colors.push(col);
-    else keywords.push(t);
+    else {
+      // 카테고리로 직접 안 잡히는 표기(jeans, trousers 등)도 같은 뜻 묶음에 카테고리로 잡히는 표기가 있으면(청바지→데님 팬츠) 그 카테고리를 함께 쓴다
+      const own = new Set();
+      for (const gi of BI_INDEX.get(normTok(t)) || []) for (const w of BILINGUAL[gi]) { const r = resolveCategoryToken(w); if (r.length && r.length <= 2) r.forEach((id) => own.add(id)); }
+      if (own.size) { categories.push(...own); terms.push({ text: t, cats: [...own], variants: variantsOf(t, [...own]) }); }
+      else { keywords.push(t); terms.push({ text: t, cats: [], variants: variantsOf(t, []) }); }
+    }
   }
   categories = [...new Set(categories)];
   colors = [...new Set(colors)];
-  return { categories, colors, keywords };
+  return { categories, colors, keywords, terms };
 }
 
 window.StyleFinderTaxonomy = { loadTaxonomy, parseQuery, expandSelection, labelOf, stripCategoryTokens, get CATEGORIES() { return CATEGORIES; }, get GROUPS() { return GROUPS; }, COLOR_LABELS };

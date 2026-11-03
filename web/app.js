@@ -1017,7 +1017,7 @@ function qs() {
 let RECENT_COL = 'first_seen_at';
 function buildQuery(offset, count = PAGE_SIZE) {
   const raw = document.getElementById('q').value;
-  const { categories: queryCategories, colors: colorsFromQuery, keywords } = window.StyleFinderTaxonomy.parseQuery(raw);
+  const { categories: queryCategories, colors: colorsFromQuery, keywords, terms } = window.StyleFinderTaxonomy.parseQuery(raw);
   // 칩으로 고른 카테고리가 있으면 그걸 우선(검색창에 카테고리 단어를 직접 치면 go()에서 칩 선택이 풀림)
   const chipCategories = window.StyleFinderTaxonomy.expandSelection(catSel);
   const categories = chipCategories.length ? chipCategories : queryCategories;
@@ -1042,22 +1042,31 @@ function buildQuery(offset, count = PAGE_SIZE) {
   else query = query.order('brand').order('title');
   query = query.order('id').range(offset, offset + count - 1); // 페이지네이션 안정성용 동률 구분 키
 
-  if (categories.length) query = query.overlaps('categories', categories);
+  // 칩으로 고른 카테고리는 그대로 걸러내고, 검색창에 친 카테고리 단어는 아래 terms에서 '카테고리 OR 상품명(한/영 표기)'로 처리한다
+  if (chipCategories.length) query = query.overlaps('categories', chipCategories);
   if (colors.length) query = query.overlaps('colors', colors);
   if (size) query = query.overlaps('sizes', sizeVariants(size));
   if (brand) query = query.eq('brand', brand);
   if (priceMin) query = query.gte('max_price', Number(priceMin));
   if (priceMax) query = query.lte('min_price', Number(priceMax));
   if (inStock) query = query.eq('in_stock', true);
-  for (const kw of keywords) {
-    // "mudule"로 쳐도 발음기호 붙은 "müdule"이 나오게 — DB의 ilike는 발음기호를 못 무시하므로
-    // 내 폴더 브랜드 목록에서 발음기호 무시하고 먼저 매칭한 다음 정확한 이름으로 in 필터 추가.
-    const foldedKw = foldAccents(kw);
-    const accentMatches = allBrands.filter((b) => foldAccents(b.name).includes(foldedKw)).map((b) => b.name);
-    const brandInClause = accentMatches.length
-      ? `,brand.in.(${accentMatches.map((n) => `"${n.replace(/"/g, '\\"')}"`).join(',')})`
-      : '';
-    query = query.or(`brand.ilike.%${kw}%,title.ilike.%${kw}%,title_norm.ilike.%${kw}%${brandInClause}`);
+  // 검색어마다: 카테고리가 인식되면 그 카테고리이거나, 상품명에 한/영 표기 중 하나라도 들어있는 상품을 보여준다.
+  // (분류가 틀리거나 비어 있어도 상품명에 있으면 나오고, 한국어/영어 어느 쪽으로 쳐도 둘 다 나온다)
+  const q = (v) => '"%' + String(v).replace(/(["\\])/g, '\\$1') + '%"';
+  const searchTerms = chipCategories.length ? terms.filter((t) => !t.cats.length) : terms; // 칩이 있으면 검색어의 카테고리 단어는 무시(예전 동작)
+  for (const t of searchTerms) {
+    const parts = [];
+    if (t.cats.length) parts.push('categories.ov.{' + t.cats.join(',') + '}');
+    for (const v of t.variants) parts.push('title.ilike.' + q(v), 'title_norm.ilike.' + q(v));
+    if (!t.cats.length) {
+      // "mudule"로 쳐도 발음기호 붙은 "müdule"이 나오게 — DB의 ilike는 발음기호를 못 무시하므로
+      // 내 폴더 브랜드 목록에서 발음기호 무시하고 먼저 매칭한 다음 정확한 이름으로 in 필터 추가.
+      for (const v of t.variants) parts.push('brand.ilike.' + q(v));
+      const foldedKw = foldAccents(t.text);
+      const accentMatches = allBrands.filter((b) => foldAccents(b.name).includes(foldedKw)).map((b) => b.name);
+      if (accentMatches.length) parts.push('brand.in.(' + accentMatches.map((n) => '"' + n.replace(/"/g, '\\"') + '"').join(',') + ')');
+    }
+    query = query.or(parts.join(','));
   }
   return { query, categories, colors, keywords };
 }
