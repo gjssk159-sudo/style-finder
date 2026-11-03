@@ -123,6 +123,10 @@
   .meta:empty { display: none; }
   .grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 38px 20px; }
   .card { position: relative; display: flex; flex-direction: column; }
+  .card.sk .imgwrap { animation: skp 1.3s ease-in-out infinite; }
+  .card.sk .body i { display: block; height: 10px; border-radius: 5px; background: var(--faint); margin-top: 8px; }
+  .card.sk .body i.s { width: 55%; }
+  @keyframes skp { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
   .card .imgwrap { position: relative; overflow: hidden; background: var(--faint); aspect-ratio: 3/4; }
   .card img { width: 100%; height: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; transition: opacity .25s ease; }
   .card:hover img { opacity: .9; }
@@ -188,16 +192,16 @@
   @media (max-width: 700px) { .soft-dlg input[type=password] { font-size: 16px; } }
 
   /* 처음 오는 사람에게 보여주는 초대장 + 홈 화면 추가 안내 */
-  .invite { position: fixed; inset: 0; z-index: 70; background: #f4f4f5; display: flex; align-items: center; justify-content: center; padding: 24px 16px 40px; overflow-y: auto; }
+  .invite { position: fixed; inset: 0; z-index: 70; background: #f4f4f5; display: flex; align-items: flex-start; justify-content: center; padding: clamp(36px, 13vh, 140px) 6vw 40px; overflow-y: auto; }
   .invite[hidden], .a2hs[hidden], .a2hs .qa-cta[hidden] { display: none; }
-  .a2hs-open .invite { align-items: flex-start; padding-top: 6vh; padding-bottom: 330px; }
-  .invite-card { width: min(460px, 100%); background: #fff; border-radius: 26px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.06); padding: 36px 26px 26px; text-align: center; display: flex; flex-direction: column; gap: 14px; }
-  .invite-card h2 { margin: 0 0 4px; font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1.25; text-transform: none; }
-  .invite-lead { margin: 0; font-size: 18px; line-height: 1.6; }
+  .a2hs-open .invite-card { padding-bottom: 104px; } /* 카드가 아래 안내 창 뒤로 이어지게 */
+  .invite-card { width: min(460px, 100%); background: #fff; border-radius: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 10px 36px rgba(0,0,0,.05); padding: 40px 26px 28px; text-align: center; display: flex; flex-direction: column; gap: 14px; }
+  .invite-card h2 { margin: 0 0 6px; font-size: 27px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-transform: none; }
+  .invite-lead { margin: 0; font-size: 19px; line-height: 1.65; font-weight: 500; }
   .invite-lead b { font-weight: 800; letter-spacing: -.02em; }
   .invite-sub { margin: 2px 0 8px; font-size: 14px; line-height: 1.7; color: #8a8782; }
   .invite-skip { background: none; color: #8a8782; padding: 8px 0 0; font-size: 14px; font-weight: 500; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
-  .a2hs { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 75; max-width: 520px; margin: 0 auto; background: #fff; border-radius: 26px; box-shadow: 0 10px 40px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.06); padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .a2hs { position: fixed; left: 4.5vw; right: 4.5vw; bottom: calc(8vh + env(safe-area-inset-bottom, 0px)); z-index: 75; max-width: 500px; margin: 0 auto; background: #fff; border-radius: 24px; box-shadow: 0 6px 30px rgba(0,0,0,.13), 0 0 0 1px rgba(0,0,0,.025); padding: 22px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
   .a2hs-x { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; padding: 0; background: none; color: #9a9791; display: flex; align-items: center; justify-content: center; }
   .a2hs-x svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
   .a2hs-head { display: flex; align-items: center; gap: 14px; padding-right: 30px; }

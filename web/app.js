@@ -381,6 +381,15 @@ async function signOut() {
 // 이벤트를 또 보내는데, 예전엔 그때마다 폴더·브랜드를 다시 받고 go()로 1페이지부터 다시 그려서
 // "유튜브 보다 오면 1페이지로 돌아가 있고 사진이 다시 흰색으로 로딩"되는 증상이 났다.
 let lastAuthUserId;
+// 로그인 직후 데이터가 올 때까지, 로그아웃 상태 안내 문구가 흐릿하게 남아있지 않도록 상품 자리 표시(스켈레톤)를 보여준다
+function showGridSkeleton() {
+  const grid = document.getElementById('grid');
+  document.getElementById('meta').textContent = '';
+  document.getElementById('moreWrap').style.display = 'none';
+  grid.classList.remove('loading');
+  grid.innerHTML = Array.from({ length: 8 }, () => '<div class="card sk"><div class="imgwrap"></div><div class="body"><i></i><i class="s"></i></div></div>').join('');
+  renderedSig = '';
+}
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'PASSWORD_RECOVERY') {
     const newPassword = prompt('새 비밀번호를 입력해주세요 (6자 이상)');
@@ -398,8 +407,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
   renderAuthArea();
   if (!sharedView) {
     if (currentUser) {
-      await loadMyFolders();
-      await loadAllBrands();
+      showGridSkeleton();
+      await Promise.all([loadMyFolders(), loadAllBrands()]); // 서로 기다릴 필요 없어서 동시에
+      renderBrandFilter(); // 내 폴더가 정해진 뒤 브랜드 필터를 다시 채움
     } else {
       myFolders = [];
       currentFolderId = null;
@@ -453,7 +463,7 @@ async function createFolder(silent) {
   renderFolderList();
   updateFolderNavLabel();
   renderBrandFilter();
-  go();
+  if (!silent) go(); // 로그인/부팅 중 자동 생성(silent)일 땐 호출한 쪽이 한 번만 그린다(두 번 그려져 깜빡이던 원인)
 }
 
 async function renameFolder() {
