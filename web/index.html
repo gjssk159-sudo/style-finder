@@ -186,6 +186,29 @@
   .qa-cta.light { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px #e3e1dc; }
   .sd-link { align-self: center; background: none; color: #8a8782; padding: 2px 0; font-size: 13px; font-weight: 500; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
   @media (max-width: 700px) { .soft-dlg input[type=password] { font-size: 16px; } }
+
+  /* 처음 오는 사람에게 보여주는 초대장 + 홈 화면 추가 안내 */
+  .invite { position: fixed; inset: 0; z-index: 70; background: #f4f4f5; display: flex; align-items: center; justify-content: center; padding: 24px 16px 40px; overflow-y: auto; }
+  .invite[hidden], .a2hs[hidden], .a2hs .qa-cta[hidden] { display: none; }
+  .a2hs-open .invite { align-items: flex-start; padding-top: 6vh; padding-bottom: 330px; }
+  .invite-card { width: min(460px, 100%); background: #fff; border-radius: 26px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,.06); padding: 36px 26px 26px; text-align: center; display: flex; flex-direction: column; gap: 14px; }
+  .invite-card h2 { margin: 0 0 4px; font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1.25; text-transform: none; }
+  .invite-lead { margin: 0; font-size: 18px; line-height: 1.6; }
+  .invite-lead b { font-weight: 800; letter-spacing: -.02em; }
+  .invite-sub { margin: 2px 0 8px; font-size: 14px; line-height: 1.7; color: #8a8782; }
+  .invite-skip { background: none; color: #8a8782; padding: 8px 0 0; font-size: 14px; font-weight: 500; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
+  .a2hs { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 75; max-width: 520px; margin: 0 auto; background: #fff; border-radius: 26px; box-shadow: 0 10px 40px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.06); padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .a2hs-x { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; padding: 0; background: none; color: #9a9791; display: flex; align-items: center; justify-content: center; }
+  .a2hs-x svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .a2hs-head { display: flex; align-items: center; gap: 14px; padding-right: 30px; }
+  .a2hs-icon { width: 54px; height: 54px; border-radius: 14px; background: #111; display: flex; align-items: center; justify-content: center; flex: none; }
+  .a2hs-icon i { width: 18px; height: 18px; border-radius: 5px; background: var(--accent); }
+  .a2hs-head b { display: block; font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 3px; }
+  .a2hs-head span:not(.a2hs-icon) { font-size: 14.5px; color: #6f6c66; }
+  .a2hs-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: st; }
+  .a2hs-steps li { counter-increment: st; display: flex; align-items: center; gap: 12px; font-size: 15px; color: #3a3833; line-height: 1.5; }
+  .a2hs-steps li::before { content: counter(st); width: 30px; height: 30px; flex: none; border-radius: 50%; background: #f1efec; color: #6f6c66; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .a2hs-steps svg { width: 18px; height: 18px; fill: none; stroke: #2fa57f; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; margin-left: 4px; }
   /* ── 다이얼로그 ── */
 
   /* ── 브랜드 현황(내 폴더 창) ── */
@@ -493,7 +516,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     num.textContent = '100';
     document.documentElement.classList.remove('intro-on');
     el.classList.add('out');
-    setTimeout(function () { el.remove(); }, 450);
+    setTimeout(function () { el.remove(); document.dispatchEvent(new Event('intro-done')); }, 450);
   }
   window.hideIntro = function () { ready = true; if (minDone) close(); }; // 앱(app.js)이 첫 화면 준비 완료를 알림
   setTimeout(function () { minDone = true; if (ready) close(); }, MIN);
@@ -559,6 +582,25 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <p>건전한 피드백을 환영합니다. <a class="ig" href="https://www.instagram.com/woosobb/" target="_blank" rel="noopener"><svg class="ig-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r=".6"/></svg>woosobb</a></p>
   </div>
 </footer>
+
+<div class="invite" id="invite" hidden>
+  <div class="invite-card" role="dialog" aria-label="초대">
+    <h2>초대를 받았습니다</h2>
+    <p class="invite-lead"><b>MY SELECT SHOP</b>에<br>초대합니다</p>
+    <p class="invite-sub">좋아하는 인디 브랜드만 골라서<br>한 번에 검색해 보세요.<br>광고 없이, 무료로 쓸 수 있어요.</p>
+    <button type="button" class="qa-cta" onclick="inviteStart()">로그인 / 회원가입</button>
+    <button type="button" class="invite-skip" onclick="inviteClose()">먼저 둘러볼게요</button>
+  </div>
+</div>
+<div class="a2hs" id="a2hs" hidden>
+  <button type="button" class="a2hs-x" aria-label="닫기" onclick="a2hsClose()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div class="a2hs-head">
+    <span class="a2hs-icon"><i></i></span>
+    <div><b>홈 화면에 MY SELECT SHOP 추가</b><span>앱처럼 빠르게 저장하고 열어보세요.</span></div>
+  </div>
+  <ol class="a2hs-steps" id="a2hsSteps"></ol>
+  <button type="button" class="qa-cta" id="a2hsInstall" hidden onclick="a2hsInstall()">홈 화면에 추가</button>
+</div>
 
 <button class="qa-fab" id="qaFab" type="button" aria-label="Q&A" aria-expanded="false" onclick="toggleQa()">
   <svg class="chat" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>

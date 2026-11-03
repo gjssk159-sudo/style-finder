@@ -1780,3 +1780,68 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
   if (!paintedFromCache) await whenFirstScreenImagesReady();
   markHomeReady();
 })();
+
+
+// ---------------- 처음 오는 사람: 초대장 + 홈 화면 추가 안내 ----------------
+// 초대장은 로그인 안 한 첫 방문에만 한 번, 홈 화면 추가 안내는 모바일 브라우저에서(이미 설치했거나 닫은 뒤 14일 안이면 제외) 보여준다.
+const UA = navigator.userAgent || '';
+const IS_IOS = /iPhone|iPad|iPod/i.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_ANDROID = /Android/i.test(UA);
+const IN_APP = /Instagram|KAKAOTALK|FBAN|FBAV|Line\/|NAVER\(|DaumApps|; wv\)/i.test(UA); // 인스타그램·카톡 같은 앱 안의 브라우저(홈 화면 추가 불가)
+const IS_STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const A2HS_OFF_KEY = 'sf_a2hs_off';
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; if (!document.getElementById('a2hs').hidden) renderA2hs(); });
+window.addEventListener('appinstalled', () => { deferredInstall = null; a2hsClose(true); });
+
+const SHARE_ICON = '<svg viewBox="0 0 24 24"><path d="M12 15V4M8.5 7.5L12 4l3.5 3.5M6 11v8h12v-8"/></svg>';
+function renderA2hs() {
+  const steps = document.getElementById('a2hsSteps');
+  const btn = document.getElementById('a2hsInstall');
+  btn.hidden = !deferredInstall;
+  let list;
+  if (deferredInstall) list = [];
+  else if (IS_IOS && !IN_APP && !/CriOS|FxiOS|EdgiOS/i.test(UA)) list = ['하단의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하세요"];
+  else if (IS_IOS) list = ["오른쪽 아래(위)의 ⋯ 메뉴에서 'Safari로 열기'를 누르세요", '하단의 공유 버튼 ' + SHARE_ICON + " → '홈 화면에 추가'"];
+  else if (IN_APP) list = ["오른쪽 위 ⋮ 메뉴에서 '다른 브라우저로 열기'를 누르세요", "브라우저 메뉴에서 '홈 화면에 추가'를 선택하세요"];
+  else list = ['오른쪽 위 ⋮ 메뉴를 누르고', "'홈 화면에 추가'를 선택하세요"];
+  steps.innerHTML = list.map((t) => '<li><span>' + t + '</span></li>').join('');
+}
+function showA2hs(force) {
+  if (!force && (IS_STANDALONE || !(IS_IOS || IS_ANDROID))) return;
+  try { if (!force && Date.now() - (+localStorage.getItem(A2HS_OFF_KEY) || 0) < 14 * 24 * 3600 * 1000) return; } catch {}
+  renderA2hs();
+  document.getElementById('a2hs').hidden = false;
+  document.documentElement.classList.add('a2hs-open');
+}
+function a2hsClose(installed) {
+  document.getElementById('a2hs').hidden = true;
+  document.documentElement.classList.remove('a2hs-open');
+  try { localStorage.setItem(A2HS_OFF_KEY, String(installed ? Date.now() + 365 * 24 * 3600 * 1000 : Date.now())); } catch {}
+}
+async function a2hsInstall() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  try { await deferredInstall.userChoice; } catch {}
+  deferredInstall = null;
+  a2hsClose(true);
+}
+function inviteClose() {
+  document.getElementById('invite').hidden = true;
+  try { localStorage.setItem('sf_welcome', '1'); } catch {}
+}
+function inviteStart() {
+  inviteClose();
+  openAuthDialog();
+}
+async function initWelcome() {
+  await homeReady; // 첫 화면이 준비된 뒤(로그인 여부도 확인된 뒤)
+  let seen = false;
+  try { seen = !!localStorage.getItem('sf_welcome'); } catch {}
+  const force = /[?&]invite=1/.test(location.search); // 주소 뒤에 ?invite=1 을 붙이면 언제든 초대장과 안내를 미리 볼 수 있다
+  const first = force || (!seen && !currentUser && !new URLSearchParams(location.search).get('share')); // 공유 링크로 온 사람에겐 초대장 대신 그 폴더를 바로 보여준다
+  if (first) document.getElementById('invite').hidden = false;
+  setTimeout(() => showA2hs(force), first ? 400 : 1500);
+}
+if (document.documentElement.classList.contains('intro-on')) document.addEventListener('intro-done', initWelcome, { once: true });
+else initWelcome();
