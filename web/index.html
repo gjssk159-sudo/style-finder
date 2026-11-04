@@ -195,6 +195,21 @@
   .invite { position: fixed; inset: 0; z-index: 70; background: #f4f4f5; display: flex; align-items: flex-start; justify-content: center; padding: clamp(36px, 13vh, 140px) 6vw 40px; overflow-y: auto; }
   .invite[hidden], .a2hs[hidden], .a2hs .qa-cta[hidden] { display: none; }
   .a2hs-open .invite-card { padding-bottom: 104px; } /* 카드가 아래 안내 창 뒤로 이어지게 */
+  .invite-compact .invite { padding-top: 18px; }
+  .invite-compact .invite-card { padding: 24px 22px 20px; gap: 10px; }
+  .invite-compact .invite-card h2 { font-size: 24px; }
+  .invite-compact .invite-lead { font-size: 16px; line-height: 1.5; }
+  .invite-compact .invite-sub { font-size: 13px; line-height: 1.55; margin: 0 0 4px; }
+  .invite-compact .a2hs-open .invite-card, .invite-compact.a2hs-open .invite-card { padding-bottom: 20px; }
+  .invite-compact .a2hs { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 16px 18px 16px; gap: 10px; }
+  .invite-compact .a2hs-head b { font-size: 15.5px; }
+  .invite-compact .a2hs-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .invite-compact .a2hs-steps { gap: 8px; }
+  .invite-compact .a2hs-steps li { font-size: 14px; }
+  .invite-compact .a2hs-steps li::before { width: 26px; height: 26px; }
+  .invite-stack .invite { flex-direction: column; align-items: center; gap: 16px; justify-content: flex-start; }
+  .invite-stack .invite .a2hs { position: static; width: min(460px, 100%); max-width: none; margin: 0; box-shadow: 0 6px 24px rgba(0,0,0,.1); flex: none; }
+  .invite-stack.a2hs-open .invite-card { padding-bottom: 20px; }
   .invite-card { width: min(460px, 100%); background: #fff; border-radius: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 10px 36px rgba(0,0,0,.05); padding: 40px 26px 28px; text-align: center; display: flex; flex-direction: column; gap: 14px; }
   .invite-card h2 { margin: 0 0 6px; font-size: 27px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-transform: none; }
   .invite-lead { margin: 0; font-size: 19px; line-height: 1.65; font-weight: 500; }

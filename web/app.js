@@ -1812,17 +1812,33 @@ function renderA2hs() {
   let list;
   if (deferredInstall) list = [];
   else if (IS_IOS && !IN_APP && !/CriOS|FxiOS|EdgiOS/i.test(UA)) list = ['하단의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하세요"];
+  else if (IS_IOS && !IN_APP) list = ['주소창 오른쪽의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하세요"]; // 아이폰 크롬 등
   else if (IS_IOS) list = ["오른쪽 아래(위)의 ⋯ 메뉴에서 'Safari로 열기'를 누르세요", '하단의 공유 버튼 ' + SHARE_ICON + " → '홈 화면에 추가'"];
   else if (IN_APP) list = ["오른쪽 위 ⋮ 메뉴에서 '다른 브라우저로 열기'를 누르세요", "브라우저 메뉴에서 '홈 화면에 추가'를 선택하세요"];
   else list = ['오른쪽 위 ⋮ 메뉴를 누르고', "'홈 화면에 추가'를 선택하세요"];
   steps.innerHTML = list.map((t) => '<li><span>' + t + '</span></li>').join('');
 }
+function layoutInvite() {
+  const inv = document.getElementById('invite'), sheet = document.getElementById('a2hs');
+  const root = document.documentElement;
+  const unstack = () => { root.classList.remove('invite-compact', 'invite-stack'); if (sheet.parentElement === inv) document.body.appendChild(sheet); };
+  unstack();
+  if (inv.hidden || sheet.hidden) return;
+  const overlap = () => document.querySelector('.invite-skip').getBoundingClientRect().bottom + 10 > sheet.getBoundingClientRect().top;
+  if (!overlap()) return;
+  root.classList.add('invite-compact');
+  if (!overlap()) return;
+  root.classList.add('invite-stack'); // 안내 창을 카드 바로 아래로 옮겨 스크롤로 보게 한다
+  inv.appendChild(sheet);
+}
+window.addEventListener('resize', () => { if (!document.getElementById('invite').hidden) layoutInvite(); });
 function showA2hs(force) {
   if (!force && (IS_STANDALONE || !(IS_IOS || IS_ANDROID))) return;
   try { if (!force && Date.now() - (+localStorage.getItem(A2HS_OFF_KEY) || 0) < 14 * 24 * 3600 * 1000) return; } catch {}
   renderA2hs();
   document.getElementById('a2hs').hidden = false;
   document.documentElement.classList.add('a2hs-open');
+  layoutInvite();
 }
 function a2hsClose(installed) {
   document.getElementById('a2hs').hidden = true;
@@ -1838,6 +1854,7 @@ async function a2hsInstall() {
 }
 function inviteClose() {
   document.getElementById('invite').hidden = true;
+  layoutInvite(); // 초대장이 닫히면 안내 창은 원래 자리(화면 아래)로
   try { localStorage.setItem('sf_welcome', '1'); } catch {}
 }
 function inviteStart() {
@@ -1852,6 +1869,7 @@ async function initWelcome() {
   const first = force || (!seen && !currentUser && !new URLSearchParams(location.search).get('share')); // 공유 링크로 온 사람에겐 초대장 대신 그 폴더를 바로 보여준다
   if (first) document.getElementById('invite').hidden = false;
   setTimeout(() => showA2hs(force), first ? 400 : 1500);
+  if (first) setTimeout(layoutInvite, 300); // 안내 창이 없어도 초대장 배치를 한 번 정리
 }
 if (document.documentElement.classList.contains('intro-on')) document.addEventListener('intro-done', initWelcome, { once: true });
 else initWelcome();
