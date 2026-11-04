@@ -502,21 +502,19 @@
     .chip.sub.tag { height: auto; padding: 0; min-width: 56px; background: none; border-radius: 0; color: var(--ink); }
     .subchips .subrow { padding-right: 72px; gap: 6px; align-items: center; }
     .sub-count { background: #fff; box-shadow: -12px 0 10px 4px var(--bg); }
-    .toolrow { display: flex; align-items: center; gap: 5px; margin: 10px -16px 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
-    .toolrow::-webkit-scrollbar { display: none; }
-    .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 10px; border-radius: 17px; background: #fff; color: #55585a; font-size: 12px; font-weight: 600; letter-spacing: 0; }
+    .toolrow { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 0; }
+    .tool-filter, .tool-chip { flex: 1 1 auto; justify-content: center; display: inline-flex; align-items: center; gap: 4px; height: 34px; min-width: 0; padding: 0 8px; border-radius: 17px; background: #fff; color: #55585a; font-size: 12.5px; font-weight: 600; letter-spacing: 0; white-space: nowrap; }
     .tool-filter svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
     .tool-filter b { min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 17px; text-align: center; letter-spacing: 0; }
     .tool-filter b[hidden] { display: none; }
     .tool-filter.on, .tool-chip.on { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
-    #sortSlot, #stockSlot { flex: none; display: block; }
-    /* 품절 제외: 초록 점 포인트, 켜면 초록으로 꽉 채움 */
-    .toolrow label.chk { flex: none; position: relative; height: 34px; padding: 0 10px 0 8px; border-radius: 17px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 700; gap: 0; box-shadow: inset 0 0 0 1.5px var(--accent); }
-    .toolrow label.chk::before { content: ''; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; border: 1.8px solid var(--accent); box-sizing: border-box; }
+    #sortSlot, #stockSlot { flex: 1 1 auto; display: block; min-width: 0; }
+    /* 품절 제외: 평소엔 작은 초록 점만, 켜면 다른 칩처럼 연한 초록으로 */
+    .toolrow label.chk { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 34px; padding: 0 8px; border-radius: 17px; background: #fff; color: #55585a; font-size: 12.5px; font-weight: 600; gap: 0; white-space: nowrap; }
+    .toolrow label.chk::before { content: ''; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--accent); flex: none; }
     .toolrow label.chk input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; }
-    .toolrow label.chk:has(input:checked) { background: var(--accent); color: #fff; box-shadow: none; }
-    .toolrow label.chk:has(input:checked)::before { background: #fff; border-color: #fff; }
-    .toolrow select { height: 34px; padding: 0 21px 0 10px; border-radius: 17px; background-color: #fff; background-position: right 8px center; font-size: 12px; font-weight: 600; color: #55585a; max-width: none; width: auto; }
+    .toolrow label.chk:has(input:checked) { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .toolrow select { display: block; width: 100%; height: 34px; padding: 0 20px 0 12px; border-radius: 17px; background-color: #fff; background-position: right 8px center; font-size: 12.5px; font-weight: 600; color: #55585a; max-width: none; }
     .meta-row { margin: 0 0 10px; }
     .meta { font-size: 12.5px; }
 
