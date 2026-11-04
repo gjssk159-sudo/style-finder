@@ -207,6 +207,7 @@
   .invite-stack .invite { flex-direction: column; align-items: center; gap: 16px; }
   .invite-stack .invite-card { margin: auto auto 0; }
   .invite-stack .invite .a2hs { position: relative; left: auto; right: auto; top: auto; bottom: auto; width: min(460px, 100%); max-width: none; margin: 0 auto auto; box-shadow: 0 6px 24px rgba(0,0,0,.1); flex: none; }
+  .invite-wait .invite-card, .invite-wait .a2hs { visibility: hidden; } /* 초대장과 홈 화면 안내를 같이 보여주려고, 준비되기 전엔 배경만 깔아 둔다 */
   .invite-card { margin: auto; width: min(460px, 100%); background: #fff; border-radius: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 10px 36px rgba(0,0,0,.05); padding: 40px 26px 28px; text-align: center; display: flex; flex-direction: column; gap: 14px; }
   .invite-card h2 { margin: 0 0 6px; font-size: 27px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-transform: none; }
   .invite-lead { margin: 0; font-size: 22px; line-height: 1.4; font-weight: 500; }
@@ -616,6 +617,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     for (var i = 0; i < localStorage.length; i++) if (/^sb-.*-auth-token$/.test(localStorage.key(i))) return;
     for (var j = 0; j < sessionStorage.length; j++) if (/^sb-.*-auth-token$/.test(sessionStorage.key(j))) return;
     document.getElementById('invite').hidden = false;
+    document.documentElement.classList.add('invite-wait');
   } catch (e) {}
 })();
 </script>
