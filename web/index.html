@@ -200,13 +200,13 @@
   .invite-compact .invite-sub { font-size: 13px; line-height: 1.55; margin: 0 0 4px; }
   .invite-compact .a2hs { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 16px 18px 16px; gap: 10px; }
   .invite-compact .a2hs-head b { font-size: 15.5px; }
-  .invite-compact .a2hs-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .invite-compact .a2hs-icon { width: 44px; height: 44px; border-radius: 11px; }
   .invite-compact .a2hs-steps { gap: 8px; }
   .invite-compact .a2hs-steps li { font-size: 14px; }
   .invite-compact .a2hs-steps li::before { width: 26px; height: 26px; }
   .invite-stack .invite { flex-direction: column; align-items: center; gap: 16px; }
   .invite-stack .invite-card { margin: auto auto 0; }
-  .invite-stack .invite .a2hs { position: static; width: min(460px, 100%); max-width: none; margin: 0 auto auto; box-shadow: 0 6px 24px rgba(0,0,0,.1); flex: none; }
+  .invite-stack .invite .a2hs { position: relative; left: auto; right: auto; top: auto; bottom: auto; width: min(460px, 100%); max-width: none; margin: 0 auto auto; box-shadow: 0 6px 24px rgba(0,0,0,.1); flex: none; }
   .invite-card { margin: auto; width: min(460px, 100%); background: #fff; border-radius: 28px; box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 10px 36px rgba(0,0,0,.05); padding: 40px 26px 28px; text-align: center; display: flex; flex-direction: column; gap: 14px; }
   .invite-card h2 { margin: 0 0 6px; font-size: 27px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-transform: none; }
   .invite-lead { margin: 0; font-size: 22px; line-height: 1.4; font-weight: 500; }
@@ -217,8 +217,7 @@
   .a2hs-x { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; padding: 0; background: none; color: #9a9791; display: flex; align-items: center; justify-content: center; }
   .a2hs-x svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
   .a2hs-head { display: flex; align-items: center; gap: 14px; padding-right: 30px; }
-  .a2hs-icon { width: 54px; height: 54px; border-radius: 14px; background: #111; display: flex; align-items: center; justify-content: center; flex: none; }
-  .a2hs-icon i { width: 18px; height: 18px; border-radius: 5px; background: var(--accent); }
+  .a2hs-icon { width: 54px; height: 54px; border-radius: 13px; object-fit: cover; flex: none; box-shadow: 0 0 0 1px rgba(0,0,0,.06); } /* 홈 화면에 실제로 생기는 아이콘(초록 M) 그대로 */
   .a2hs-head b { display: block; font-size: 17px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 3px; }
   .a2hs-head span:not(.a2hs-icon) { font-size: 14.5px; color: #6f6c66; }
   .a2hs-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: st; }
@@ -611,7 +610,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <div class="a2hs" id="a2hs" hidden>
   <button type="button" class="a2hs-x" aria-label="닫기" onclick="a2hsClose()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="a2hs-head">
-    <span class="a2hs-icon"><i></i></span>
+    <img class="a2hs-icon" src="./apple-touch-icon.png" alt="" width="54" height="54">
     <div><b>홈 화면에 MY SELECT SHOP 추가</b><span>앱처럼 빠르게 저장하고 열어보세요.</span></div>
   </div>
   <ol class="a2hs-steps" id="a2hsSteps"></ol>

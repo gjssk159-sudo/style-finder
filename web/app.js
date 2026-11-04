@@ -1818,18 +1818,17 @@ function renderA2hs() {
   else list = ['오른쪽 위 ⋮ 메뉴를 누르고', "'홈 화면에 추가'를 선택하세요"];
   steps.innerHTML = list.map((t) => '<li><span>' + t + '</span></li>').join('');
 }
+// 모바일: 초대장 카드와 홈 화면 추가 안내 창을 하나의 묶음으로 보고 화면 한가운데에 놓는다(위아래로 이어 붙임).
+// 묶음이 화면보다 크면 글자/여백을 줄이고, 그래도 크면 스크롤. 안내 창이 없으면(PC 등) 카드만 중앙.
 function layoutInvite() {
   const inv = document.getElementById('invite'), sheet = document.getElementById('a2hs');
   const root = document.documentElement;
-  const unstack = () => { root.classList.remove('invite-compact', 'invite-stack'); if (sheet.parentElement === inv) document.body.appendChild(sheet); };
-  unstack();
+  root.classList.remove('invite-compact', 'invite-stack');
+  if (sheet.parentElement === inv) document.body.appendChild(sheet);
   if (inv.hidden || sheet.hidden) return;
-  const overlap = () => document.querySelector('.invite-skip').getBoundingClientRect().bottom + 10 > sheet.getBoundingClientRect().top;
-  if (!overlap()) return;
-  root.classList.add('invite-compact');
-  if (!overlap()) return;
-  root.classList.add('invite-stack'); // 안내 창을 카드 바로 아래로 옮겨 스크롤로 보게 한다
+  root.classList.add('invite-stack');
   inv.appendChild(sheet);
+  if (inv.scrollHeight > inv.clientHeight + 1) root.classList.add('invite-compact');
 }
 window.addEventListener('resize', () => { if (!document.getElementById('invite').hidden) layoutInvite(); });
 function showA2hs(force) {
@@ -1843,6 +1842,7 @@ function showA2hs(force) {
 function a2hsClose(installed) {
   document.getElementById('a2hs').hidden = true;
   document.documentElement.classList.remove('a2hs-open');
+  layoutInvite(); // 안내 창이 닫히면 초대장 카드만 가운데로
   try { localStorage.setItem(A2HS_OFF_KEY, String(installed ? Date.now() + 365 * 24 * 3600 * 1000 : Date.now())); } catch {}
 }
 async function a2hsInstall() {
