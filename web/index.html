@@ -509,9 +509,8 @@
     .tool-filter b[hidden] { display: none; }
     .tool-filter.on, .tool-chip.on { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
     #sortSlot, #stockSlot { flex: 1 1 auto; display: block; min-width: 0; }
-    /* 품절 제외: 평소엔 작은 초록 점만, 켜면 다른 칩처럼 연한 초록으로 */
+    /* 품절 제외: 다른 칩과 똑같이(켜면 연한 초록) */
     .toolrow label.chk { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 34px; padding: 0 8px; border-radius: 17px; background: #fff; color: #55585a; font-size: 12.5px; font-weight: 600; gap: 0; white-space: nowrap; }
-    .toolrow label.chk::before { content: ''; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--accent); flex: none; }
     .toolrow label.chk input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; }
     .toolrow label.chk:has(input:checked) { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
     .toolrow select { display: block; width: 100%; height: 34px; padding: 0 20px 0 12px; border-radius: 17px; background-color: #fff; background-position: right 8px center; font-size: 12.5px; font-weight: 600; color: #55585a; max-width: none; }
