@@ -1861,15 +1861,19 @@ function inviteStart() {
   inviteClose();
   openAuthDialog();
 }
+// 초대장은 인트로(로딩 화면)가 아직 덮고 있을 때 미리 깔아 둔다 — 인트로가 걷히면 바로 초대장이 보이고, 뒤의 사이트가 잠깐 비치지 않는다.
 async function initWelcome() {
   await homeReady; // 첫 화면이 준비된 뒤(로그인 여부도 확인된 뒤)
   let seen = false;
   try { seen = !!localStorage.getItem('sf_welcome'); } catch {}
   const force = /[?&]invite=1/.test(location.search); // 주소 뒤에 ?invite=1 을 붙이면 언제든 초대장과 안내를 미리 볼 수 있다
   const first = force || (!seen && !currentUser && !new URLSearchParams(location.search).get('share')); // 공유 링크로 온 사람에겐 초대장 대신 그 폴더를 바로 보여준다
-  if (first) document.getElementById('invite').hidden = false;
-  setTimeout(() => showA2hs(force), first ? 400 : 1500);
-  if (first) setTimeout(layoutInvite, 300); // 안내 창이 없어도 초대장 배치를 한 번 정리
+  if (first) { document.getElementById('invite').hidden = false; layoutInvite(); }
+  const afterIntro = () => {
+    setTimeout(() => showA2hs(force), first ? 400 : 1500);
+    if (first) setTimeout(layoutInvite, 300); // 안내 창이 뜬 뒤 배치를 한 번 더 정리
+  };
+  if (document.documentElement.classList.contains('intro-on')) document.addEventListener('intro-done', afterIntro, { once: true });
+  else afterIntro();
 }
-if (document.documentElement.classList.contains('intro-on')) document.addEventListener('intro-done', initWelcome, { once: true });
-else initWelcome();
+initWelcome();
