@@ -607,6 +607,18 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <button type="button" class="invite-skip" onclick="inviteClose()">먼저 둘러볼게요</button>
   </div>
 </div>
+<script>
+// 새로 고침해도 사이트가 먼저 비치지 않도록: 처음 온 사람(초대장을 안 닫았고 로그인 흔적이 없음)에겐 앱 코드가 뜨기도 전에 초대장을 바로 펼친다.
+// 로그인돼 있다고 판명되면 app.js가 다시 접는다.
+(function () {
+  try {
+    if (/[?&]share=/.test(location.search) || localStorage.getItem('sf_welcome')) return;
+    for (var i = 0; i < localStorage.length; i++) if (/^sb-.*-auth-token$/.test(localStorage.key(i))) return;
+    for (var j = 0; j < sessionStorage.length; j++) if (/^sb-.*-auth-token$/.test(sessionStorage.key(j))) return;
+    document.getElementById('invite').hidden = false;
+  } catch (e) {}
+})();
+</script>
 <div class="a2hs" id="a2hs" hidden>
   <button type="button" class="a2hs-x" aria-label="닫기" onclick="a2hsClose()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="a2hs-head">

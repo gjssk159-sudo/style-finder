@@ -1868,7 +1868,8 @@ async function initWelcome() {
   try { seen = !!localStorage.getItem('sf_welcome'); } catch {}
   const force = /[?&]invite=1/.test(location.search); // 주소 뒤에 ?invite=1 을 붙이면 언제든 초대장과 안내를 미리 볼 수 있다
   const first = force || (!seen && !currentUser && !new URLSearchParams(location.search).get('share')); // 공유 링크로 온 사람에겐 초대장 대신 그 폴더를 바로 보여준다
-  if (first) { document.getElementById('invite').hidden = false; layoutInvite(); }
+  document.getElementById('invite').hidden = !first; // 페이지가 먼저 펼쳐 둔 초대장도, 알고 보니 로그인돼 있으면 여기서 접는다
+  if (first) layoutInvite();
   const afterIntro = () => {
     setTimeout(() => showA2hs(force), first ? 400 : 1500);
     if (first) setTimeout(layoutInvite, 300); // 안내 창이 뜬 뒤 배치를 한 번 더 정리
