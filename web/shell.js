@@ -42,8 +42,70 @@
     closeColorPanel();
     renderColorPanel();
     countFilters();
+    syncSizeChips();
+    buildFolderCard();
     go();
   });
+
+  // 사이즈: 선택 상자 대신 칩으로(원래 선택 상자는 그대로 두고 값만 맞춘다)
+  const sizeEl = $('size');
+  sizeEl.insertAdjacentHTML('afterend', '<div id="sizeChips"></div>');
+  const sizeChips = $('sizeChips');
+  function buildSizeChips() {
+    sizeChips.innerHTML = [...sizeEl.options].filter((o) => o.value).map((o) =>
+      '<button type="button" data-v="' + o.value.replace(/"/g, '&quot;') + '">' + o.textContent + '</button>').join('');
+    syncSizeChips();
+  }
+  function syncSizeChips() {
+    const cur = sizeEl.value || (typeof pendingSize !== 'undefined' ? pendingSize : '');
+    sizeChips.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === cur));
+  }
+  sizeChips.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const same = b.classList.contains('on');
+    sizeEl.value = same ? '' : b.dataset.v;
+    sizeEl.dispatchEvent(new Event('change', { bubbles: true }));
+    syncSizeChips();
+  });
+  new MutationObserver(buildSizeChips).observe(sizeEl, { childList: true });
+  buildSizeChips();
+
+  // 필터 시트 맨 아래 버튼에 지금 결과 개수를 보여준다
+  const cta = box.querySelector('.sheet-cta');
+  function syncCta() {
+    const m = ($('meta').textContent || '').match(/([\d,]+)\s*개/);
+    cta.textContent = m ? '상품 ' + m[1] + '개 보기' : '결과 보기';
+  }
+  new MutationObserver(syncCta).observe($('meta'), { childList: true, characterData: true, subtree: true });
+  syncCta();
+
+  // 검색창 아래 색상/사이즈 칩은 필터 시트의 해당 칸으로 바로 열어 준다
+  document.querySelectorAll('.tool-chip').forEach((b) => b.addEventListener('click', () => {
+    openFilter();
+    const target = b.dataset.open === 'color' ? box.querySelector('.msel') : sizeChips;
+    setTimeout(() => target.scrollIntoView({ block: 'start' }), 60);
+  }));
+
+  // 내 폴더 카드: 폴더에 담긴 브랜드를 한 줄로 보여주고, 누르면 그 브랜드만 본다
+  const fCard = $('fCard'), fcRow = $('fcRow'), brandSel = $('brand');
+  function buildFolderCard() {
+    const brands = [...brandSel.options].filter((o) => o.value).map((o) => o.value);
+    fCard.hidden = brands.length === 0;
+    const cur = brandSel.value;
+    const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    fcRow.innerHTML = '<button type="button" class="fb' + (cur ? '' : ' on') + '" data-b=""><i>전체</i><span>' + brands.length + '</span></button>' +
+      brands.map((n) => '<button type="button" class="fb' + (n === cur ? ' on' : '') + '" data-b="' + esc(n) + '"><i>' + esc(n.trim().charAt(0).toUpperCase()) + '</i><span>' + esc(n) + '</span></button>').join('');
+  }
+  fcRow.addEventListener('click', (e) => {
+    const b = e.target.closest('.fb'); if (!b) return;
+    pickBrand(b.dataset.b);
+    setTimeout(buildFolderCard, 0);
+  });
+  $('fcManage').addEventListener('click', () => { folderDialog.showModal(); renderFolderList(); });
+  new MutationObserver(buildFolderCard).observe(brandSel, { childList: true });
+  box.addEventListener('change', () => setTimeout(() => { buildFolderCard(); syncSizeChips(); }, 0));
+  box.addEventListener('click', () => setTimeout(() => { buildFolderCard(); syncSizeChips(); }, 80));
+  buildFolderCard();
 
   // 지금 걸려 있는 필터 개수를 필터 버튼에 표시
   function countFilters() {

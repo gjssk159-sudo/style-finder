@@ -423,84 +423,168 @@
     .more-wrap button.secondary:hover:not(:disabled) { opacity: .6; }
   }
 
-  /* ── 앱 껍데기: 하단 탭바 + 필터 바텀시트 + AI 서비스 (모바일) ── */
-  .toolrow, .tabbar, .sheet-head, .sheet-cta, .sheet-dim, .nav-mobile { display: none; }
+  /* ── 앱 껍데기: 하단 탭바 + 필터 바텀시트 + AI 서비스 (모바일은 앱처럼, 둥근 카드 중심) ── */
+  .toolrow, .tabbar, .sheet-head, .sheet-cta, .sheet-dim, .m-actions, .fcard, #sizeChips { display: none; }
   .sheet-dim[hidden], .aiview[hidden] { display: none; }
-  .aiview { position: fixed; inset: 0; z-index: 25; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .ai-in { max-width: 720px; margin: 0 auto; padding: 22px 40px 80px; }
-  .ai-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--ink); }
+  .aiview { position: fixed; inset: 0; z-index: 25; background: #f3f4f3; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .ai-in { max-width: 560px; margin: 0 auto; padding: 22px 16px 130px; }
+  .ai-top { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 18px; }
   .ai-top .logo { font-size: 19px; }
-  .ai-back { background: none; color: var(--ink); padding: 4px 0; font-size: 12px; font-weight: 500; letter-spacing: .06em; border-bottom: 1px solid var(--ink); }
-  .ai-kicker { margin: 34px 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .22em; color: var(--sub); }
-  .ai-in h1 { margin: 0 0 28px; font-size: 30px; line-height: 1.25; font-weight: 800; letter-spacing: -.035em; }
-  .ai-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-  .ai-list li { display: grid; grid-template-columns: 38px 1fr auto; gap: 0 6px; align-items: start; padding: 20px 0; border-bottom: 1px solid var(--line); }
-  .ai-list .no { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--sub); padding-top: 3px; }
-  .ai-list b { display: block; font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 5px; }
-  .ai-list p { margin: 0; font-size: 13px; line-height: 1.7; color: #4a4741; }
-  .ai-list em { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: var(--sub); border: 1px solid var(--line); padding: 3px 8px; margin-top: 1px; white-space: nowrap; }
+  .ai-back { background: none; color: var(--ink); padding: 4px 0; font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
+  .ai-hero { background: linear-gradient(135deg, #0f1f19, #1c4a38); color: #fff; border-radius: 24px; padding: 24px 22px; margin-bottom: 12px; }
+  .ai-hero small { font-size: 12px; color: #8ee7c3; font-weight: 700; letter-spacing: .06em; }
+  .ai-hero h1 { margin: 8px 0 8px; font-size: 22px; line-height: 1.3; font-weight: 800; letter-spacing: -.03em; }
+  .ai-hero p { margin: 0; font-size: 13px; line-height: 1.6; color: #b7cfc5; }
+  .ai-card { background: #fff; border-radius: 22px; padding: 18px 16px; margin-bottom: 12px; }
+  .ai-card h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; text-transform: none; }
+  .ai-drop { border: 1.8px dashed #cfd3d1; border-radius: 18px; height: 138px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #8a8d8b; font-size: 13px; background: #fafafa; }
+  .ai-drop b { color: var(--ink); font-size: 14px; }
+  .ai-drop svg { width: 26px; height: 26px; fill: none; stroke: #777; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ai-soon { display: flex; gap: 12px; align-items: center; }
+  .ai-soon .ic { width: 46px; height: 46px; border-radius: 15px; background: #f3f4f3; display: grid; place-items: center; flex: none; }
+  .ai-soon .ic svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ai-soon b { display: block; font-size: 14.5px; margin-bottom: 3px; }
+  .ai-soon span { font-size: 12px; color: var(--sub); line-height: 1.45; }
+  .ai-pill { margin-left: auto; flex: none; font-size: 11px; font-weight: 700; background: #e6f7f0; color: #1f9d73; padding: 4px 10px; border-radius: 10px; }
   .nav-links .nav-ai svg { stroke-width: 1.5; }
   @media (max-width: 700px) {
-    header { z-index: auto; backdrop-filter: none; -webkit-backdrop-filter: none; } /* 고정 위치 시트가 헤더 안에 갇히지 않게 */
+    :root { --bg: #f3f4f3; --line: #e8e9e7; }
+    header { position: relative; z-index: auto; backdrop-filter: none; -webkit-backdrop-filter: none; background: transparent; padding: 14px 16px 0; } /* 고정 위치 시트가 헤더 안에 갇히지 않게 */
+    header::after { display: none; }
     .nav-links, #authArea { display: none; }
-    .nav-mobile { display: inline-block; margin-left: auto; background: none; color: var(--ink); padding: 2px 0; font-size: 12px; font-weight: 500; letter-spacing: .06em; border-bottom: 1px solid var(--ink); }
-    .topbar { flex-wrap: nowrap; align-items: center; padding-bottom: 12px; }
+    .topbar { flex-wrap: nowrap; align-items: center; padding-bottom: 14px; }
     .spacer { display: none; }
-    main { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
-    .foot { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
-    .qa-fab { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 12px; }
+    .m-actions { display: flex; gap: 8px; margin-left: auto; }
+    .m-ic { width: 36px; height: 36px; padding: 0; border-radius: 50%; background: #fff; color: var(--ink); border: 1px solid var(--line); display: grid; place-items: center; }
+    .m-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    main { padding: 14px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
+    .foot { padding: 6px 16px calc(120px + env(safe-area-inset-bottom, 0px)); border-top: 0; }
+    .qa-fab { bottom: calc(100px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 12px; }
     .qa-fab svg { width: 19px; height: 19px; }
     .qa-panel { bottom: 0; }
+    html.ai-open .qa-fab { display: none; }
 
-    /* 검색창 아래: 필터 버튼 + 정렬 */
-    .toolrow { display: flex; align-items: center; justify-content: space-between; flex: 1 1 100%; border-bottom: 1px solid var(--line); }
-    .tool-filter { display: inline-flex; align-items: center; gap: 7px; background: none; color: var(--ink); padding: 11px 0; font-size: 12.5px; font-weight: 600; letter-spacing: .06em; }
-    .tool-filter svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
-    .tool-filter b { min-width: 17px; height: 17px; padding: 0 4px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 17px; text-align: center; letter-spacing: 0; }
+    /* 검색창 */
+    .row { gap: 0; min-width: 0; }
+    .search-wrap { flex: 1 1 100%; background: #fff; border: 0; border-radius: 14px; height: 46px; }
+    .search-wrap svg { left: 15px; }
+    input[type=text]#q { height: 46px; padding: 0 14px 0 42px; font-size: 15px; }
+
+    /* 내 폴더 카드 */
+    .fcard { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 22px; padding: 14px 16px 12px; margin-top: 12px; }
+    .fcard[hidden] { display: none; }
+    .fc-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .fc-h b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+    .fc-h button { background: none; color: #1f9d73; padding: 0; font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
+    .fc-row { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
+    .fc-row::-webkit-scrollbar { display: none; }
+    .fb { flex: none; width: 56px; padding: 0; background: none; color: #55585a; font-size: 11px; font-weight: 500; letter-spacing: 0; text-align: center; }
+    .fb i { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 6px; border-radius: 18px; background: #f3f4f3; border: 1.5px solid transparent; color: var(--ink); font-style: normal; font-size: 15px; font-weight: 800; }
+    .fb span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fb.on i { background: #e6f7f0; border-color: var(--accent); color: #1f9d73; }
+
+    /* 카테고리 + 필터 칩(알약형) */
+    .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 8px; margin: 12px -16px 0; padding: 0 16px; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { height: 34px; padding: 0 15px; display: flex; align-items: center; border: 0; border-radius: 17px; background: #fff; color: #55585a; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+    .chip.on { background: var(--ink); color: #fff; }
+    .chip.on::before { display: none; }
+    .subchips { position: absolute; left: 0; right: 0; top: 100%; z-index: 9; margin: 0; padding: 10px 16px 12px; gap: 6px; background: var(--bg); border-bottom: 1px solid var(--line); overflow: visible; }
+    .chip.sub { height: 30px; padding: 0 12px; font-size: 12.5px; font-weight: 500; border-radius: 15px; background: #fff; }
+    .chip.sub.on { background: var(--accent); color: #fff; font-weight: 600; border: 0; }
+    .chip.sub.tag { height: auto; padding: 0; min-width: 56px; background: none; border-radius: 0; color: var(--ink); }
+    .subchips .subrow { padding-right: 72px; gap: 6px; align-items: center; }
+    .sub-count { background: #fff; box-shadow: -12px 0 10px 4px var(--bg); }
+    .toolrow { display: flex; align-items: center; gap: 8px; margin: 10px -16px 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+    .toolrow::-webkit-scrollbar { display: none; }
+    .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 17px; background: #fff; color: #55585a; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+    .tool-filter svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .tool-filter b { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; letter-spacing: 0; }
     .tool-filter b[hidden] { display: none; }
-    .toolrow select { padding: 11px 16px 11px 0; font-size: 13px; font-weight: 500; text-align: right; direction: rtl; }
-    .row { gap: 0; }
-    .search-wrap { border-bottom: 0; }
+    #sortSlot { flex: none; display: block; }
+    .toolrow select { height: 34px; padding: 0 28px 0 14px; border-radius: 17px; background-color: #fff; background-position: right 12px center; font-size: 13px; font-weight: 600; color: #55585a; max-width: none; }
+    .meta-row { margin: 0 0 10px; }
+    .meta { font-size: 12.5px; }
+
+    /* 상품 카드 */
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .card { background: #fff; border-radius: 20px; padding: 8px 8px 12px; }
+    .card .imgwrap, .card img { border-radius: 14px; }
+    .badge { left: 8px; top: 8px; bottom: auto; background: rgba(255,255,255,.92); color: var(--ink); font-size: 10.5px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 8px; }
+    .card .body { padding: 9px 4px 0; gap: 2px; }
+    .brand { font-size: 11px; color: var(--sub); letter-spacing: .04em; font-weight: 600; }
+    .title { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .price { font-size: 14px; font-weight: 800; margin-top: 4px; }
+    .tags { margin-top: 4px; }
+    .tag { font-size: 10.5px; color: #a3a6a4; }
+    .empty { border: 0; background: #fff; border-radius: 22px; margin: 24px 0; }
 
     /* 필터: 아래에서 올라오는 시트 */
-    .sheet-dim { display: block; position: fixed; inset: 0; z-index: 79; background: rgba(17,17,17,.42); }
+    .sheet-dim { display: block; position: fixed; inset: 0; z-index: 79; background: rgba(0,0,0,.42); }
     html.sheet-open, html.sheet-open body { overflow: hidden; }
-    .filter-box { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; margin: 0; border: 0; background: var(--paper); border-radius: 16px 16px 0 0; padding: 0 20px calc(14px + env(safe-area-inset-bottom, 0px)); max-height: 84vh; max-height: 84dvh; overflow-y: auto; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; transform: translateY(104%); visibility: hidden; transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s .3s; }
+    .filter-box { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; margin: 0; border: 0; background: #fff; border-radius: 28px 28px 0 0; padding: 10px 20px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 86vh; max-height: 86dvh; overflow-y: auto; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; transform: translateY(104%); visibility: hidden; transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s .3s; }
     .filter-box.open { transform: none; visibility: visible; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
-    .sheet-head { display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 2; background: var(--paper); padding: 20px 0 14px; border-bottom: 1px solid var(--ink); }
-    .sheet-head b { flex: 1; font-size: 12px; letter-spacing: .22em; font-weight: 700; }
-    .sheet-reset { background: none; color: var(--sub); padding: 2px 0; font-size: 12px; font-weight: 500; letter-spacing: .02em; text-decoration: underline; text-underline-offset: 3px; }
-    .sheet-x { background: none; color: var(--ink); padding: 0; width: 24px; height: 24px; display: grid; place-items: center; }
-    .sheet-x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
     .filter-box > * { flex: none; }
-    .filter-box .msel, .filter-box .brand-combo, .filter-box .price-range, .filter-box label.chk { border-bottom: 1px solid var(--line); width: 100%; }
-    .filter-box .msel-btn { width: 100%; max-width: none; padding: 17px 20px 17px 0; font-size: 15px; font-weight: 500; }
-    .filter-box .msel-btn::after { right: 4px; }
-    .filter-box > select { width: 100%; max-width: none; padding: 17px 20px 17px 0; font-size: 15px; border-bottom: 1px solid var(--line); }
-    .filter-box .msel-panel { position: static; width: 100%; max-width: none; max-height: none; border: 0; border-top: 1px solid var(--line); padding: 6px 0 10px; }
-    .filter-box .brand-combo { flex: none; }
-    .filter-box .brand-combo input { width: 100%; padding: 17px 20px 17px 0; font-size: 15px; border-bottom: 0; }
-    .filter-box .brand-combo-list { position: static; min-width: 0; max-height: 220px; border: 0; border-top: 1px solid var(--line); }
-    .filter-box .brand-combo::after { top: 26px; }
-    .filter-box .price-range { gap: 10px; padding: 8px 0; }
-    .filter-box input[type=number] { width: auto; flex: 1; padding: 11px 0; font-size: 15px; border-bottom: 0; }
-    .filter-box label.chk { padding: 17px 0; font-size: 15px; gap: 10px; }
-    .filter-box label.chk input { width: 18px; height: 18px; }
-    .sheet-cta { display: block; position: sticky; bottom: 0; margin-top: 16px; width: 100%; box-shadow: 0 40px 0 0 var(--paper), 0 -12px 0 0 var(--paper); padding: 16px; font-size: 14px; letter-spacing: .08em; }
+    .filter-box::before { content: ''; order: -1; align-self: center; flex: none; width: 40px; height: 4px; border-radius: 2px; background: #ddd; margin: 0 0 6px; }
+    .sheet-head { display: flex; align-items: center; gap: 14px; order: 0; position: sticky; top: -10px; z-index: 2; background: #fff; margin: 0 -20px; padding: 10px 20px 4px; }
+    .sheet-head b { flex: 1; font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+    .sheet-reset { background: none; color: var(--sub); padding: 2px 0; font-size: 13px; font-weight: 500; letter-spacing: 0; }
+    .sheet-x { background: none; color: var(--ink); padding: 0; width: 24px; height: 24px; display: grid; place-items: center; }
+    .sheet-x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+    .filter-box .msel { order: 1; width: 100%; }
+    .filter-box > #size { display: none; }
+    .filter-box #sizeChips { order: 2; }
+    .filter-box .brand-combo { order: 3; flex: none; width: 100%; }
+    .filter-box .price-range { order: 4; width: 100%; }
+    .filter-box label.chk { order: 5; }
+    .filter-box .sheet-cta { order: 9; }
+    .filter-box .msel::before, .filter-box #sizeChips::before, .filter-box .brand-combo::before, .filter-box .price-range::before { display: block; flex: 0 0 100%; font-size: 13px; font-weight: 700; margin: 18px 0 10px; }
+    .filter-box .msel::before { content: '색상'; }
+    .filter-box #sizeChips::before { content: '사이즈'; flex: 0 0 100%; }
+    .filter-box .brand-combo::before { content: '브랜드'; }
+    .filter-box .price-range::before { content: '가격'; }
+    .filter-box .msel-btn, .filter-box .msel-head { display: none; }
+    .filter-box .msel-panel { display: block; position: static; width: 100%; max-width: none; max-height: none; border: 0; padding: 0; overflow: visible; background: none; }
+    .filter-box .msel-list { display: flex; flex-wrap: wrap; gap: 12px; }
+    .filter-box .msel-item { position: relative; padding: 0; gap: 0; font-size: 0; }
+    .filter-box .msel-item input { position: absolute; opacity: 0; width: 100%; height: 100%; left: 0; top: 0; margin: 0; }
+    .filter-box .msel-item .sw { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #e4e4e2; }
+    .filter-box .msel-item:has(input:checked) .sw { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #sizeChips { display: flex; flex-wrap: wrap; gap: 8px; }
+    #sizeChips button { padding: 0 14px; height: 36px; border-radius: 12px; background: #f3f4f3; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: 0; }
+    #sizeChips button.on { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .filter-box .brand-combo input { width: 100%; height: 46px; padding: 0 36px 0 14px; border: 0; border-radius: 12px; background: #f3f4f3; font-size: 15px; }
+    .filter-box .brand-combo::after { top: auto; bottom: 21px; right: 16px; }
+    .filter-box .brand-combo-list { position: static; min-width: 0; max-height: 200px; border: 0; border-radius: 12px; background: #f3f4f3; margin-top: 6px; }
+    .filter-box .brand-combo-item { border-bottom-color: #e8e9e7; }
+    .filter-box .price-range { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .filter-box input[type=number] { width: auto; flex: 1; min-width: 0; height: 46px; padding: 0 14px; border: 0; border-radius: 12px; background: #f3f4f3; font-size: 15px; }
+    .filter-box .hsep { flex: none; }
+    .filter-box label.chk { align-self: flex-start; margin-top: 18px; padding: 0 14px; height: 36px; border-radius: 12px; background: #f3f4f3; font-size: 13px; font-weight: 600; gap: 8px; }
+    .filter-box label.chk:has(input:checked) { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
+    .sheet-cta { display: block; position: sticky; bottom: -18px; margin-top: 22px; width: 100%; height: 52px; padding: 0; border-radius: 26px; font-size: 15px; font-weight: 700; letter-spacing: 0; box-shadow: 0 30px 0 0 #fff, 0 -12px 0 0 #fff; }
 
     /* 하단 탭바 */
-    .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: rgba(249,248,245,.96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-    .tabbar button { position: relative; background: none; color: #a09c93; padding: 9px 0 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; letter-spacing: .02em; }
+    .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); padding: 10px 0 calc(14px + env(safe-area-inset-bottom, 0px)); }
+    .tabbar button { background: none; color: #9a9d9b; padding: 2px 0 0; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 600; letter-spacing: 0; }
     .tabbar button.on { color: var(--ink); }
-    .tabbar button.on::before { content: ''; position: absolute; top: -1px; left: 26%; right: 26%; height: 2px; background: var(--ink); }
-    .tabbar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-    .tabbar .plus i { width: 32px; height: 22px; display: grid; place-items: center; background: var(--accent); color: #fff; border-radius: 7px; }
-    .tabbar .plus svg { width: 16px; height: 16px; stroke-width: 2; }
-    .tabbar .plus { color: var(--ink); }
+    .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .tabbar button.on svg.fill, .tabbar .ai-ic path { fill: currentColor; stroke: none; }
+    .tabbar .plus { color: #55585a; }
+    .tabbar .plus i { display: grid; place-items: center; width: 56px; height: 56px; margin: -30px auto -2px; border-radius: 50%; background: var(--accent); border: 4px solid #fff; box-shadow: 0 8px 18px rgba(47,191,143,.38); }
+    .tabbar .plus svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2.4; }
 
     /* 대화상자도 아래에서 올라오는 시트로 */
-    #addDialog, #folderDialog, #aboutDialog, #authDialog, dialog.soft-dlg { width: 100%; max-width: 100%; margin: auto 0 0; border: 0; border-radius: 16px 16px 0 0; max-height: 90vh; max-height: 90dvh; animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
-    #addDialog .dlg-body, #folderDialog .dlg-body, #aboutDialog .dlg-body, #authDialog .dlg-body { max-height: 90vh; max-height: 90dvh; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+    #addDialog, #folderDialog, #aboutDialog, #authDialog, dialog.soft-dlg { width: 100%; max-width: 100%; margin: auto 0 0; border: 0; border-radius: 28px 28px 0 0; max-height: 90vh; max-height: 90dvh; animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
+    #addDialog::before, #folderDialog::before, #aboutDialog::before, #authDialog::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: #ddd; margin: 10px auto 0; }
+    #addDialog .dlg-body, #folderDialog .dlg-body, #aboutDialog .dlg-body, #authDialog .dlg-body { max-height: calc(90vh - 14px); max-height: calc(90dvh - 14px); padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px)); gap: 12px; }
+    .dlg-body h2 { font-size: 18px; font-weight: 700; letter-spacing: -.02em; text-transform: none; margin-bottom: 2px; }
+    .dlg-body input:not([type=checkbox]) { padding: 0 16px; height: 48px; border: 0; border-radius: 14px; background: #f3f4f3; }
+    .dlg-body textarea { padding: 12px 16px; border: 0; border-radius: 14px; background: #f3f4f3; }
+    .dlg-row { gap: 10px; }
+    .dlg-row button { flex: 1; height: 52px; padding: 0; border-radius: 26px; font-size: 15px; font-weight: 700; letter-spacing: 0; }
+    .dlg-row button.secondary { background: #f3f4f3; color: var(--ink); border: 0; }
+    #addResult, #folderMsg, #authMsg { border-left: 0; border-radius: 12px; padding: 10px 14px; background: #f3f4f3; }
     @keyframes sheetUp { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
   }
 </style><style id="intro-css">
@@ -626,7 +710,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <div class="topbar">
       <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
-      <button class="nav-mobile" onclick="aboutDialog.showModal()">이용 안내</button>
+      <span class="m-actions"><button type="button" class="m-ic" aria-label="이용 안내" onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg></button><button type="button" class="m-ic" aria-label="마이" onclick="currentUser ? openMyPage() : openAuthDialog()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg></button></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
@@ -640,7 +724,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
-      <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>필터<b id="filterCnt" hidden></b></button><span id="sortSlot"></span></div>
+      <div class="fcard" id="fCard" hidden><div class="fc-h"><b>내 폴더</b><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
       <select id="size"><option value="">사이즈 전체</option></select>
@@ -667,6 +751,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     </div>
     <div class="chips" id="chips"></div>
     <div class="chips subchips" id="subChips" style="display:none"></div>
+    <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn">필터 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><b id="filterCnt" hidden></b></button><button type="button" class="tool-chip" data-open="color">색상</button><button type="button" class="tool-chip" data-open="size">사이즈</button><span id="sortSlot"></span></div>
   </div>
 </header>
 <script>document.querySelectorAll("header input, header select").forEach(function (e) { e.setAttribute("autocomplete", "off"); });</script>
@@ -904,16 +989,14 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <div class="sheet-dim" id="sheetDim" hidden></div>
 <section class="aiview" id="aiView" hidden aria-label="AI 서비스"><div class="ai-in">
   <div class="ai-top"><p class="logo"><span class="logo-mark"></span>MY SELECT SHOP</p><button type="button" class="ai-back" id="aiBack">돌아가기</button></div>
-  <p class="ai-kicker">AI SERVICE</p>
-  <h1>사진으로 찾고,<br>미리 입어봐요.</h1>
-  <ol class="ai-list">
-    <li><span class="no">01</span><div><b>비슷한 옷 찾기</b><p>마음에 드는 옷 사진을 올리면, 내 폴더의 브랜드에서 가장 비슷한 상품을 찾아드려요.</p></div><em>준비 중</em></li>
-    <li><span class="no">02</span><div><b>가상 피팅</b><p>내 전신사진과 상품의 실측 사이즈로, 입었을 때의 핏을 미리 확인해요.</p></div><em>준비 중</em></li>
-  </ol>
+  <div class="ai-hero"><small>AI</small><h1>사진 한 장으로<br>내 폴더에서 찾아드려요</h1><p>마음에 든 옷 사진을 올리면 내 폴더 브랜드에서 가장 비슷한 옷을 골라줘요.</p></div>
+  <div class="ai-card"><h2>비슷한 옷 찾기</h2>
+    <div class="ai-drop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg><b>사진 올리기</b>캡처나 촬영한 옷 사진<span class="ai-pill" style="margin:4px 0 0">준비 중</span></div></div>
+  <div class="ai-card"><div class="ai-soon"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M7 11l5-1 5 1M9 21l3-6 3 6"/></svg></div><div><b>가상 피팅</b><span>내 전신사진 + 상품 실측으로<br>핏을 미리 확인해요</span></div><span class="ai-pill">준비 중</span></div></div>
 </div></section>
 <nav class="tabbar" aria-label="메뉴">
   <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</button>
-  <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/><circle cx="12" cy="12" r="2.2"/></svg>AI 서비스</button>
+  <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true" class="ai-ic"><path class="spk" d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6zM18.5 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>AI 서비스</button>
   <button type="button" data-tab="add" class="plus"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</button>
   <button type="button" data-tab="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg>내 폴더</button>
   <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</button>
