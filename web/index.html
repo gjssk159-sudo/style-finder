@@ -459,7 +459,7 @@
     .m-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     main { padding: 14px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
     .foot { padding: 6px 16px calc(120px + env(safe-area-inset-bottom, 0px)); border-top: 0; }
-    .qa-fab { bottom: calc(100px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 12px; }
+    .qa-fab { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 12px; }
     .qa-fab svg { width: 19px; height: 19px; }
     .qa-panel { bottom: 0; }
     html.ai-open .qa-fab { display: none; }
@@ -471,16 +471,23 @@
     input[type=text]#q { height: 46px; padding: 0 14px 0 42px; font-size: 15px; }
 
     /* 내 폴더 카드 */
-    .fcard { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 22px; padding: 14px 16px 12px; margin-top: 12px; }
+    .fcard { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 20px; padding: 11px 16px 9px; margin-top: 10px; }
     .fcard[hidden] { display: none; }
-    .fc-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .fc-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .fc-tabs { display: flex; gap: 16px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .fc-tabs::-webkit-scrollbar { display: none; }
+    .fc-h .fc-tab { flex: none; background: none; padding: 0; color: #a3a6a4; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+    .fc-h .fc-tab.on { color: var(--ink); font-weight: 700; }
+    .fc-empty { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 6px; font-size: 13px; color: var(--sub); }
+    .fc-empty button { flex: none; height: 34px; padding: 0 14px; border-radius: 17px; background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
     .fc-h b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
     .fc-h button { background: none; color: #1f9d73; padding: 0; font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
     .fc-row { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
     .fc-row::-webkit-scrollbar { display: none; }
-    .fb { flex: none; width: 56px; padding: 0; background: none; color: #55585a; font-size: 11px; font-weight: 500; letter-spacing: 0; text-align: center; }
-    .fb i { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 6px; border-radius: 18px; background: #f3f4f3; border: 1.5px solid transparent; color: var(--ink); font-style: normal; font-size: 15px; font-weight: 800; }
+    .fb { flex: none; width: 52px; padding: 0; background: none; color: #55585a; font-size: 11px; font-weight: 500; letter-spacing: 0; text-align: center; }
+    .fb i { display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 4px; border-radius: 15px; background: #f3f4f3; border: 1.5px solid transparent; color: var(--ink); font-style: normal; font-size: 15px; font-weight: 800; }
     .fb span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fb { font-size: 10.5px; }
     .fb.on i { background: #e6f7f0; border-color: var(--accent); color: #1f9d73; }
 
     /* 카테고리 + 필터 칩(알약형) */
@@ -502,6 +509,9 @@
     .tool-filter b { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; letter-spacing: 0; }
     .tool-filter b[hidden] { display: none; }
     #sortSlot { flex: none; display: block; }
+    .toolrow label.chk { flex: none; position: relative; height: 34px; padding: 0 14px; border-radius: 17px; background: #fff; color: #55585a; font-size: 13px; font-weight: 600; gap: 0; }
+    .toolrow label.chk input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; }
+    .toolrow label.chk:has(input:checked) { background: #e6f7f0; color: #1f9d73; box-shadow: inset 0 0 0 1.5px var(--accent); }
     .toolrow select { height: 34px; padding: 0 28px 0 14px; border-radius: 17px; background-color: #fff; background-position: right 12px center; font-size: 13px; font-weight: 600; color: #55585a; max-width: none; }
     .meta-row { margin: 0 0 10px; }
     .meta { font-size: 12.5px; }
@@ -710,7 +720,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <div class="topbar">
       <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
-      <span class="m-actions"><button type="button" class="m-ic" aria-label="이용 안내" onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg></button><button type="button" class="m-ic" aria-label="마이" onclick="currentUser ? openMyPage() : openAuthDialog()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg></button></span>
+      <span class="m-actions"><button type="button" class="m-ic" aria-label="이용 안내" onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg></button></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
@@ -724,7 +734,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
-      <div class="fcard" id="fCard" hidden><div class="fc-h"><b>내 폴더</b><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
+      <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
       <select id="size"><option value="">사이즈 전체</option></select>
@@ -751,7 +761,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     </div>
     <div class="chips" id="chips"></div>
     <div class="chips subchips" id="subChips" style="display:none"></div>
-    <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn">필터 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><b id="filterCnt" hidden></b></button><button type="button" class="tool-chip" data-open="color">색상</button><button type="button" class="tool-chip" data-open="size">사이즈</button><span id="sortSlot"></span></div>
+    <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn">필터 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><b id="filterCnt" hidden></b></button><span id="sortSlot"></span><span id="stockSlot"></span></div>
   </div>
 </header>
 <script>document.querySelectorAll("header input, header select").forEach(function (e) { e.setAttribute("autocomplete", "off"); });</script>

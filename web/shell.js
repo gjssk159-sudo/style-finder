@@ -9,9 +9,12 @@
   const sortEl = $('sort');
   const sortHome = document.createComment('sort-home');
   sortEl.parentNode.insertBefore(sortHome, sortEl);
+  const stockEl = $('inStock').closest('label');
+  const stockHome = document.createComment('stock-home');
+  stockEl.parentNode.insertBefore(stockHome, stockEl);
   function placeSort() {
-    if (mq.matches) $('sortSlot').appendChild(sortEl);
-    else sortHome.parentNode.insertBefore(sortEl, sortHome.nextSibling);
+    if (mq.matches) { $('sortSlot').appendChild(sortEl); $('stockSlot').appendChild(stockEl); }
+    else { sortHome.parentNode.insertBefore(sortEl, sortHome.nextSibling); stockHome.parentNode.insertBefore(stockEl, stockHome.nextSibling); }
   }
   placeSort();
   (mq.addEventListener ? mq.addEventListener('change', placeSort) : mq.addListener(placeSort));
@@ -37,7 +40,6 @@
     $('brandInput').value = '';
     $('priceMin').value = '';
     $('priceMax').value = '';
-    $('inStock').checked = false;
     currentPage = 1;
     closeColorPanel();
     renderColorPanel();
@@ -79,24 +81,32 @@
   new MutationObserver(syncCta).observe($('meta'), { childList: true, characterData: true, subtree: true });
   syncCta();
 
-  // 검색창 아래 색상/사이즈 칩은 필터 시트의 해당 칸으로 바로 열어 준다
-  document.querySelectorAll('.tool-chip').forEach((b) => b.addEventListener('click', () => {
-    openFilter();
-    const target = b.dataset.open === 'color' ? box.querySelector('.msel') : sizeChips;
-    setTimeout(() => target.scrollIntoView({ block: 'start' }), 60);
-  }));
-
   // 내 폴더 카드: 폴더에 담긴 브랜드를 한 줄로 보여주고, 누르면 그 브랜드만 본다
   const fCard = $('fCard'), fcRow = $('fcRow'), brandSel = $('brand');
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function buildFolderCard() {
     const brands = [...brandSel.options].filter((o) => o.value).map((o) => o.value);
-    fCard.hidden = brands.length === 0;
+    const folders = typeof myFolders !== 'undefined' ? myFolders : [];
+    fCard.hidden = typeof currentUser === 'undefined' || !currentUser || (folders.length === 0 && brands.length === 0);
     const cur = brandSel.value;
-    const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    // 폴더가 여러 개면 위쪽 탭으로 바로 바꿀 수 있게(비어 있는 폴더에서도 다른 폴더로 돌아올 수 있어야 한다)
+    $('fcTabs').innerHTML = folders.length > 1
+      ? folders.map((f) => '<button type="button" class="fc-tab' + (f.id === currentFolderId ? ' on' : '') + '" data-f="' + f.id + '">' + esc(f.name) + '</button>').join('')
+      : '<button type="button" class="fc-tab on">' + esc((folders[0] && folders[0].name) || '내 폴더') + '</button>';
+    if (brands.length === 0) {
+      fcRow.innerHTML = '<div class="fc-empty"><span>이 폴더는 비어 있어요.</span><button type="button" data-manage="1">브랜드 담기</button></div>';
+      return;
+    }
     fcRow.innerHTML = '<button type="button" class="fb' + (cur ? '' : ' on') + '" data-b=""><i>전체</i><span>' + brands.length + '</span></button>' +
       brands.map((n) => '<button type="button" class="fb' + (n === cur ? ' on' : '') + '" data-b="' + esc(n) + '"><i>' + esc(n.trim().charAt(0).toUpperCase()) + '</i><span>' + esc(n) + '</span></button>').join('');
   }
+  $('fcTabs').addEventListener('click', async (e) => {
+    const t = e.target.closest('.fc-tab'); if (!t || !t.dataset.f) return;
+    await switchFolder(Number(t.dataset.f));
+    buildFolderCard();
+  });
   fcRow.addEventListener('click', (e) => {
+    if (e.target.closest('[data-manage]')) { folderDialog.showModal(); renderFolderList(); return; }
     const b = e.target.closest('.fb'); if (!b) return;
     pickBrand(b.dataset.b);
     setTimeout(buildFolderCard, 0);
@@ -105,7 +115,10 @@
   new MutationObserver(buildFolderCard).observe(brandSel, { childList: true });
   box.addEventListener('change', () => setTimeout(() => { buildFolderCard(); syncSizeChips(); }, 0));
   box.addEventListener('click', () => setTimeout(() => { buildFolderCard(); syncSizeChips(); }, 80));
+  folderDialog.addEventListener('close', () => setTimeout(buildFolderCard, 100));
   buildFolderCard();
+  setTimeout(buildFolderCard, 1500);
+  setTimeout(buildFolderCard, 4000);
 
   // 지금 걸려 있는 필터 개수를 필터 버튼에 표시
   function countFilters() {
@@ -114,7 +127,6 @@
     if ($('size').value) n++;
     if ($('brand').value) n++;
     if ($('priceMin').value || $('priceMax').value) n++;
-    if ($('inStock').checked) n++;
     const c = $('filterCnt');
     c.textContent = n || '';
     c.hidden = !n;
