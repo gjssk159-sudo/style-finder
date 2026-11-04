@@ -422,6 +422,87 @@
     .ftab:hover, .fchip:hover { color: var(--ink); }
     .more-wrap button.secondary:hover:not(:disabled) { opacity: .6; }
   }
+
+  /* ── 앱 껍데기: 하단 탭바 + 필터 바텀시트 + AI 서비스 (모바일) ── */
+  .toolrow, .tabbar, .sheet-head, .sheet-cta, .sheet-dim, .nav-mobile { display: none; }
+  .sheet-dim[hidden], .aiview[hidden] { display: none; }
+  .aiview { position: fixed; inset: 0; z-index: 25; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .ai-in { max-width: 720px; margin: 0 auto; padding: 22px 40px 80px; }
+  .ai-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--ink); }
+  .ai-top .logo { font-size: 19px; }
+  .ai-back { background: none; color: var(--ink); padding: 4px 0; font-size: 12px; font-weight: 500; letter-spacing: .06em; border-bottom: 1px solid var(--ink); }
+  .ai-kicker { margin: 34px 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .22em; color: var(--sub); }
+  .ai-in h1 { margin: 0 0 28px; font-size: 30px; line-height: 1.25; font-weight: 800; letter-spacing: -.035em; }
+  .ai-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .ai-list li { display: grid; grid-template-columns: 38px 1fr auto; gap: 0 6px; align-items: start; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .ai-list .no { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--sub); padding-top: 3px; }
+  .ai-list b { display: block; font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 5px; }
+  .ai-list p { margin: 0; font-size: 13px; line-height: 1.7; color: #4a4741; }
+  .ai-list em { font-style: normal; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: var(--sub); border: 1px solid var(--line); padding: 3px 8px; margin-top: 1px; white-space: nowrap; }
+  .nav-links .nav-ai svg { stroke-width: 1.5; }
+  @media (max-width: 700px) {
+    header { z-index: auto; backdrop-filter: none; -webkit-backdrop-filter: none; } /* 고정 위치 시트가 헤더 안에 갇히지 않게 */
+    .nav-links, #authArea { display: none; }
+    .nav-mobile { display: inline-block; margin-left: auto; background: none; color: var(--ink); padding: 2px 0; font-size: 12px; font-weight: 500; letter-spacing: .06em; border-bottom: 1px solid var(--ink); }
+    .topbar { flex-wrap: nowrap; align-items: center; padding-bottom: 12px; }
+    .spacer { display: none; }
+    main { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+    .foot { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+    .qa-fab { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 12px; }
+    .qa-fab svg { width: 19px; height: 19px; }
+    .qa-panel { bottom: 0; }
+
+    /* 검색창 아래: 필터 버튼 + 정렬 */
+    .toolrow { display: flex; align-items: center; justify-content: space-between; flex: 1 1 100%; border-bottom: 1px solid var(--line); }
+    .tool-filter { display: inline-flex; align-items: center; gap: 7px; background: none; color: var(--ink); padding: 11px 0; font-size: 12.5px; font-weight: 600; letter-spacing: .06em; }
+    .tool-filter svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+    .tool-filter b { min-width: 17px; height: 17px; padding: 0 4px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 17px; text-align: center; letter-spacing: 0; }
+    .tool-filter b[hidden] { display: none; }
+    .toolrow select { padding: 11px 16px 11px 0; font-size: 13px; font-weight: 500; text-align: right; direction: rtl; }
+    .row { gap: 0; }
+    .search-wrap { border-bottom: 0; }
+
+    /* 필터: 아래에서 올라오는 시트 */
+    .sheet-dim { display: block; position: fixed; inset: 0; z-index: 79; background: rgba(17,17,17,.42); }
+    html.sheet-open, html.sheet-open body { overflow: hidden; }
+    .filter-box { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; margin: 0; border: 0; background: var(--paper); border-radius: 16px 16px 0 0; padding: 0 20px calc(14px + env(safe-area-inset-bottom, 0px)); max-height: 84vh; max-height: 84dvh; overflow-y: auto; display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; transform: translateY(104%); visibility: hidden; transition: transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s .3s; }
+    .filter-box.open { transform: none; visibility: visible; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+    .sheet-head { display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 2; background: var(--paper); padding: 20px 0 14px; border-bottom: 1px solid var(--ink); }
+    .sheet-head b { flex: 1; font-size: 12px; letter-spacing: .22em; font-weight: 700; }
+    .sheet-reset { background: none; color: var(--sub); padding: 2px 0; font-size: 12px; font-weight: 500; letter-spacing: .02em; text-decoration: underline; text-underline-offset: 3px; }
+    .sheet-x { background: none; color: var(--ink); padding: 0; width: 24px; height: 24px; display: grid; place-items: center; }
+    .sheet-x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+    .filter-box > * { flex: none; }
+    .filter-box .msel, .filter-box .brand-combo, .filter-box .price-range, .filter-box label.chk { border-bottom: 1px solid var(--line); width: 100%; }
+    .filter-box .msel-btn { width: 100%; max-width: none; padding: 17px 20px 17px 0; font-size: 15px; font-weight: 500; }
+    .filter-box .msel-btn::after { right: 4px; }
+    .filter-box > select { width: 100%; max-width: none; padding: 17px 20px 17px 0; font-size: 15px; border-bottom: 1px solid var(--line); }
+    .filter-box .msel-panel { position: static; width: 100%; max-width: none; max-height: none; border: 0; border-top: 1px solid var(--line); padding: 6px 0 10px; }
+    .filter-box .brand-combo { flex: none; }
+    .filter-box .brand-combo input { width: 100%; padding: 17px 20px 17px 0; font-size: 15px; border-bottom: 0; }
+    .filter-box .brand-combo-list { position: static; min-width: 0; max-height: 220px; border: 0; border-top: 1px solid var(--line); }
+    .filter-box .brand-combo::after { top: 26px; }
+    .filter-box .price-range { gap: 10px; padding: 8px 0; }
+    .filter-box input[type=number] { width: auto; flex: 1; padding: 11px 0; font-size: 15px; border-bottom: 0; }
+    .filter-box label.chk { padding: 17px 0; font-size: 15px; gap: 10px; }
+    .filter-box label.chk input { width: 18px; height: 18px; }
+    .sheet-cta { display: block; position: sticky; bottom: 0; margin-top: 16px; width: 100%; box-shadow: 0 40px 0 0 var(--paper), 0 -12px 0 0 var(--paper); padding: 16px; font-size: 14px; letter-spacing: .08em; }
+
+    /* 하단 탭바 */
+    .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: rgba(249,248,245,.96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .tabbar button { position: relative; background: none; color: #a09c93; padding: 9px 0 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; letter-spacing: .02em; }
+    .tabbar button.on { color: var(--ink); }
+    .tabbar button.on::before { content: ''; position: absolute; top: -1px; left: 26%; right: 26%; height: 2px; background: var(--ink); }
+    .tabbar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .tabbar .plus i { width: 32px; height: 22px; display: grid; place-items: center; background: var(--accent); color: #fff; border-radius: 7px; }
+    .tabbar .plus svg { width: 16px; height: 16px; stroke-width: 2; }
+    .tabbar .plus { color: var(--ink); }
+
+    /* 대화상자도 아래에서 올라오는 시트로 */
+    #addDialog, #folderDialog, #aboutDialog, #authDialog, dialog.soft-dlg { width: 100%; max-width: 100%; margin: auto 0 0; border: 0; border-radius: 16px 16px 0 0; max-height: 90vh; max-height: 90dvh; animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
+    #addDialog .dlg-body, #folderDialog .dlg-body, #aboutDialog .dlg-body, #authDialog .dlg-body { max-height: 90vh; max-height: 90dvh; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+    @keyframes sheetUp { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+  }
 </style><style id="intro-css">
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
@@ -545,9 +626,11 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <div class="topbar">
       <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
+      <button class="nav-mobile" onclick="aboutDialog.showModal()">이용 안내</button>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
+        <button class="nav-ai" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/><circle cx="12" cy="12" r="2.2"/></svg><span class="lbl">AI 서비스</span></button>
         <button class="primary" id="addBrandBtn" onclick="openAddDialog()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8.5v7M8.5 12h7"/></svg><span class="lbl">브랜드 등록</span></button>
       </div>
       <span id="authArea"></span>
@@ -557,6 +640,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
+      <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>필터<b id="filterCnt" hidden></b></button><span id="sortSlot"></span></div>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
       <select id="size"><option value="">사이즈 전체</option></select>
@@ -816,9 +900,28 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
 </dialog>
 
+
+<div class="sheet-dim" id="sheetDim" hidden></div>
+<section class="aiview" id="aiView" hidden aria-label="AI 서비스"><div class="ai-in">
+  <div class="ai-top"><p class="logo"><span class="logo-mark"></span>MY SELECT SHOP</p><button type="button" class="ai-back" id="aiBack">돌아가기</button></div>
+  <p class="ai-kicker">AI SERVICE</p>
+  <h1>사진으로 찾고,<br>미리 입어봐요.</h1>
+  <ol class="ai-list">
+    <li><span class="no">01</span><div><b>비슷한 옷 찾기</b><p>마음에 드는 옷 사진을 올리면, 내 폴더의 브랜드에서 가장 비슷한 상품을 찾아드려요.</p></div><em>준비 중</em></li>
+    <li><span class="no">02</span><div><b>가상 피팅</b><p>내 전신사진과 상품의 실측 사이즈로, 입었을 때의 핏을 미리 확인해요.</p></div><em>준비 중</em></li>
+  </ol>
+</div></section>
+<nav class="tabbar" aria-label="메뉴">
+  <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</button>
+  <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/><circle cx="12" cy="12" r="2.2"/></svg>AI 서비스</button>
+  <button type="button" data-tab="add" class="plus"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</button>
+  <button type="button" data-tab="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg>내 폴더</button>
+  <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</button>
+</nav>
 <script defer src="./taxonomy-client.js"></script>
 <script defer src="./config.js"></script>
 <script defer src="./app.js"></script>
+<script defer src="./shell.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
