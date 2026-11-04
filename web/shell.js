@@ -23,23 +23,28 @@
   const box = document.querySelector('.filter-box');
   const dim = $('sheetDim');
   box.insertAdjacentHTML('afterbegin',
-    '<div class="sheet-head"><b>FILTER</b><button type="button" class="sheet-reset">초기화</button><button type="button" class="sheet-x" aria-label="닫기">' +
+    '<div class="sheet-head"><b id="sheetTitle">필터</b><button type="button" class="sheet-reset">초기화</button><button type="button" class="sheet-x" aria-label="닫기">' +
     '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>');
   box.insertAdjacentHTML('beforeend', '<button type="button" class="sheet-cta">결과 보기</button>');
-  function openFilter() { box.classList.add('open'); dim.hidden = false; root.classList.add('sheet-open'); }
+  const TITLES = { filter: '필터', color: '색상', size: '사이즈' };
+  function openFilter(mode) {
+    mode = TITLES[mode] ? mode : 'filter';
+    box.dataset.mode = mode;
+    $('sheetTitle').textContent = TITLES[mode];
+    box.scrollTop = 0;
+    box.classList.add('open'); dim.hidden = false; root.classList.add('sheet-open');
+  }
   function closeFilter() { box.classList.remove('open'); dim.hidden = true; root.classList.remove('sheet-open'); countFilters(); }
-  $('filterBtn').addEventListener('click', openFilter);
+  $('filterBtn').addEventListener('click', () => openFilter('filter'));
+  document.querySelectorAll('.tool-chip').forEach((b) => b.addEventListener('click', () => openFilter(b.dataset.open)));
   dim.addEventListener('click', closeFilter);
   box.querySelector('.sheet-x').addEventListener('click', closeFilter);
   box.querySelector('.sheet-cta').addEventListener('click', closeFilter);
   box.querySelector('.sheet-reset').addEventListener('click', () => {
-    colorSel = [];
-    pendingSize = '';
-    $('size').value = '';
-    $('brand').value = '';
-    $('brandInput').value = '';
-    $('priceMin').value = '';
-    $('priceMax').value = '';
+    const mode = box.dataset.mode;
+    if (mode === 'color') colorSel = [];
+    else if (mode === 'size') { pendingSize = ''; $('size').value = ''; }
+    else { $('brand').value = ''; $('brandInput').value = ''; $('priceMin').value = ''; $('priceMax').value = ''; }
     currentPage = 1;
     closeColorPanel();
     renderColorPanel();
@@ -123,13 +128,19 @@
   // 지금 걸려 있는 필터 개수를 필터 버튼에 표시
   function countFilters() {
     let n = 0;
-    try { n += colorSel.length; } catch {}
-    if ($('size').value) n++;
     if ($('brand').value) n++;
     if ($('priceMin').value || $('priceMax').value) n++;
     const c = $('filterCnt');
     c.textContent = n || '';
     c.hidden = !n;
+    $('filterBtn').classList.toggle('on', n > 0);
+    let cn = 0;
+    try { cn = colorSel.length; } catch {}
+    $('colorChip').textContent = cn ? '색상 ' + cn : '색상';
+    $('colorChip').classList.toggle('on', cn > 0);
+    const sz = $('size').value || (typeof pendingSize !== 'undefined' ? pendingSize : '');
+    $('sizeChip').textContent = sz || '사이즈';
+    $('sizeChip').classList.toggle('on', !!sz);
   }
   box.addEventListener('input', () => setTimeout(countFilters, 0));
   box.addEventListener('change', () => setTimeout(countFilters, 0));
@@ -163,6 +174,18 @@
   tabs.forEach((b) => b.addEventListener('click', () => go2[b.dataset.tab]()));
   document.querySelectorAll('.nav-ai').forEach((b) => b.addEventListener('click', showAi));
   $('aiBack').addEventListener('click', hideAi);
+  // 로고를 누르면 검색·필터·카테고리를 모두 처음 상태로(앱 쪽 초기화 + 새 화면 요소들도 같이 맞춘다)
+  const baseReset = window.resetAll;
+  window.resetAll = function () {
+    closeFilter();
+    hideAi();
+    const r = baseReset.apply(this, arguments);
+    syncSizeChips();
+    countFilters();
+    setTimeout(() => { buildFolderCard(); countFilters(); }, 50);
+    window.scrollTo({ top: 0 });
+    return r;
+  };
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (box.classList.contains('open')) closeFilter();
