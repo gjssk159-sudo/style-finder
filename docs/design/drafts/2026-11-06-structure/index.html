@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마이셀렉트샵 리뉴얼 — 틀(구성) 시안 3개</title>
+<style>
+/* 와이어프레임: 색·글꼴은 일부러 뺐다. 무엇이 어디에 있는지만 본다. */
+body{margin:0;background:#ececec;font-family:'Malgun Gothic',sans-serif;color:#222;word-break:keep-all;overflow-wrap:anywhere}
+.top{padding:20px 28px 6px}.top h1{margin:0;font-size:21px}.top p{margin:6px 0 0;color:#555;font-size:14px;line-height:1.6}
+section{padding:18px 28px 26px;border-top:1px solid #d6d6d6}
+section h2{margin:0;font-size:19px}section .why{margin:6px 0 4px;font-size:14px;color:#444;line-height:1.6;max-width:1100px}
+.flow{font-size:13px;color:#666;margin:0 0 14px}
+.row{display:flex;gap:22px;overflow-x:auto;padding-bottom:6px}
+.scr{flex:none;width:330px}.scr b.cap{display:block;font-size:13px;margin-bottom:6px;color:#333}
+.ph{width:330px;height:690px;background:#fff;border:1.5px solid #999;border-radius:22px;overflow:hidden;position:relative;font-size:11.5px;color:#555}
+.bx{background:#e4e4e4;border:1px dashed #a5a5a5;border-radius:4px;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.lbl{font-size:11px;color:#666;margin:10px 12px 4px;font-weight:700}
+.hdr{height:42px;margin:10px 12px 0;display:flex;gap:6px}.hdr .bx{height:100%}
+.nav{position:absolute;left:0;right:0;bottom:0;height:52px;border-top:1.5px solid #999;display:flex}
+.nav span{flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;border-right:1px dashed #ccc}
+.nav span.on{background:#d2d2d2;font-weight:700;color:#111}
+.circles{display:flex;gap:8px;margin:0 12px;overflow:hidden}.circles i{flex:none;width:52px;height:52px;border-radius:50%;background:#e4e4e4;border:1px dashed #a5a5a5;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:10px}
+.hscroll{display:flex;gap:6px;margin:0 12px;overflow:hidden}.hscroll .bx{flex:none;width:92px;height:122px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 12px}.g2 .bx{height:150px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0 12px}.g3 .bx{height:96px}
+.line{height:34px;margin:0 12px 6px;display:flex;gap:6px}.line .bx{height:100%}
+.brandhead{margin:4px 12px 6px;display:flex;justify-content:space-between;align-items:center}
+.note{position:absolute;right:8px;top:8px;background:#222;color:#fff;font-size:10px;padding:2px 6px;border-radius:3px}
+.foot{padding:16px 28px 40px;font-size:13px;color:#555}
+</style></head><body>
+<div class="top"><h1>마이셀렉트샵 리뉴얼 — 틀(구성) 시안 3개</h1>
+<p>중심: <b>브랜드 따라가기</b>(D-4). 색·글꼴은 빼고 <b>화면에 무엇이 어디 있는지</b>만 그렸습니다. 틀마다 첫 화면 → 브랜드 화면 → 브랜드 목록 순서예요.<br>
+검색·내 폴더·브랜드 등록·질문하기·AI는 모든 틀에 그대로 있고 <b>자리만</b> 다릅니다. 새 기능은 넣지 않았어요.</p></div>
+
+<section><h2>A. 브랜드 소식형 — "담은 브랜드마다 새 상품이 한 칸씩"</h2>
+<p class="why">첫 화면이 <b>브랜드 단위</b>로 나뉩니다. 위에는 담은 브랜드 동그라미, 아래는 브랜드마다 "이름 + 새 상품 몇 개(가로로 밀기)". 인스타그램 스토리·Shop 앱 "따라가는 가게"와 비슷해요. <b>좋은 점</b>: 브랜드가 한눈에 구분됨. <b>아쉬운 점</b>: 상품을 한꺼번에 많이 훑기는 어려움.</p>
+<p class="flow">흐름: 홈에서 브랜드 동그라미/이름 누름 → 그 브랜드 화면 → (아래 메뉴) 브랜드 목록에서 새 브랜드 발견·담기</p>
+<div class="row">
+ <div class="scr"><b class="cap">① 첫 화면</b><div class="ph">
+  <div class="hdr"><div class="bx" style="flex:1">로고</div><div class="bx" style="width:42px">검색</div></div>
+  <div class="lbl">담은 브랜드 (누르면 그 브랜드로)</div>
+  <div class="circles"><i>브랜드</i><i>브랜드</i><i>브랜드</i><i>브랜드</i><i>+ 담기</i></div>
+  <div class="brandhead"><b>온결 · 새 상품 8</b><span>전체 ›</span></div>
+  <div class="hscroll"><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div></div>
+  <div class="brandhead"><b>무드랩 · 새 상품 3</b><span>전체 ›</span></div>
+  <div class="hscroll"><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div></div>
+  <div class="brandhead"><b>소요 · 새 상품 5</b><span>전체 ›</span></div>
+  <div class="hscroll"><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div></div>
+  <div class="nav"><span class="on">홈</span><span>검색</span><span>브랜드</span><span>폴더</span><span>마이</span></div></div></div>
+ <div class="scr"><b class="cap">② 브랜드 화면</b><div class="ph">
+  <div class="hdr"><div class="bx" style="width:42px">‹</div><div class="bx" style="flex:1">브랜드 이름</div><div class="bx" style="width:70px">담기/빼기</div></div>
+  <div class="bx" style="margin:8px 12px;height:60px">브랜드 한 줄 소개 · 상품 수 · 쇼핑몰 바로가기</div>
+  <div class="line"><div class="bx" style="flex:1">분류 칩</div><div class="bx" style="width:80px">최근순</div></div>
+  <div class="g2"><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div></div>
+  <div class="nav"><span>홈</span><span>검색</span><span class="on">브랜드</span><span>폴더</span><span>마이</span></div></div></div>
+ <div class="scr"><b class="cap">③ 브랜드 목록</b><div class="ph">
+  <div class="hdr"><div class="bx" style="flex:1">브랜드 검색</div></div>
+  <div class="line" style="margin-top:8px"><div class="bx" style="flex:1">전체 · 담은 것 · 새로 들어옴</div></div>
+  <div class="lbl">최근 등록된 브랜드</div>
+  <div class="hscroll"><div class="bx">브랜드 카드<br>(사진 3장)</div><div class="bx">브랜드 카드</div><div class="bx">브랜드 카드</div></div>
+  <div class="lbl">가나다순</div>
+  <div class="line"><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="line"><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="line"><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="bx" style="margin:6px 12px;height:40px">+ 목록에 없는 브랜드 등록</div>
+  <div class="nav"><span>홈</span><span>검색</span><span class="on">브랜드</span><span>폴더</span><span>마이</span></div></div></div>
+</div></section>
+
+<section><h2>B. 브랜드 서랍형 — "내 브랜드 칸을 열어서 본다"</h2>
+<p class="why">첫 화면이 <b>내 브랜드 칸 모음</b>(사진 붙은 타일)입니다. 칸을 누르면 그 브랜드 화면으로 들어가요. 무신사 "브랜드" 탭·SSENSE 디자이너 목록과 비슷해요. <b>좋은 점</b>: 가장 단순하고 브랜드가 확실한 주인공. <b>아쉬운 점</b>: 상품을 보려면 한 번 더 눌러야 함.</p>
+<p class="flow">흐름: 홈(내 브랜드 칸) → 브랜드 화면 → 모든 브랜드 목록에서 발견·담기 / 검색은 상단에서 전체 검색</p>
+<div class="row">
+ <div class="scr"><b class="cap">① 첫 화면</b><div class="ph">
+  <div class="hdr"><div class="bx" style="flex:1">검색 (내 브랜드 전체에서)</div></div>
+  <div class="line" style="margin-top:8px"><div class="bx" style="flex:1">폴더 1 · 폴더 2 · 폴더 3</div></div>
+  <div class="lbl">내 브랜드 (새 상품 있는 순)</div>
+  <div class="g2"><div class="bx" style="height:130px">브랜드 칸<br>대표 사진 · 이름<br>새 상품 8</div><div class="bx" style="height:130px">브랜드 칸</div><div class="bx" style="height:130px">브랜드 칸</div><div class="bx" style="height:130px">브랜드 칸</div><div class="bx" style="height:130px">브랜드 칸</div><div class="bx" style="height:130px">+ 브랜드 담기</div></div>
+  <div class="nav"><span class="on">내 브랜드</span><span>모든 브랜드</span><span>+ 등록</span><span>AI</span><span>마이</span></div></div></div>
+ <div class="scr"><b class="cap">② 브랜드 화면</b><div class="ph">
+  <div class="bx" style="margin:0;height:150px;border-radius:0">브랜드 대표 사진</div>
+  <div class="brandhead"><b>브랜드 이름 · 상품 128</b><div class="bx" style="width:70px;height:28px">담기/빼기</div></div>
+  <div class="line"><div class="bx" style="flex:1">새 상품 · 전체 · 품절 제외</div><div class="bx" style="width:60px">필터</div></div>
+  <div class="g3"><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div></div>
+  <div class="nav"><span class="on">내 브랜드</span><span>모든 브랜드</span><span>+ 등록</span><span>AI</span><span>마이</span></div></div></div>
+ <div class="scr"><b class="cap">③ 모든 브랜드</b><div class="ph">
+  <div class="hdr"><div class="bx" style="flex:1">브랜드 검색</div></div>
+  <div class="line" style="margin-top:8px"><div class="bx" style="flex:1">ㄱ ㄴ ㄷ … A B C (가나다 빠른 이동)</div></div>
+  <div class="line"><div class="bx" style="width:40px">사진</div><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="line"><div class="bx" style="width:40px">사진</div><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="line"><div class="bx" style="width:40px">사진</div><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="line"><div class="bx" style="width:40px">사진</div><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="line"><div class="bx" style="width:40px">사진</div><div class="bx" style="flex:1">브랜드 이름 · 상품 수</div><div class="bx" style="width:54px">담기</div></div>
+  <div class="nav"><span>내 브랜드</span><span class="on">모든 브랜드</span><span>+ 등록</span><span>AI</span><span>마이</span></div></div></div>
+</div></section>
+
+<section><h2>C. 새 상품 타임라인형 — "담은 브랜드 새 상품이 한 줄로 쭉"</h2>
+<p class="why">첫 화면은 담은 브랜드들의 새 상품이 <b>새로 들어온 순서대로</b> 한 줄로 흐릅니다. 카드마다 브랜드 이름이 크게 붙고, 위의 브랜드 칩을 누르면 그 브랜드만 남아요. Grailed·Lyst의 "팔로우 피드"와 비슷해요. <b>좋은 점</b>: 매일 들어와 새 상품을 훑기 좋음. <b>아쉬운 점</b>: 상품이 많은 브랜드가 화면을 차지할 수 있음.</p>
+<p class="flow">흐름: 홈(타임라인) → 카드의 브랜드 이름 누름 → 브랜드 화면 / 브랜드 칩으로 바로 좁히기 / 검색 탭에서 전체 검색</p>
+<div class="row">
+ <div class="scr"><b class="cap">① 첫 화면</b><div class="ph">
+  <div class="hdr"><div class="bx" style="flex:1">로고 · 폴더 고르기 ▾</div><div class="bx" style="width:42px">검색</div></div>
+  <div class="line" style="margin-top:8px"><div class="bx" style="flex:1">브랜드 칩: 전체 · 온결 · 무드랩 · 소요 …</div></div>
+  <div class="lbl">오늘 들어온 새 상품</div>
+  <div class="bx" style="margin:0 12px 4px;height:24px;justify-content:flex-start">온결 · 3시간 전</div>
+  <div class="bx" style="margin:0 12px 8px;height:200px">큰 상품 사진 (한 개 또는 2열)</div>
+  <div class="bx" style="margin:0 12px 4px;height:24px;justify-content:flex-start">무드랩 · 5시간 전</div>
+  <div class="g2"><div class="bx" style="height:130px">상품</div><div class="bx" style="height:130px">상품</div></div>
+  <div class="nav"><span class="on">새 상품</span><span>검색</span><span>브랜드</span><span>폴더</span><span>마이</span></div></div></div>
+ <div class="scr"><b class="cap">② 브랜드 화면</b><div class="ph">
+  <div class="hdr"><div class="bx" style="width:42px">‹</div><div class="bx" style="flex:1">브랜드 이름</div><div class="bx" style="width:70px">담기/빼기</div></div>
+  <div class="line" style="margin-top:8px"><div class="bx" style="flex:1">새 상품 · 전체 · 분류 · 품절 제외</div></div>
+  <div class="g2"><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div><div class="bx">상품</div></div>
+  <div class="nav"><span>새 상품</span><span>검색</span><span class="on">브랜드</span><span>폴더</span><span>마이</span></div></div></div>
+ <div class="scr"><b class="cap">③ 브랜드 목록</b><div class="ph">
+  <div class="hdr"><div class="bx" style="flex:1">브랜드 검색</div></div>
+  <div class="line" style="margin-top:8px"><div class="bx" style="flex:1">담은 브랜드 · 모든 브랜드</div></div>
+  <div class="g2"><div class="bx" style="height:120px">브랜드<br>사진 4장 묶음</div><div class="bx" style="height:120px">브랜드</div><div class="bx" style="height:120px">브랜드</div><div class="bx" style="height:120px">브랜드</div></div>
+  <div class="bx" style="margin:8px 12px;height:40px">+ 목록에 없는 브랜드 등록</div>
+  <div class="nav"><span>새 상품</span><span>검색</span><span class="on">브랜드</span><span>폴더</span><span>마이</span></div></div></div>
+</div></section>
+<p class="foot">질문하기·AI 사진 찾기는 A·C는 "마이" 안에, B는 아래 메뉴에 둡니다. 고르신 뒤 바꿀 수 있어요. · 근거: design-kit/research/structure/STRUCTURE.md</p>
+</body></html>
