@@ -11,7 +11,6 @@
 없음
 
 ## 3. 안 되는 것 — 정직하게
-- 로컬 `main`에 push 안 한 커밋이 있음(b25fc66 하네스 설치부터, 확인: `git status -sb`). push하면 Vercel에 바로 배포되므로 사용자 확인 후 push.
 - 자동 테스트 없음. `npm run check`는 문법·JSON·taxonomy 사본만 보고 동작은 보장 안 함.
 - 최근 화면 변경(b6ec794 품절 제외 칩 등)은 이번 세션에서 브라우저로 다시 확인하지 않음(미검증).
 - `docs/HANDOFF.md`·`docs/SETUP.md`·`docs/ARCHITECTURE.md`는 아직 빈 양식. `docs/DECISIONS.md`에는 D-1만 있음(날짜 미기입).
