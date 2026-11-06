@@ -8,7 +8,7 @@
 
 ## 목록
 - [x] #1 AGENTS.md의 `채우기` 칸 채우기(§1 프로젝트, §4 검증 명령, §6·§7 프로젝트 규칙) — 2026-11-06, b25fc66
-- [ ] #2 인수인계 문서 양식 채우기(`docs/HANDOFF.md`·`docs/SETUP.md`·`docs/ARCHITECTURE.md`, DECISIONS D-1 날짜)
+- [x] #2 인수인계 문서 양식 채우기(`docs/HANDOFF.md`·`docs/SETUP.md`·`docs/ARCHITECTURE.md`, DECISIONS D-1 날짜) — 2026-11-06
 
 ## 대기
 <!-- 남(사람·외부)이 해 줘야 진행되는 것 + 확인 방법 -->
