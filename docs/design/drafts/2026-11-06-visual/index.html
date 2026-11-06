@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마이셀렉트샵 리뉴얼 — 틀 A × 레퍼런스 분위기 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&display=swap" rel="stylesheet">
+<style>
+/* 틀 A(D-5) × 레퍼런스 R1~R6: 종이색 바탕, 흑백, 큰 세리프 브랜드 이름 + 아주 작은 라벨, 상품 칸은 사진+두 줄, 모서리·그림자 없음 */
+:root{--paper:#f3f2ee;--tile:#e7e5df;--ink:#111;--sub:#6b6860;--hair:#cfccc4}
+*{box-sizing:border-box}
+body{margin:0;background:#bdbcb8;font-family:'Pretendard Variable',Pretendard,sans-serif;color:var(--ink);word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.page{display:flex;gap:28px;padding:26px;overflow-x:auto;align-items:flex-start}
+.cap{font-size:13px;color:#333;margin:0 0 8px;font-weight:600}
+.ph{flex:none;width:390px;height:844px;background:var(--paper);overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none}
+.serif{font-family:'Noto Serif KR',serif}
+.micro{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0}
+.logo{font-size:11px;font-weight:700;letter-spacing:.34em}
+.search{margin:18px 18px 0;border-bottom:1px solid var(--ink);padding:10px 0;display:flex;gap:10px;align-items:center;font-size:15px;color:var(--sub)}
+.hero{padding:28px 18px 6px;display:flex;justify-content:space-between;align-items:flex-end}
+.hero h1{margin:0;font-size:40px;line-height:1.05;font-weight:900;letter-spacing:-.02em}
+.follow{display:flex;gap:10px;padding:16px 18px 8px;overflow-x:auto;scrollbar-width:none}
+.follow a{flex:none;width:64px;text-decoration:none;color:var(--ink)}
+.follow .sq{width:64px;height:80px;background:var(--tile);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.follow .n{font-size:10px;color:var(--sub);margin-top:6px;letter-spacing:.08em}
+.follow .nm{font-size:12px;font-weight:600;margin-top:1px}
+.follow .add .sq{background:transparent;border:1px dashed var(--hair);align-items:center;font-size:20px;color:var(--sub)}
+.sec{margin-top:30px;border-top:1px solid var(--hair);padding-top:16px}
+.sh{display:flex;justify-content:space-between;align-items:baseline;padding:0 18px}
+.sh h2{margin:0;font-size:26px;font-weight:900;letter-spacing:-.01em}
+.more{font-size:11.5px;letter-spacing:.06em;display:flex;align-items:center;gap:8px;color:var(--ink);white-space:nowrap}
+.more i{display:inline-block;width:28px;height:1px;background:var(--ink);position:relative}.more i:after{content:'';position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid var(--ink);border-right:1px solid var(--ink);transform:rotate(45deg)}
+.sub2{padding:4px 18px 12px}
+.row{display:flex;gap:8px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.it{flex:none;width:132px}
+.img{background:var(--tile);aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.it .t{font-size:11.5px;margin-top:7px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.it .p{font-size:11.5px;margin-top:2px;font-weight:600}
+.lookno{position:absolute;left:7px;top:6px;font-size:9.5px;letter-spacing:.12em;color:var(--sub)}
+.soldout{position:absolute;right:7px;top:6px;font-size:9.5px;letter-spacing:.12em;color:var(--ink);background:var(--paper);padding:2px 5px}
+.edit{display:grid;grid-template-columns:1.25fr 1fr;gap:10px;padding:0 18px;align-items:end}
+.edit .big{aspect-ratio:3/4.3}
+.edit .txt{padding-bottom:4px}
+.edit .txt p{font-size:12px;line-height:1.6;color:#333;margin:8px 0 12px}
+nav{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--ink);display:flex;margin-top:28px}
+nav span{flex:1;text-align:center;padding:13px 0 16px;font-size:11px;letter-spacing:.14em;color:var(--sub)}
+nav span.on{color:var(--ink);font-weight:700}
+nav span.plus{color:var(--ink);font-size:16px;letter-spacing:0;padding-top:9px}
+/* 브랜드 화면 */
+.bhero{position:relative;height:430px;background:#d9d6cf;display:flex;align-items:flex-end;justify-content:flex-end;padding-right:24px;overflow:hidden}
+.bhero .nm{position:absolute;left:16px;right:14px;bottom:10px;font-size:68px;line-height:1;font-weight:900;letter-spacing:-.03em;color:var(--ink);z-index:1}
+.bhero .back{position:absolute;left:16px;top:14px;font-size:12px;letter-spacing:.1em}
+.bhero .corner{position:absolute;right:16px;top:16px;text-align:right}
+.bbar{display:flex;justify-content:space-between;align-items:center;padding:22px 18px 6px}
+.btn{background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:11px 18px;border:0}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.tabs{display:flex;gap:18px;padding:14px 18px;border-bottom:1px solid var(--hair);font-size:12.5px;color:var(--sub);overflow-x:auto;scrollbar-width:none}
+.tabs b{color:var(--ink);border-bottom:1.5px solid var(--ink);padding-bottom:4px;font-weight:700}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px 8px;padding:16px 18px 0}
+.g2 .t{font-size:12px;margin-top:7px}
+.g2 .p{font-size:12px;font-weight:600;margin-top:2px}
+/* 브랜드 목록 */
+.ltitle{padding:26px 18px 0}
+.ltitle h1{margin:0;font-size:46px;font-weight:900;line-height:1}
+.idx{display:flex;gap:12px;padding:16px 18px;font-size:12px;color:var(--sub);overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--ink)}
+.idx b{color:var(--ink)}
+.li{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--hair)}
+.li .no{font-size:10.5px;color:var(--sub);letter-spacing:.08em}
+.li .nm{font-size:19px;font-weight:600}
+.li .cnt{font-size:11px;color:var(--sub);margin-top:2px}
+.li .act{font-size:12px;font-weight:700;border:1px solid var(--ink);padding:7px 11px}
+.li .act.on{background:var(--ink);color:#fff}
+.newb{display:flex;gap:8px;padding:0 18px;overflow-x:auto;scrollbar-width:none}
+.newb .c{flex:none;width:150px}
+.newb .c .ims{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;height:120px}
+.newb .c .ims div{background:var(--tile);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.newb .c .ims div:first-child{grid-row:span 2}
+.newb .c b{display:block;font-size:14px;margin-top:6px}
+.reg{margin:18px;padding:16px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style></head><body>
+<div class="page">
+
+<div><p class="cap">① 홈 — 담은 브랜드 줄 + 브랜드마다 새 상품 줄</p><div class="ph" id="home">
+  <div class="top"><span class="logo">MY SELECT SHOP</span><span class="micro">11.06 THU</span></div>
+  <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>브랜드나 상품을 검색해보세요</div>
+  <div class="hero"><h1 class="serif">내 브랜드</h1><div class="micro" style="text-align:right;line-height:1.7">05 BRANDS<br>폴더 · 내 폴더 ▾</div></div>
+  <div class="follow" id="follow"></div>
+  <div id="secs"></div>
+  <nav><span class="on">홈</span><span>브랜드</span><span class="plus">＋</span><span>AI</span><span>마이</span></nav>
+</div></div>
+
+<div><p class="cap">② 브랜드 화면 — 큰 사진 위에 큰 이름</p><div class="ph">
+  <div class="bhero"><span class="back">‹ 뒤로</span><div class="corner micro" style="line-height:1.7">BRAND 01<br>128 ITEMS</div><div id="bfig"></div><div class="nm serif">온결</div></div>
+  <div class="bbar"><div><div class="micro">BRAND · 상품 128</div><div style="font-size:12.5px;margin-top:4px">쇼핑몰 바로가기 ⟶</div></div><button class="btn">담은 브랜드 ✓</button></div>
+  <div class="tabs"><b>전체 128</b><span>아우터</span><span>상의</span><span>바지</span><span>니트</span><span>필터</span><span>최근순 ▾</span></div>
+  <div class="g2" id="bgrid"></div>
+  <nav><span>홈</span><span class="on">브랜드</span><span class="plus">＋</span><span>AI</span><span>마이</span></nav>
+</div></div>
+
+<div><p class="cap">③ 브랜드 목록 — 발견하고 담기</p><div class="ph">
+  <div class="top"><span class="logo">MY SELECT SHOP</span><span class="micro">INDEX</span></div>
+  <div class="ltitle"><h1 class="serif">브랜드</h1><div class="micro" style="margin-top:10px">ALL 214 · 담은 브랜드 05</div></div>
+  <div class="search" style="margin-top:14px">브랜드 이름으로 찾기</div>
+  <div class="sh" style="margin-top:24px"><span class="micro" style="color:var(--ink)">최근 등록된 브랜드</span><span class="more">전체 보기 <i></i></span></div>
+  <div class="newb" id="newb" style="margin-top:10px"></div>
+  <div class="idx" style="margin-top:22px"><b>ㄱ</b><span>ㄴ</span><span>ㄷ</span><span>ㅁ</span><span>ㅂ</span><span>ㅅ</span><span>ㅇ</span><span>ㅈ</span><span>ㅍ</span><span>ㅎ</span><span>A–Z</span></div>
+  <div id="list"></div>
+  <div class="reg"><span>목록에 없는 브랜드 등록</span><span>＋</span></div>
+  <nav><span>홈</span><span class="on">브랜드</span><span class="plus">＋</span><span>AI</span><span>마이</span></nav>
+</div></div>
+</div>
+<script>
+// 옷 모양 그림(실제 상품 사진 대신)
+const G={coat:'<path d="M38 10h24l6 10 14 8-6 70H24l-6-70 14-8z" />',pants:'<path d="M30 8h40l4 90H54l-4-60-4 60H26z"/>',knit:'<path d="M30 14h40l18 18-10 10-8-6v52H30V36l-8 6-10-10z"/>',bag:'<path d="M28 40h44l6 48H22zM38 40c0-14 24-14 24 0" fill="none" stroke-width="5"/>',shirt:'<path d="M34 10h32l20 16-8 12-8-5v65H30V33l-8 5-8-12z"/>',hood:'<path d="M36 18c0-14 28-14 28 0l20 14-8 12-8-6v60H32V38l-8 6-8-12z"/>'};
+const fig=(k,c,w=70)=>`<svg viewBox="0 0 100 100" width="${w}%" aria-hidden="true" style="fill:${c};stroke:${c}">${G[k]}</svg>`;
+const person=(c)=>`<svg viewBox="0 0 100 160" width="62%" aria-hidden="true"><circle cx="50" cy="20" r="11" fill="#2a2724"/><path d="M33 34h34l10 50-6 4 2 66H58l-8-60-8 60H29l2-66-6-4z" fill="${c}"/></svg>`;
+const B=[['온결','#2b2926',['coat','knit','pants','shirt']],['무드랩','#3f5268',['pants','shirt','hood','coat']],['소요','#9a8a72',['knit','coat','bag','pants']],['헤이든','#5a3a2a',['bag','coat','shirt','knit']],['파인스튜디오','#3a3c40',['hood','pants','knit','coat']]];
+const N=['울 블렌드 오버핏 싱글 코트','코튼 와이드 데님 팬츠','라운드넥 캐시미어 니트','레더 미니 숄더백','헤비 코튼 후드 집업','스트라이프 옥스퍼드 셔츠'];
+document.getElementById('follow').innerHTML=B.map((b,i)=>`<a><div class="sq">${person(b[1])}</div><div class="n">0${i+1}</div><div class="nm">${b[0]}</div></a>`).join('')+'<a class="add"><div class="sq">＋</div><div class="n">&nbsp;</div><div class="nm">담기</div></a>';
+const item=(b,k,i,sold)=>`<div class="it"><div class="img"><span class="lookno">NO.${String(i+1).padStart(2,'0')}</span>${sold?'<span class="soldout">품절</span>':''}${fig(k,b[1])}</div><div class="t">${N[(i+B.indexOf(b))%6]}</div><div class="p">₩${(59+i*13+B.indexOf(b)*7)},000</div></div>`;
+document.getElementById('secs').innerHTML=B.slice(0,3).map((b,s)=>{
+  const head=`<div class="sh"><h2 class="serif">${b[0]}</h2><span class="more">전체 보기 <i></i></span></div><div class="sub2 micro">새 상품 ${[8,3,5][s]} · 오늘 05:00</div>`;
+  if(s===0) return `<div class="sec">${head}<div class="edit"><div class="img big">${person(b[1])}</div><div class="txt"><div class="micro">NO.01 — NEW</div><div style="font-size:15px;font-weight:700;margin-top:6px">울 블렌드 오버핏 싱글 코트</div><p>₩189,000</p><div class="img" style="aspect-ratio:1/1">${fig('knit',b[1],60)}</div></div></div><div class="row" style="margin-top:14px">${b[2].slice(1).map((k,i)=>item(b,k,i+1,i===2)).join('')}</div></div>`;
+  return `<div class="sec">${head}<div class="row">${b[2].map((k,i)=>item(b,k,i,false)).join('')}</div></div>`;
+}).join('');
+document.getElementById('bfig').innerHTML=`<div style="width:210px;height:390px;display:flex;align-items:flex-end;justify-content:center">${person('#2b2926').replace('width="62%"','width="100%"')}</div>`;
+document.getElementById('bgrid').innerHTML=['coat','knit','pants','shirt','bag','hood'].map((k,i)=>`<div><div class="img"><span class="lookno">NO.${String(i+1).padStart(2,'0')}</span>${i===4?'<span class="soldout">품절</span>':''}${fig(k,'#2b2926')}</div><div class="t">${N[i]}</div><div class="p">₩${59+i*21},000</div></div>`).join('');
+document.getElementById('newb').innerHTML=[['레이어드','#4b4640'],['노르웨이숲','#55603f'],['오트밀하우스','#a08f74']].map(([n,c])=>`<div class="c"><div class="ims"><div>${person(c)}</div><div>${fig('knit',c,60)}</div><div>${fig('pants',c,60)}</div></div><b>${n}</b><div class="micro">NEW · 상품 42</div></div>`).join('');
+const L=[['가먼트레이블',86,0],['나인온스',41,0],['노르웨이숲',23,0],['무드랩',57,1],['소요',63,1],['온결',128,1],['파인스튜디오',39,1],['헤이든',22,1]];
+document.getElementById('list').innerHTML=L.map((r,i)=>`<div class="li"><span class="no">${String(i+1).padStart(2,'0')}</span><div><div class="nm serif">${r[0]}</div><div class="cnt">상품 ${r[1]}</div></div><span class="act ${r[2]?'on':''}">${r[2]?'담음 ✓':'담기 ＋'}</span></div>`).join('');
+</script></body></html>
