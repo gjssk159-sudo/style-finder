@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시안 A — 갤러리(조용한 미니멀)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+/* 시안 A: 편집숍 갤러리. 카드·그림자 없음, 사진이 주인공, 글자는 작고 조용하게. */
+:root{--bg:#f6f5f1;--ink:#151515;--sub:#6f6b64;--line:#dcd9d1}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard Variable',Pretendard,sans-serif;font-size:14px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+.wrap{max-width:430px;margin:0 auto;padding-bottom:84px}
+header{display:flex;justify-content:space-between;align-items:baseline;padding:22px 18px 14px}
+.logo{font-size:13px;font-weight:700;letter-spacing:.32em}
+.help{font-size:12px;color:var(--sub);letter-spacing:.08em}
+.search{margin:0 18px;border-bottom:1px solid var(--ink);display:flex;gap:10px;align-items:center;padding:10px 0}
+.search span{color:var(--sub);font-size:15px}
+.folder{display:flex;justify-content:space-between;align-items:baseline;margin:22px 18px 0;font-size:12px;letter-spacing:.06em}
+.folder b{font-size:12px;letter-spacing:.18em}
+.folder a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.cats{display:flex;gap:20px;overflow-x:auto;padding:22px 18px 0;scrollbar-width:none}
+.cats span{flex:none;font-size:12px;letter-spacing:.16em;color:var(--sub);padding-bottom:6px}
+.cats span.on{color:var(--ink);border-bottom:1.5px solid var(--ink)}
+.tools{display:flex;justify-content:space-between;padding:16px 18px 14px;font-size:12px;color:var(--sub);letter-spacing:.04em;border-bottom:1px solid var(--line);margin:0 0 2px}
+.tools b{color:var(--ink);font-weight:500}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.card .img{aspect-ratio:3/4}
+.card .t{padding:10px 12px 22px}
+.brand{font-size:11.5px;font-weight:700;letter-spacing:.14em}
+.name{font-size:13px;color:var(--sub);margin-top:3px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-size:13px;margin-top:6px;font-weight:500}
+.sold{opacity:.45}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line)}
+nav .in{max-width:430px;margin:0 auto;display:flex;justify-content:space-around;padding:14px 0 18px;font-size:11.5px;letter-spacing:.14em;color:var(--sub)}
+nav .on{color:var(--ink);font-weight:700}
+</style></head><body><div class="wrap">
+<header><span class="logo">MY SELECT SHOP</span><span class="help">도움말</span></header>
+<div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>찾고 싶은 아이템을 검색해보세요</span></div>
+<div class="folder"><span><b>내 폴더</b> &nbsp;브랜드 5</span><a>관리</a></div>
+<div class="cats"><span class="on">ALL</span><span>TOP</span><span>OUTER</span><span>BOTTOM</span><span>DRESS/SKIRT</span><span>BAG</span><span>SHOES</span></div>
+<div class="tools"><span>128개</span><span><b>브랜드순</b> · 색상 · 사이즈 · 품절 제외 · 필터</span></div>
+<div class="grid" id="grid"></div>
+</div>
+<nav><div class="in"><span class="on">홈</span><span>AI</span><span>+ 등록</span><span>폴더</span><span>마이</span></div></nav>
+<script>
+const P=[['온결','울 블렌드 오버핏 싱글 코트','189,000','#b4a593','#8c7d6c'],['무드랩','코튼 와이드 데님 팬츠 워시드 블루','79,000','#7d95ad','#4f677f'],['소요','라운드넥 캐시미어 니트 오트밀','129,000','#ddd3c0','#bfb29b'],['헤이든','레더 미니 숄더백','98,000','#7a5a48','#4e3528'],['파인스튜디오','헤비 코튼 후드 집업 차콜','89,000','#55595e','#2f3236'],['온결','스트라이프 옥스퍼드 셔츠','69,000','#d5dee5','#aab8c3']];
+document.getElementById('grid').innerHTML=P.map((p,i)=>`<div class="card ${i===3?'sold':''}"><div class="img" style="background:linear-gradient(170deg,${p[3]},${p[4]})"></div><div class="t"><div class="brand">${p[0]}</div><div class="name">${p[1]}</div><div class="price">₩${p[2]}${i===3?' · 품절':''}</div></div></div>`).join('');
+</script></body></html>
