@@ -196,21 +196,21 @@ function updateAuthDialogMode() {
   document.getElementById('authSubmitBtn').textContent = authMode === 'signin' ? '로그인' : '회원가입';
   document.getElementById('authForgotLink').style.display = authMode === 'signin' ? '' : 'none';
   document.getElementById('authToggleText').innerHTML = authMode === 'signin'
-    ? '계정이 없으신가요? <button class="linklike" onclick="toggleAuthMode()">회원가입</button>'
-    : '이미 계정이 있으신가요? <button class="linklike" onclick="toggleAuthMode()">로그인</button>';
+    ? '계정이 없으십니까? <button class="linklike" onclick="toggleAuthMode()">회원가입</button>'
+    : '이미 계정이 있으십니까? <button class="linklike" onclick="toggleAuthMode()">로그인</button>';
 }
 
 async function requestPasswordReset() {
   const email = document.getElementById('authEmail').value.trim();
   const msg = document.getElementById('authMsg');
-  if (!email) { msg.className = 'warn'; msg.style.display = 'block'; msg.textContent = '이메일을 먼저 입력해주세요.'; return; }
+  if (!email) { msg.className = 'warn'; msg.style.display = 'block'; msg.textContent = '이메일을 먼저 입력해 주십시오.'; return; }
   msg.className = '';
   msg.style.display = 'block';
   msg.textContent = '전송 중…';
   const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
   if (error) { msg.className = 'warn'; msg.textContent = error.message; return; }
   msg.className = 'ok';
-  msg.textContent = '비밀번호 재설정 메일을 보냈어요. 메일함을 확인해주세요.';
+  msg.textContent = '비밀번호 재설정 메일을 보냈습니다. 메일함을 확인해 주십시오.';
 }
 
 // ---------------- 마이페이지 / 문의(Q&A) ----------------
@@ -283,27 +283,27 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleQa(f
 async function changePassword() {
   const pw = document.getElementById('myNewPw').value;
   const pw2 = document.getElementById('myNewPw2').value;
-  if (pw.length < 6) { showMsg('myMsg', 'warn', '새 비밀번호는 6자 이상이어야 해요.'); return; }
-  if (pw !== pw2) { showMsg('myMsg', 'warn', '새 비밀번호 확인이 일치하지 않아요.'); return; }
+  if (pw.length < 6) { showMsg('myMsg', 'warn', '새 비밀번호는 6자 이상이어야 합니다.'); return; }
+  if (pw !== pw2) { showMsg('myMsg', 'warn', '새 비밀번호 확인이 일치하지 않습니다.'); return; }
   showMsg('myMsg', '', '변경 중…');
   const { error } = await sb.auth.updateUser({ password: pw });
-  if (error) { showMsg('myMsg', 'warn', /different from the old password/i.test(error.message) ? '지금 쓰는 비밀번호와 달라야 해요.' : error.message); return; }
+  if (error) { showMsg('myMsg', 'warn', /different from the old password/i.test(error.message) ? '지금 쓰는 비밀번호와 달라야 합니다.' : error.message); return; }
   document.getElementById('myNewPw').value = '';
   document.getElementById('myNewPw2').value = '';
-  showMsg('myMsg', 'ok', '비밀번호를 변경했어요. 다음 로그인부터 새 비밀번호를 사용해주세요.');
+  showMsg('myMsg', 'ok', '비밀번호를 변경했습니다. 다음 로그인부터 새 비밀번호를 사용해 주십시오.');
 }
 async function sendResetMail() {
   if (!currentUser?.email) return;
   showMsg('myMsg', '', '전송 중…');
   const { error } = await sb.auth.resetPasswordForEmail(currentUser.email, { redirectTo: location.origin + location.pathname });
   if (error) { showMsg('myMsg', 'warn', error.message); return; }
-  showMsg('myMsg', 'ok', '재설정 메일을 보냈어요. 메일함을 확인해주세요.');
+  showMsg('myMsg', 'ok', '재설정 메일을 보냈습니다. 메일함을 확인해 주십시오.');
 }
 async function loadMyQuestions() {
   const list = document.getElementById('qnaList');
   const { data, error } = await sb.from('qna_posts').select('id,title,body,answer,answered_at,created_at').order('created_at', { ascending: false });
-  if (error) { list.innerHTML = '<p class="qa-empty">질문 내역을 불러오지 못했어요.</p>'; return; }
-  if (!data.length) { list.innerHTML = '<p class="qa-empty">아직 남긴 질문이 없어요.<br>홈에서 질문하기를 눌러보세요.</p>'; return; }
+  if (error) { list.innerHTML = '<p class="qa-empty">질문 내역을 불러오지 못했습니다.</p>'; return; }
+  if (!data.length) { list.innerHTML = '<p class="qa-empty">아직 남긴 질문이 없습니다.<br>홈에서 질문하기를 눌러 보십시오.</p>'; return; }
   const fmt = (t) => new Date(t).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   list.innerHTML = data.map((q) => `
     <div class="qna-item">
@@ -317,21 +317,21 @@ async function loadMyQuestions() {
 async function submitQuestion() {
   const title = document.getElementById('qnaTitle').value.trim();
   const body = document.getElementById('qnaBody').value.trim();
-  if (!title || !body) { showMsg('qnaMsg', 'warn', '제목과 내용을 모두 입력해주세요.'); return; }
+  if (!title || !body) { showMsg('qnaMsg', 'warn', '제목과 내용을 모두 입력해 주십시오.'); return; }
   showMsg('qnaMsg', '', '등록 중…');
   const { error } = await sb.from('qna_posts').insert({ user_id: currentUser.id, title, body });
   if (error) {
-    showMsg('qnaMsg', 'warn', /row-level security|violates/i.test(error.message) ? '질문은 하루 10개까지 남길 수 있어요. 내일 다시 시도해주세요.' : error.message);
+    showMsg('qnaMsg', 'warn', /row-level security|violates/i.test(error.message) ? '질문은 하루 10개까지 남길 수 있습니다. 내일 다시 시도해 주십시오.' : error.message);
     return;
   }
   document.getElementById('qnaTitle').value = '';
   document.getElementById('qnaBody').value = '';
-  showMsg('qnaMsg', 'ok', '질문을 등록했어요. 운영진이 확인하고 답변을 남겨드려요.');
+  showMsg('qnaMsg', 'ok', '질문을 등록했습니다. 운영진이 확인하고 답변을 남겨 드립니다.');
   loadMyQuestions();
   setTimeout(() => { if (document.getElementById('qaPanel').dataset.view === 'compose') setQaView('mine'); }, 1100);
 }
 async function deleteQuestion(id) {
-  if (!(await askConfirm('이 질문을 삭제할까요?'))) return;
+  if (!(await askConfirm('이 질문을 삭제하시겠습니까?'))) return;
   const { error } = await sb.from('qna_posts').delete().eq('id', id);
   if (error) { showMsg('qnaMsg', 'warn', error.message); return; }
   loadMyQuestions();
@@ -339,10 +339,10 @@ async function deleteQuestion(id) {
 
 function authErrorMessage(error, mode) {
   const m = error.message || '';
-  if (/invalid login credentials/i.test(m)) return '이메일 또는 비밀번호가 올바르지 않아요.';
-  if (/email not confirmed/i.test(m)) return '이메일 인증이 필요해요. 메일함을 확인해주세요.';
-  if (mode === 'signup' && /already registered|already been registered|user already exists/i.test(m)) return '이미 가입된 이메일이에요. 로그인해주세요.';
-  if (/password should be at least/i.test(m)) return '비밀번호는 6자 이상이어야 해요.';
+  if (/invalid login credentials/i.test(m)) return '이메일 또는 비밀번호가 올바르지 않습니다.';
+  if (/email not confirmed/i.test(m)) return '이메일 인증이 필요합니다. 메일함을 확인해 주십시오.';
+  if (mode === 'signup' && /already registered|already been registered|user already exists/i.test(m)) return '이미 가입된 이메일입니다. 로그인해 주십시오.';
+  if (/password should be at least/i.test(m)) return '비밀번호는 6자 이상이어야 합니다.';
   return m;
 }
 
@@ -350,7 +350,7 @@ async function submitAuth() {
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   const msg = document.getElementById('authMsg');
-  if (!email || !password) { msg.className = 'warn'; msg.textContent = '이메일과 비밀번호를 입력해주세요.'; return; }
+  if (!email || !password) { msg.className = 'warn'; msg.textContent = '이메일과 비밀번호를 입력해 주십시오.'; return; }
 
   msg.className = '';
   msg.style.display = 'block';
@@ -367,7 +367,7 @@ async function submitAuth() {
       authDialog.close();
     } else {
       msg.className = 'ok';
-      msg.textContent = '가입 확인 메일을 보냈어요. 메일함에서 확인 후 로그인해주세요.';
+      msg.textContent = '가입 확인 메일을 보냈습니다. 메일함에서 확인 후 로그인해 주십시오.';
     }
   }
 }
@@ -392,10 +392,10 @@ function showGridSkeleton() {
 }
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'PASSWORD_RECOVERY') {
-    const newPassword = prompt('새 비밀번호를 입력해주세요 (6자 이상)');
+    const newPassword = prompt('새 비밀번호를 입력해 주십시오 (6자 이상)');
     if (newPassword) {
       const { error } = await sb.auth.updateUser({ password: newPassword });
-      alert(error ? '오류: ' + error.message : '비밀번호가 변경됐어요.');
+      alert(error ? '오류: ' + error.message : '비밀번호가 변경되었습니다.');
     }
   }
   const newId = session?.user?.id || null;
@@ -448,7 +448,7 @@ async function loadFolderBrandIds() {
 }
 
 async function createFolder(silent) {
-  if (myFolders.length >= 3) { await askAlert('폴더는 최대 3개까지 만들 수 있어요.'); return; }
+  if (myFolders.length >= 3) { await askAlert('폴더는 최대 3개까지 만들 수 있습니다.'); return; }
   let name = '내 폴더';
   if (!silent) {
     name = await askText('새 폴더 이름', `폴더 ${myFolders.length + 1}`);
@@ -479,9 +479,9 @@ async function renameFolder() {
 }
 
 async function deleteFolder() {
-  if (myFolders.length <= 1) { await askAlert('마지막 폴더는 삭제할 수 없어요.'); return; }
+  if (myFolders.length <= 1) { await askAlert('마지막 폴더는 삭제할 수 없습니다.'); return; }
   const f = myFolders.find((x) => x.id === currentFolderId);
-  if (!f || !(await askConfirm(`"${f.name}" 폴더를 삭제할까요? 안에 담긴 브랜드 목록도 함께 사라져요.`))) return;
+  if (!f || !(await askConfirm(`"${f.name}" 폴더를 삭제하시겠습니까? 안에 담긴 브랜드 목록도 함께 사라집니다.`))) return;
   const { error } = await sb.from('folders').delete().eq('id', currentFolderId);
   if (error) { await askAlert(error.message); return; }
   myFolders = myFolders.filter((x) => x.id !== currentFolderId);
@@ -513,15 +513,15 @@ async function copyShareLink() {
   try {
     await navigator.clipboard.writeText(url);
     msg.className = 'ok';
-    msg.textContent = '공유 링크가 복사됐어요!';
+    msg.textContent = '공유 링크가 복사되었습니다!';
   } catch {
-    prompt('링크를 복사해서 공유하세요', url);
+    prompt('링크를 복사해서 공유하십시오', url);
   }
 }
 
 async function loadSharedFolder(shareId) {
   const { data: folder, error } = await sb.from('folders').select('id,name,share_id,user_id').eq('share_id', shareId).single();
-  if (error || !folder) { alert('존재하지 않거나 삭제된 공유 링크예요.'); return; }
+  if (error || !folder) { alert('존재하지 않거나 삭제된 공유 링크입니다.'); return; }
   sharedView = folder;
   currentFolderId = folder.id;
   await loadFolderBrandIds();
@@ -554,7 +554,7 @@ function renderSharedBanner() {
   if (!el) return;
   if (sharedView) {
     el.style.display = 'flex';
-    el.innerHTML = `<span><b>${sharedView.name}</b> 폴더를 보는 중이에요 (다른 사람과 공유됨)</span>
+    el.innerHTML = `<span><b>${sharedView.name}</b> 폴더를 보는 중입니다 (다른 사람과 공유됨)</span>
       <button class="linklike" onclick="exitSharedView()">내 폴더로 돌아가기</button>`;
     if (addBtn) addBtn.style.display = 'none';
   } else {
@@ -578,7 +578,7 @@ function renderFolderTabs() {
   const manage = document.getElementById('folderManageRow');
   if (!wrap) return;
   if (sharedView) {
-    wrap.innerHTML = '<div class="shared-note">다른 사람의 폴더예요 — 보기만 가능해요.</div>';
+    wrap.innerHTML = '<div class="shared-note">다른 사람의 폴더입니다 — 보기만 가능합니다.</div>';
     if (manage) manage.style.display = 'none';
     return;
   }
@@ -815,7 +815,7 @@ function renderFolderList() {
   if (!currentUser) {
     if (filterRow) filterRow.style.display = 'none';
     if (selectAllRow) selectAllRow.style.display = 'none';
-    list.innerHTML = '<div style="padding:12px;color:#a1a1aa">로그인하면 폴더를 만들 수 있어요.</div>';
+    list.innerHTML = '<div style="padding:12px;color:#a1a1aa">로그인하면 폴더를 만들 수 있습니다.</div>';
     return;
   }
   if (filterRow) filterRow.style.display = 'flex';
@@ -846,7 +846,7 @@ function renderFolderList() {
       </label>`;
     })
     .join('') || (folderListFilter === 'mine'
-      ? '<div style="padding:12px;color:#a1a1aa">아직 등록한 브랜드가 없어요.</div>'
+      ? '<div style="padding:12px;color:#a1a1aa">아직 등록한 브랜드가 없습니다.</div>'
       : '<div style="padding:12px;color:#a1a1aa">결과 없음</div>');
 }
 
@@ -913,7 +913,7 @@ function slugify(hostname) {
 async function submitAddFallback(urlInput, addToFolder, out) {
   let shopUrl;
   try { shopUrl = new URL(/^https?:\/\//i.test(urlInput) ? urlInput : `https://${urlInput}`).origin; }
-  catch { out.className = 'warn'; out.textContent = 'URL 형식이 이상해요.'; return; }
+  catch { out.className = 'warn'; out.textContent = 'URL 형식이 이상합니다.'; return; }
 
   // 브랜드 표시 이름은 사용자가 직접 입력하지 않고 URL에서 자동으로 뽑아서 붙인다 —
   // 자유 입력 필드로 두면 장난스럽거나 부적절한 이름을 등록할 수 있어서.
@@ -932,20 +932,20 @@ async function submitAddFallback(urlInput, addToFolder, out) {
   }
 
   out.className = 'ok';
-  out.textContent = `등록 요청 접수! 자동 판별 후 다음 정기 수집(매일 새벽) 때 반영돼요.${addToFolder ? ' (이미 있던 브랜드면 내 폴더에 바로 추가됨)' : ''}`;
+  out.textContent = `등록 요청 접수! 자동 판별 후 다음 정기 수집(매일 새벽) 때 반영됩니다.${addToFolder ? ' (이미 있던 브랜드면 내 폴더에 바로 추가됨)' : ''}`;
   await loadAllBrands();
 }
 
 async function submitAdd() {
   const out = document.getElementById('addResult');
-  if (!currentUser) { out.className = 'warn'; out.textContent = '로그인 먼저 해주세요.'; out.style.display = 'block'; return; }
-  if (sharedView) { out.className = 'warn'; out.textContent = '공유된 폴더에는 추가할 수 없어요. 내 폴더로 돌아가서 추가해주세요.'; out.style.display = 'block'; return; }
+  if (!currentUser) { out.className = 'warn'; out.textContent = '로그인을 먼저 해 주십시오.'; out.style.display = 'block'; return; }
+  if (sharedView) { out.className = 'warn'; out.textContent = '공유된 폴더에는 추가할 수 없습니다. 내 폴더로 돌아가서 추가해 주십시오.'; out.style.display = 'block'; return; }
   const urlInput = document.getElementById('addUrl').value.trim();
   const addToFolder = document.getElementById('addToMyFolder').checked;
   // 인스타그램 아이디로 입력했는지: @로 시작, instagram.com 주소, 또는 점이 없는 영문 아이디(URL이면 .com 같은 도메인이 있음)
   const isInstagram = /^@/.test(urlInput) || /instagram\.com\//i.test(urlInput) || /^[a-z0-9_]{2,30}$/i.test(urlInput);
   if (!urlInput) {
-    out.className = 'warn'; out.textContent = '쇼핑몰 URL을 입력해주세요.'; out.style.display = 'block';
+    out.className = 'warn'; out.textContent = '쇼핑몰 URL을 입력해 주십시오.'; out.style.display = 'block';
     return;
   }
 
@@ -966,12 +966,12 @@ async function submitAdd() {
   // 서버가 만든 정확한 이유를 그대로 보여준다 — 폴백의 뭉뚱그린 메시지로 덮어써버리면
   // 실제 원인을 알 수 없게 된다.
   if (error) {
-    if (isInstagram) { out.className = 'warn'; out.textContent = '인스타그램 아이디로 등록하는 중 문제가 생겼어요. 잠시 후 다시 시도하거나 쇼핑몰 주소(URL)로 등록해주세요.'; return; }
+    if (isInstagram) { out.className = 'warn'; out.textContent = '인스타그램 아이디로 등록하는 중 문제가 생겼습니다. 잠시 후 다시 시도하거나 쇼핑몰 주소(URL)로 등록해 주십시오.'; return; }
     return submitAddFallback(urlInput, addToFolder, out);
   }
   if (!data.ok) {
     out.className = 'warn';
-    out.textContent = data.message || '등록에 실패했어요. 다시 시도해주세요.';
+    out.textContent = data.message || '등록에 실패했습니다. 다시 시도해 주십시오.';
     return;
   }
 
@@ -983,17 +983,17 @@ async function submitAdd() {
 
   out.className = 'ok';
   const folderNote = addToFolder ? '' : ' (내 폴더에는 추가 안 함)';
-  const viaNote = data.via ? `인스타그램 @${data.via.handle} → ${data.via.url.replace(/^https?:\/\//, '')} 로 찾았어요. ` : '';
+  const viaNote = data.via ? `인스타그램 @${data.via.handle} → ${data.via.url.replace(/^https?:\/\//, '')} 로 찾았습니다. ` : '';
   if (data.alreadyExisted) {
-    out.textContent = `${viaNote}이미 등록된 브랜드였어요.${addToFolder ? ' 내 폴더에 바로 추가했어요.' : ''}`;
+    out.textContent = `${viaNote}이미 등록된 브랜드입니다.${addToFolder ? ' 내 폴더에 바로 추가했습니다.' : ''}`;
   } else if (data.status === 'ready' && data.dispatched) {
-    out.textContent = `${viaNote}등록 완료! 지금 수집 중이에요, 1~2분 후 검색에 나와요.${folderNote}`;
+    out.textContent = `${viaNote}등록 완료! 지금 수집 중입니다. 1~2분 후 검색에 나옵니다.${folderNote}`;
   } else if (data.status === 'pending' && data.dispatched) {
-    out.textContent = `${viaNote}등록 완료! 쇼핑몰 종류를 확인하면서 상품을 수집 중이에요, 2~3분 후 검색에 나와요.${folderNote}`;
+    out.textContent = `${viaNote}등록 완료! 쇼핑몰 종류를 확인하면서 상품을 수집 중입니다. 2~3분 후 검색에 나옵니다.${folderNote}`;
   } else if (data.status === 'ready') {
-    out.textContent = `${viaNote}등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.${folderNote}`;
+    out.textContent = `${viaNote}등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영됩니다.${folderNote}`;
   } else {
-    out.textContent = `${viaNote}등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 해요. 조금 걸릴 수 있어요.${folderNote}`;
+    out.textContent = `${viaNote}등록은 됐지만 자동 판별이 안 돼서 사람이 확인해야 합니다. 조금 걸릴 수 있습니다.${folderNote}`;
   }
   await loadAllBrands();
 }
@@ -1325,7 +1325,7 @@ async function renderCurrentPage() {
 
   if (!currentUser && !sharedView) {
     meta.textContent = '';
-    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있어요.<br>위에서 이메일로 로그인해보세요.</div>';
+    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있습니다.<br>위에서 이메일로 로그인해 보십시오.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     renderedSig = '';
     return;
@@ -1333,8 +1333,8 @@ async function renderCurrentPage() {
   if (myFolderIds.length === 0) {
     meta.textContent = '';
     grid.innerHTML = sharedView
-      ? '<div class="empty">이 폴더는 비어있어요.</div>'
-      : '<div class="empty">내 폴더가 비어있어요.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보세요.</div>';
+      ? '<div class="empty">이 폴더는 비어 있습니다.</div>'
+      : '<div class="empty">내 폴더가 비어 있습니다.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해 보십시오.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     renderedSig = '';
     return;
@@ -1374,7 +1374,7 @@ async function renderCurrentPage() {
   const subCount = document.getElementById('subCount');
   if (subCount) subCount.textContent = lastTotal.toLocaleString('ko-KR') + '개'; // 세부 카테고리 줄이 개수 줄을 덮으므로 거기에도 표시
 
-  if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없어요.<br>필터를 줄이거나 다른 검색어로 찾아보세요.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
+  if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없습니다.<br>필터를 줄이거나 다른 검색어로 찾아보십시오.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
   const sig = sigOf(data);
   if (sig !== renderedSig) { // 캐시로 먼저 그린 화면과 내용이 같으면 DOM을 그대로 둔다(사진 재요청·깜빡임·스크롤 튐 방지)
     grid.innerHTML = cardsHtml(data);
@@ -1811,11 +1811,11 @@ function renderA2hs() {
   btn.hidden = !deferredInstall;
   let list;
   if (deferredInstall) list = [];
-  else if (IS_IOS && !IN_APP && !/CriOS|FxiOS|EdgiOS/i.test(UA)) list = ['하단의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하세요"];
-  else if (IS_IOS && !IN_APP) list = ['주소창 오른쪽의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하세요"]; // 아이폰 크롬 등
-  else if (IS_IOS) list = ["오른쪽 아래(위)의 ⋯ 메뉴에서 'Safari로 열기'를 누르세요", '하단의 공유 버튼 ' + SHARE_ICON + " → '홈 화면에 추가'"];
-  else if (IN_APP) list = ["오른쪽 위 ⋮ 메뉴에서 '다른 브라우저로 열기'를 누르세요", "브라우저 메뉴에서 '홈 화면에 추가'를 선택하세요"];
-  else list = ['오른쪽 위 ⋮ 메뉴를 누르고', "'홈 화면에 추가'를 선택하세요"];
+  else if (IS_IOS && !IN_APP && !/CriOS|FxiOS|EdgiOS/i.test(UA)) list = ['하단의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하십시오"];
+  else if (IS_IOS && !IN_APP) list = ['주소창 오른쪽의 공유 버튼을 누르고 ' + SHARE_ICON, "'홈 화면에 추가'를 선택하십시오"]; // 아이폰 크롬 등
+  else if (IS_IOS) list = ["오른쪽 아래(위)의 ⋯ 메뉴에서 'Safari로 열기'를 누르십시오", '하단의 공유 버튼 ' + SHARE_ICON + " → '홈 화면에 추가'"];
+  else if (IN_APP) list = ["오른쪽 위 ⋮ 메뉴에서 '다른 브라우저로 열기'를 누르십시오", "브라우저 메뉴에서 '홈 화면에 추가'를 선택하십시오"];
+  else list = ['오른쪽 위 ⋮ 메뉴를 누르고', "'홈 화면에 추가'를 선택하십시오"];
   steps.innerHTML = list.map((t) => '<li><span>' + t + '</span></li>').join('');
 }
 // 모바일: 초대장 카드와 홈 화면 추가 안내 창을 하나의 묶음으로 보고 화면 한가운데에 놓는다(위아래로 이어 붙임).
