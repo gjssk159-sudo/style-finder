@@ -276,9 +276,9 @@ const PAGE = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
   .title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
   .price { font-size: 13px; margin-top: 2px; }
   .tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .tag { font-size: 11px; color: #52525b; background: #f4f4f5; border-radius: 5px; padding: 1px 6px; }
+  .tag { font-size: 12px; color: #52525b; background: #f4f4f5; border-radius: 5px; padding: 1px 6px; }
   .sold { color: #a1a1aa; }
-  .multi { color: #2563eb; font-size: 11px; margin-top: 4px; }
+  .multi { color: #2563eb; font-size: 12px; margin-top: 4px; }
   a.card { text-decoration: none; color: inherit; }
   .empty { max-width: 1200px; margin: 40px auto; text-align: center; color: #a1a1aa; }
   dialog { border: 0; border-radius: 14px; padding: 0; width: min(440px, 92vw); }
