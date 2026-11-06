@@ -258,37 +258,37 @@ const PAGE = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
   h1 { margin: 0 0 10px; font-size: 18px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
   h1 button.link { background: none; border: 0; color: #2563eb; font-size: 13px; font-weight: 400; cursor: pointer; padding: 0; }
   .row { display: flex; gap: 8px; max-width: 980px; flex-wrap: wrap; align-items: center; }
-  input[type=text] { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid #d4d4d8; border-radius: 2px; font-size: 15px; }
-  input[type=number] { width: 100px; padding: 10px 10px; border: 1px solid #d4d4d8; border-radius: 2px; font-size: 14px; }
-  select { padding: 10px 10px; border: 1px solid #d4d4d8; border-radius: 2px; font-size: 14px; background: #fff; color: #18181b; max-width: 160px; }
-  button { padding: 10px 18px; border: 0; border-radius: 2px; background: #18181b; color: #fff; font-size: 15px; cursor: pointer; }
+  input[type=text] { flex: 1; min-width: 220px; padding: 10px 14px; border: 1px solid #d4d4d8; border-radius: 10px; font-size: 15px; }
+  input[type=number] { width: 100px; padding: 10px 10px; border: 1px solid #d4d4d8; border-radius: 10px; font-size: 14px; }
+  select { padding: 10px 10px; border: 1px solid #d4d4d8; border-radius: 10px; font-size: 14px; background: #fff; color: #18181b; max-width: 160px; }
+  button { padding: 10px 18px; border: 0; border-radius: 10px; background: #18181b; color: #fff; font-size: 15px; cursor: pointer; }
   label.chk { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #52525b; white-space: nowrap; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; max-width: 980px; }
-  .chip { padding: 5px 11px; border: 1px solid #d4d4d8; border-radius: 2px; background: #fff; font-size: 13px; cursor: pointer; }
+  .chip { padding: 5px 11px; border: 1px solid #d4d4d8; border-radius: 999px; background: #fff; font-size: 13px; cursor: pointer; }
   .chip:hover { border-color: #18181b; }
   main { padding: 20px; }
   .meta { max-width: 1200px; margin: 0 auto 14px; color: #71717a; font-size: 13px; }
   .grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px 14px; }
-  .card { background: #fff; border: 1px solid #e4e4e7; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; }
+  .card { background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
   .card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f4f4f5; }
   .card .body { padding: 10px 11px 12px; display: flex; flex-direction: column; gap: 3px; }
   .brand { font-size: 12px; color: #71717a; }
   .title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
   .price { font-size: 13px; margin-top: 2px; }
   .tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .tag { font-size: 12px; color: #52525b; background: #f4f4f5; border-radius: 2px; padding: 1px 6px; }
+  .tag { font-size: 12px; color: #52525b; background: #f4f4f5; border-radius: 5px; padding: 1px 6px; }
   .sold { color: #a1a1aa; }
   .multi { color: #2563eb; font-size: 12px; margin-top: 4px; }
   a.card { text-decoration: none; color: inherit; }
   .empty { max-width: 1200px; margin: 40px auto; text-align: center; color: #a1a1aa; }
-  dialog { border: 0; border-radius: 2px; padding: 0; width: min(440px, 92vw); }
+  dialog { border: 0; border-radius: 14px; padding: 0; width: min(440px, 92vw); }
   dialog::backdrop { background: rgba(0,0,0,.35); }
   .dlg-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
   .dlg-body h2 { margin: 0 0 4px; font-size: 16px; }
-  .dlg-body input { padding: 10px 12px; border: 1px solid #d4d4d8; border-radius: 2px; font-size: 14px; }
+  .dlg-body input { padding: 10px 12px; border: 1px solid #d4d4d8; border-radius: 10px; font-size: 14px; }
   .dlg-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
   .dlg-row button.secondary { background: #f4f4f5; color: #18181b; }
-  #addResult { font-size: 13px; padding: 8px 10px; border-radius: 2px; display: none; }
+  #addResult { font-size: 13px; padding: 8px 10px; border-radius: 8px; display: none; }
   #addResult.ok { display: block; background: #ecfdf5; color: #047857; }
   #addResult.warn { display: block; background: #fffbeb; color: #92400e; }
 </style></head><body>
