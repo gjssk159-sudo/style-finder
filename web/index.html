@@ -23,6 +23,8 @@
   :root {
     --ink: #111111; --sub: #75716a; --line: #dedbd4; --bg: #f9f8f5; --faint: #eeece6; --paper: #ffffff;
     --accent: #2fbf8f;
+    /* D-6 리뉴얼(룩북형) 색 — 종이색 바탕, 흑백, 머리카락 굵기 선 */
+    --book-bg: #f3f2ee; --book-tile: #e7e5df; --book-sub: #6b6860; --book-hair: #cfccc4;
   }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; word-break: keep-all; font-variant-numeric: tabular-nums; }
@@ -582,14 +584,11 @@
     .sheet-cta { display: block; position: sticky; bottom: -18px; margin-top: 22px; width: 100%; height: 52px; padding: 0; border-radius: 26px; font-size: 15px; font-weight: 700; letter-spacing: 0; box-shadow: 0 30px 0 0 #fff, 0 -12px 0 0 #fff; }
 
     /* 하단 탭바 */
-    .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); padding: 10px 0 calc(14px + env(safe-area-inset-bottom, 0px)); }
-    .tabbar button { background: none; color: #9a9d9b; padding: 2px 0 0; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0; }
-    .tabbar button.on { color: var(--ink); }
-    .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-    .tabbar button.on svg.fill, .tabbar .ai-ic path { fill: currentColor; stroke: none; }
-    .tabbar .plus { color: #55585a; }
-    .tabbar .plus i { display: grid; place-items: center; width: 56px; height: 56px; margin: -30px auto -2px; border-radius: 50%; background: var(--accent); border: 4px solid #fff; box-shadow: 0 8px 18px rgba(47,191,143,.38); }
-    .tabbar .plus svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2.4; }
+    .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--book-bg); border-top: 1px solid var(--ink); padding: 0 0 env(safe-area-inset-bottom); }
+    /* D-6: 글자만 있는 아래 메뉴. 누르는 높이 48px */
+    .tabbar button { background: none; color: var(--book-sub); min-height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; letter-spacing: .14em; border-radius: 0; }
+    .tabbar button.on { color: var(--ink); font-weight: 700; box-shadow: inset 0 3px 0 var(--accent); } /* D-7: 지금 메뉴 위 초록 줄 */
+    .tabbar .plus { color: var(--ink); font-size: 20px; font-weight: 400; letter-spacing: 0; }
 
     /* 대화상자도 아래에서 올라오는 시트로 */
     #addDialog, #folderDialog, #aboutDialog, #authDialog, dialog.soft-dlg { width: 100%; max-width: 100%; margin: auto 0 0; border: 0; border-radius: 28px 28px 0 0; max-height: 90vh; max-height: 90dvh; animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
@@ -1012,11 +1011,11 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <div class="ai-card"><div class="ai-soon"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M7 11l5-1 5 1M9 21l3-6 3 6"/></svg></div><div><b>가상 피팅</b><span>내 전신사진 + 상품 실측으로<br>핏을 미리 확인해요</span></div><span class="ai-pill">준비 중</span></div></div>
 </div></section>
 <nav class="tabbar" aria-label="메뉴">
-  <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</button>
-  <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true" class="ai-ic"><path class="spk" d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6zM18.5 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>AI 서비스</button>
-  <button type="button" data-tab="add" class="plus"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</button>
-  <button type="button" data-tab="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg>내 폴더</button>
-  <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</button>
+  <button type="button" data-tab="home" class="on">홈</button>
+  <button type="button" data-tab="brand">브랜드</button>
+  <button type="button" data-tab="add" class="plus" aria-label="브랜드 등록">＋</button>
+  <button type="button" data-tab="ai">AI</button>
+  <button type="button" data-tab="my">마이</button>
 </nav>
 <script defer src="./taxonomy-client.js"></script>
 <script defer src="./config.js"></script>

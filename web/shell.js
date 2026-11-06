@@ -169,6 +169,8 @@
     ai() { closeFilter(); showAi(); },
     add() { closeFilter(); openAddDialog(); },
     folder() { closeFilter(); folderDialog.showModal(); renderFolderList(); },
+    // T-04 1단계: 브랜드 목록 화면(4단계)이 생기기 전까지 '브랜드'는 브랜드 목록·담기 창(폴더 창)을 연다
+    brand() { closeFilter(); folderDialog.showModal(); renderFolderList(); },
     my() { closeFilter(); if (currentUser) openMyPage(); else openAuthDialog(); },
   };
   tabs.forEach((b) => b.addEventListener('click', () => go2[b.dataset.tab]()));
