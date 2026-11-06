@@ -1,0 +1,13 @@
+{
+  "verify": {
+    "command": "npm run check",
+    "whenChanged": ["src/**", "web/**", "scripts/**", "*.json"],
+    "timeoutSec": 120
+  },
+  "protectedPaths": [
+    ".github/workflows/**",
+    ".claude/**",
+    "supabase/**",
+    "web/config.js"
+  ]
+}

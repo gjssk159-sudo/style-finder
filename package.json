@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "collect": "node src/run.js",
-    "collect:kr": "node src/collect-kr.js"
+    "collect:kr": "node src/collect-kr.js",
+    "check": "node scripts/check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

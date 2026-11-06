@@ -1,0 +1,5 @@
+# 줄바꿈: 기본 LF, Windows 스크립트만 CRLF (Mac/Windows 섞여도 diff가 깨지지 않게)
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

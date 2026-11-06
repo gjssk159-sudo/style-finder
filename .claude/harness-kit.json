@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "kit": "claude-harness-kit",
+  "kind": "project",
+  "version": "0.1.0",
+  "updatedAt": "2026-11-06T00:54:13.222Z",
+  "base": "C:/Users/이상헌/OneDrive/바탕 화면/마이셀렉트샵",
+  "os": "windows",
+  "installedAt": "2026-11-06T00:54:13.222Z",
+  "packs": [
+    "core",
+    "windows",
+    "design",
+    "security"
+  ],
+  "plugins": [
+    {
+      "id": "harness-design@harness-kit",
+      "scope": "project",
+      "kind": "kit",
+      "pack": "design"
+    },
+    {
+      "id": "harness-security@harness-kit",
+      "scope": "project",
+      "kind": "kit",
+      "pack": "security"
+    }
+  ],
+  "files": {
+    ".gitattributes": {
+      "sha256": "6ed3d0809d7671e80f9411d28feb03aa2b0753392b7a826ba8005fec8903423e",
+      "pack": "core"
+    },
+    "AGENTS.md": {
+      "sha256": "97115872e257ee74445392ddd9c788386c6e3768c15492a314bd3282dc46ab45",
+      "pack": "core"
+    },
+    "CLAUDE.md": {
+      "sha256": "4446ee68545c8b5a31acd4a13d807bd759ce36b8f5e8f50fb4ca65e4bc2d7ef2",
+      "pack": "core"
+    },
+    "docs/ARCHITECTURE.md": {
+      "sha256": "ff5b7d8012668025fa2a7dde4f48e4f797de2920ab1cdbe169f5a871db50d14a",
+      "pack": "core"
+    },
+    "docs/DECISIONS.md": {
+      "sha256": "b082d40d8d86c2a78a180e815c29d6a554396a5b55a33a5575c28c58cbc330a3",
+      "pack": "core"
+    },
+    "docs/HANDOFF.md": {
+      "sha256": "6f0827c5290a00f3158fcfe393ad076923428e68e948816ea5a9c966c6ef0bb1",
+      "pack": "core"
+    },
+    "docs/SETUP.md": {
+      "sha256": "ecc35e2944e9ae25ff396e2f52dfa8892f67d9309cc766ee7a1a5c983fdd8056",
+      "pack": "core"
+    },
+    "docs/STATUS.md": {
+      "sha256": "43e7ce7f384d94926e982b0b53e3c5d77223e8fa98474e935bb3605985dd9c55",
+      "pack": "core"
+    },
+    "docs/TASKS.md": {
+      "sha256": "8a5c1bcd1474a13f3328407795595e0f85c45dcea12521374565d97b238d31e5",
+      "pack": "core"
+    },
+    "docs/buildlog/README.md": {
+      "sha256": "96712f0d5c3f2e96831678320418b7c3fda6672458871b3271562baff64ca47f",
+      "pack": "core"
+    },
+    "docs/UI_GUIDE.md": {
+      "sha256": "97823c3a051a0772df839f09a9e3658bf02fdc175498ca06f093188d3b8cb0c2",
+      "pack": "design"
+    },
+    "docs/design/confirmed/README.md": {
+      "sha256": "881c78f95cbffa99a5a6bf9c2a108f0120969e59a16a730594bdcfc2c489d51f",
+      "pack": "design"
+    }
+  },
+  "blocks": [
+    {
+      "file": "AGENTS.md",
+      "id": "design",
+      "pack": "design"
+    }
+  ],
+  "json": {
+    ".claude/settings.json": {
+      "permissions": {
+        "deny": [
+          "Bash(rm -rf /)",
+          "Bash(rm -rf ~)",
+          "Bash(git push --force*)",
+          "Bash(git push -f*)",
+          "Bash(git reset --hard*)",
+          "Bash(git clean -f*)",
+          "PowerShell(git push --force*)",
+          "PowerShell(git push -f*)",
+          "PowerShell(git reset --hard*)",
+          "PowerShell(git clean -f*)",
+          "Read(./.env)",
+          "Read(./.env.local)",
+          "Read(./.env.development)",
+          "Read(./.env.development.local)",
+          "Read(./.env.production)",
+          "Read(./.env.production.local)",
+          "Read(./.env.test)",
+          "Read(./.env.test.local)",
+          "Read(./.env.staging)",
+          "Read(./**/.env)",
+          "Read(./**/.env.local)",
+          "Read(./**/.env.production)",
+          "Read(./**/*.pem)",
+          "Read(./**/*.key)",
+          "Read(./**/*.p12)",
+          "Read(./**/*.pfx)",
+          "Read(./**/*.p8)",
+          "Read(./**/*.jks)",
+          "Read(./**/*.keystore)"
+        ]
+      }
+    },
+    ".claude/harness.json": {
+      "verify": null,
+      "protectedPaths": [
+        ".github/workflows/**",
+        ".claude/**"
+      ]
+    }
+  },
+  "created": [
+    ".claude/settings.json",
+    ".claude/harness.json"
+  ],
+  "dirs": [
+    "docs",
+    "docs/buildlog",
+    "docs/design/confirmed",
+    "docs/design"
+  ],
+  "backups": [
+    "C:/Users/이상헌/.claude/harness-kit/backups/20261106-095404"
+  ]
+}
