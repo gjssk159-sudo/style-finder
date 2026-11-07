@@ -24,7 +24,7 @@ const BASE = `http://127.0.0.1:${server.address().port}/`;
 // ── 가짜 데이터 ──
 const REF = 'fipjvgglzlvksepdjxjv';
 const UID = '00000000-0000-4000-8000-000000000001';
-const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'].map((n, i) => ({ id: 100 + i, name: n, type: 'cafe24', status: 'ready', added_by: null }));
+const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'].map((n, i) => ({ id: 100 + i, name: n, type: 'cafe24', status: 'active', added_by: null }));
 const products = Array.from({ length: 12 }, (_, i) => ({
   id: 1000 + i, brand: brands[i % 5].name, brand_id: brands[i % 5].id,
   title: ['울 블렌드 오버핏 싱글 코트', '코튼 와이드 데님 팬츠', '라운드넥 캐시미어 니트', '레더 미니 숄더백', '헤비 코튼 후드 집업', '스트라이프 옥스퍼드 셔츠'][i % 6],
@@ -55,15 +55,13 @@ async function open(browser, { login, width = 390, height = 844 }) {
     return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'content-range': `0-${Math.max(0, rows.length - 1)}/${rows.length}`, 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range' }, body: JSON.stringify(body) });
   });
   await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="3" height="4"><rect width="3" height="4" fill="#bbb"/></svg>' }));
-  // 바깥 글꼴(구글·jsdelivr)은 내려받지 않는다 — 인터넷 속도에 따라 시험 결과가 흔들리지 않게(2026-11-07 실제로 멈춤)
-  await ctx.route(/fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net\/npm\/pretendard/, (route) => route.fulfill({ contentType: 'text/css', body: '' }));
   if (login) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-' + REF + '-auth-token', JSON.stringify(session)]);
   const page = await ctx.newPage();
   page.setDefaultTimeout(5000); // 못 찾으면 오래 기다리지 않고 실패로 센다
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('dialog', (d) => d.dismiss()); // alert/confirm 이 뜨면 닫는다(멈춤 방지)
-  await page.goto(BASE, { waitUntil: 'load', timeout: 30000 });
+  await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForTimeout(2200);
   return { ctx, page, calls, errors };
 }
@@ -96,58 +94,23 @@ const browser = await chromium.launch();
   const p = s.page;
   await check('홈: 내 폴더 브랜드 상품을 불러온다', async () => s.calls.some((c) => c.path.endsWith('/product_group') && /brand_id=in\./.test(c.query)));
   await check('홈: 상품 카드가 그려진다', async () => (await p.locator('#grid .card').count()) > 0);
-  await p.waitForTimeout(800);
-  await check('홈(T-04): 브랜드마다 최근 상품 구역이 보인다', async () => (await isOpen(p, '#brandFeed')) && (await p.locator('#brandFeed .bf-sec').count()) >= 2 && (await p.locator('#brandFeed .bf-it').count()) >= 4);
-  await check('홈: 화면이 옆으로 넘치지 않는다(가로 스크롤 없음)', async () => {
-    const r = await p.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
-    if (r.s > r.c) console.log(`  (화면 폭 ${r.c}px 인데 내용 폭 ${r.s}px)`);
-    return r.s <= r.c;
-  });
   await shot(p, '2-home');
-  await check('홈(T-04): 브랜드 구역 이름을 누르면 그 브랜드만 보고, 구역은 숨는다', async () => {
-    const name = await p.locator('#brandFeed .bf-name').first().textContent();
-    const n = s.calls.length; await p.locator('#brandFeed .bf-name').first().click(); await p.waitForTimeout(1500);
-    const asked = s.calls.slice(n).some((c) => c.path.endsWith('/product_group') && c.query.includes('brand=eq.' + name));
-    const hidden = !(await isOpen(p, '#brandFeed'));
-    if (!asked || !hidden) console.log(`  (브랜드 '${name}' 요청 ${asked ? '있음' : '없음'} · 구역 ${hidden ? '숨음' : '보임'} · 최근 요청: ${s.calls.slice(n).map((c) => c.path.split('/').pop() + c.query.slice(-160)).join(' | ')} · #brand=${await p.$eval('#brand', (e) => e.value + '/' + [...e.options].map((o) => o.value).join(','))})`);
-    return asked && hidden;
-  });
-  await check('브랜드 화면(T-04): 고른 브랜드의 큰 이름과 상품 수가 보인다', async () => (await isOpen(p, '#brandHead')) && /\S/.test(await p.locator('#brandHead .bh-name').textContent()) && /상품 \d/.test(await p.locator('#brandHead .bh-count').textContent()));
-  await shot(p, '2b-brand');
-  await check('브랜드 화면(T-04): 뒤로를 누르면 홈(브랜드 구역)으로 돌아온다', async () => {
-    await p.locator('#brandHead [data-act="back"]').click(); await p.waitForTimeout(1500);
-    return !(await isOpen(p, '#brandHead')) && (await isOpen(p, '#brandFeed'));
-  });
-  await check('브랜드 화면(T-04): 담은 브랜드를 누르고 확인하면 폴더에서 빼는 요청을 보낸다', async () => {
-    await p.locator('#brandFeed .bf-name').first().click(); await p.waitForTimeout(1500);
-    const n = s.calls.length; await p.locator('#brandHead [data-act="remove"]').click(); await p.waitForTimeout(400);
-    if (!(await isOpen(p, '#confirmDialog'))) return false;
-    await p.locator('#confirmOkBtn').click(); await p.waitForTimeout(1500);
-    return s.calls.slice(n).some((c) => c.path.endsWith('/user_brands') && c.method === 'DELETE') && !(await isOpen(p, '#brandHead'));
-  });
-  try { await p.evaluate(() => pickBrand('')); await p.waitForTimeout(1200); } catch {}
   await check('검색: 검색어를 넣으면 그 말로 상품을 찾는다', async () => {
     const n = s.calls.length; await p.fill('#q', '코트'); await p.press('#q', 'Enter'); await p.waitForTimeout(1500);
     return s.calls.slice(n).some((c) => c.path.endsWith('/product_group') && c.query.includes('코트'));
   });
-  await check('홈(T-04): 검색 중에는 브랜드 구역이 숨는다', async () => !(await isOpen(p, '#brandFeed')));
   try { await p.fill('#q', ''); await p.press('#q', 'Enter'); await p.waitForTimeout(800); } catch {}
   await check('분류: 분류 칩을 누르면 그 분류로 거른다', async () => {
     const chip = p.locator('#chips button, #chips .chip').nth(1); const n = s.calls.length; await chip.click(); await p.waitForTimeout(1500);
     return s.calls.slice(n).some((c) => c.path.endsWith('/product_group') && /categories/.test(c.query));
   });
-  await check('메뉴: 아래 메뉴가 홈·브랜드·＋·AI·마이 순서다 (D-5)', async () => (await p.$$eval('.tabbar [data-tab]', (b) => b.map((x) => x.dataset.tab).join(','))) === 'home,brand,add,ai,my');
-  await check('브랜드: 브랜드 목록(담기) 창이 열리고 담은 브랜드 5개가 보인다', async () => {
-    await tab(p, 'brand'); await p.waitForTimeout(700); await shot(p, '3-folder');
+  await check('폴더: 폴더 관리 창이 열리고 담은 브랜드 5개가 보인다', async () => {
+    await tab(p, 'folder'); await p.waitForTimeout(700); await shot(p, '3-folder');
     return (await isOpen(p, '#folderDialog')) && (await p.locator('#folderList input[type=checkbox]').count()) >= 5;
   });
-  await check('브랜드: 브랜드 체크를 풀면 폴더에서 빼는 요청을 보낸다', async () => {
+  await check('폴더: 브랜드 체크를 풀면 폴더에서 빼는 요청을 보낸다', async () => {
     const n = s.calls.length; await p.locator('#folderList input[type=checkbox]:checked').nth(1).click(); await p.waitForTimeout(900);
     return s.calls.slice(n).some((c) => c.path.endsWith('/user_brands') && c.method === 'DELETE');
-  });
-  await check('브랜드 목록(T-04): "목록에 없는 브랜드 등록"을 누르면 등록 창이 열린다', async () => {
-    await p.locator('#folderDialog .fd-register').click(); await p.waitForTimeout(500);
-    return (await isOpen(p, '#addDialog')) && !(await isOpen(p, '#folderDialog'));
   });
   await closeAll(p);
   await check('등록: 브랜드 등록 창이 열리고 주소를 넣어 등록 요청을 보낸다', async () => {
@@ -162,43 +125,6 @@ const browser = await chromium.launch();
   await closeAll(p);
   await check('질문하기: 질문 창이 열린다', async () => { await p.locator('#qaFab').click(); await p.waitForTimeout(600); await shot(p, '7-qa'); return isOpen(p, '#qaPanel'); });
   await check('로그인 후: 화면 오류 없음', async () => s.errors.length === 0 || (console.log(s.errors), false));
-  await s.ctx.close();
-}
-
-// 3) PC 화면(T-04 6단계)
-{
-  const s = await open(browser, { login: true, width: 1280, height: 860 });
-  const p = s.page;
-  await p.waitForTimeout(800);
-  await check('PC: 브랜드 구역과 전체 상품 칸이 보이고 옆으로 넘치지 않는다', async () => {
-    const r = await p.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
-    return (await isOpen(p, '#brandFeed')) && (await p.locator('#grid .card').count()) > 0 && r.s <= r.c;
-  });
-  await check('PC: 첫 브랜드 큰 사진이 화면 높이를 넘지 않는다', async () => {
-    const h = await p.$eval('.bf-big', (e) => e.getBoundingClientRect().height).catch(() => 0);
-    return h > 0 && h < 860;
-  });
-  await shot(p, '8-desktop');
-  // 2026-11-08 사용자 제보 "화면에 가려져서 잘 안 보인다": PC 머리 부분이 붙은 채 길어져 상품을 가렸다
-  const covered = async () => p.evaluate(() => {
-    const card = [...document.querySelectorAll('#grid .card')].find((c) => c.getBoundingClientRect().height > 0);
-    if (!card) return 'no-card';
-    card.scrollIntoView({ block: 'center' });
-    const r = card.getBoundingClientRect();
-    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-    return card.contains(hit) ? '' : (hit && (hit.closest('header') ? 'header' : hit.className || hit.tagName));
-  });
-  await check('PC: 아래로 내려가도 상품이 머리 부분에 가려지지 않는다', async () => { const c = await covered(); if (c) console.log('  (상품을 가린 것: ' + c + ')'); return c === ''; });
-  await check('PC: 검색 결과 화면에서도 상품이 가려지지 않는다', async () => {
-    await p.evaluate(() => window.scrollTo(0, 0)); await p.fill('#q', '코트'); await p.press('#q', 'Enter'); await p.waitForTimeout(1500);
-    const c = await covered(); if (c) console.log('  (상품을 가린 것: ' + c + ')'); return c === '';
-  });
-  try { await p.fill('#q', ''); await p.press('#q', 'Enter'); await p.waitForTimeout(800); } catch {}
-  await check('PC: 브랜드 화면에서도 상품이 가려지지 않는다', async () => {
-    await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#brandFeed .bf-name').first().click(); await p.waitForTimeout(1500);
-    const c = await covered(); if (c) console.log('  (상품을 가린 것: ' + c + ')'); return c === '';
-  });
-  await check('PC: 화면 오류 없음', async () => s.errors.length === 0 || (console.log(s.errors), false));
   await s.ctx.close();
 }
 

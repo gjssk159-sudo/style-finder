@@ -103,7 +103,7 @@
       return;
     }
     fcRow.innerHTML = '<button type="button" class="fb' + (cur ? '' : ' on') + '" data-b=""><i>전체</i><span>' + brands.length + '</span></button>' +
-      brands.map((n) => { const th = (window.brandThumbs || {})[n]; return '<button type="button" class="fb' + (n === cur ? ' on' : '') + '" data-b="' + esc(n) + '"><i' + (th ? ' class="has-img" style="background-image:url(&quot;' + esc(th) + '&quot;)"' : '') + '>' + esc(n.trim().charAt(0).toUpperCase()) + '</i><span>' + esc(n) + '</span></button>'; }).join('');
+      brands.map((n) => '<button type="button" class="fb' + (n === cur ? ' on' : '') + '" data-b="' + esc(n) + '"><i>' + esc(n.trim().charAt(0).toUpperCase()) + '</i><span>' + esc(n) + '</span></button>').join('');
   }
   $('fcTabs').addEventListener('click', async (e) => {
     const t = e.target.closest('.fc-tab'); if (!t || !t.dataset.f) return;
@@ -121,7 +121,6 @@
   box.addEventListener('change', () => setTimeout(() => { buildFolderCard(); syncSizeChips(); }, 0));
   box.addEventListener('click', () => setTimeout(() => { buildFolderCard(); syncSizeChips(); }, 80));
   folderDialog.addEventListener('close', () => setTimeout(buildFolderCard, 100));
-  window.buildFolderCard = buildFolderCard; // brand-feed.js 가 브랜드 사진을 받은 뒤 다시 그리게
   buildFolderCard();
   setTimeout(buildFolderCard, 1500);
   setTimeout(buildFolderCard, 4000);
@@ -170,8 +169,6 @@
     ai() { closeFilter(); showAi(); },
     add() { closeFilter(); openAddDialog(); },
     folder() { closeFilter(); folderDialog.showModal(); renderFolderList(); },
-    // T-04 1단계: 브랜드 목록 화면(4단계)이 생기기 전까지 '브랜드'는 브랜드 목록·담기 창(폴더 창)을 연다
-    brand() { closeFilter(); folderDialog.showModal(); renderFolderList(); },
     my() { closeFilter(); if (currentUser) openMyPage(); else openAuthDialog(); },
   };
   tabs.forEach((b) => b.addEventListener('click', () => go2[b.dataset.tab]()));
