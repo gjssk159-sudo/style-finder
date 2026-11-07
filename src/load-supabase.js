@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { groupItems } from './dedupe.js';
 import { getSupabaseAdmin } from './lib/supabase.js';
+import { assignFirstSeen, numOf } from './lib/first-seen.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'data', 'out');
@@ -135,14 +136,43 @@ async function main() {
   const withoutBrandId = groupRows.length - withBrandId.length;
   if (withoutBrandId) console.log(`  (brand_id 없어서 이번엔 스킵: ${withoutBrandId}개 — 편집샵 전용 브랜드)`);
 
+  // 최신순 기준 시각(#7): 이미 있던 상품은 first_seen_at 을 보내지 않아 그대로 두고(덮어쓰기 금지),
+  // 새로 들어가는 상품만 정해서 보낸다 — 지워졌다 돌아온 옛 상품이 "방금 발견"으로 맨 위에 오지 않게(src/lib/first-seen.js).
+  const nowIso = new Date().toISOString();
+  const existingRows = [];
+  const newRows = [];
+  const brandIds = [...new Set(withBrandId.map((g) => g.brand_id))];
+  const groupsByKey = new Map(groups.filter((g) => g.brand_id).map((g) => [`${g.brand_id}||${g.title_norm}`, g]));
+  for (const brandId of brandIds) {
+    const rows = withBrandId.filter((g) => g.brand_id === brandId);
+    const before = await selectAll(sb, 'product_group', 'brand_id', brandId, 'id,title_norm,first_seen_at');
+    const known = new Set(before.map((r) => r.title_norm));
+    const fresh = rows.filter((r) => !known.has(r.title_norm));
+    existingRows.push(...rows.filter((r) => known.has(r.title_norm)));
+    if (!fresh.length) continue;
+    // 기존 상품의 (쇼핑몰, 상품 번호, 날짜)
+    const seenAt = new Map(before.map((r) => [r.id, r.first_seen_at]));
+    const sourceIds = [...new Set(fresh.flatMap((r) => groupsByKey.get(`${brandId}||${r.title_norm}`).offers.map((o) => o.source_id)))];
+    const existing = [];
+    for (const sourceId of sourceIds) {
+      for (const o of await selectAll(sb, 'offer', 'source_id', sourceId, 'external_id,group_id')) {
+        if (seenAt.has(o.group_id)) existing.push({ source_id: sourceId, num: numOf(o.external_id), first_seen_at: seenAt.get(o.group_id) });
+      }
+    }
+    const assigned = assignFirstSeen(
+      before.length ? existing : [],
+      fresh.map((r) => ({ key: r.title_norm, offers: groupsByKey.get(`${brandId}||${r.title_norm}`).offers })),
+    );
+    const back = [...assigned.keys()].length;
+    for (const r of fresh) newRows.push({ ...r, first_seen_at: assigned.get(r.title_norm) || nowIso });
+    console.log(`  ${brandId}: 새 상품 ${fresh.length}개 중 ${before.length ? `옛 상품이 돌아온 것 ${back}개(옛 날짜 유지)` : `브랜드 첫 수집 → 1~90일 전에 나눠 둠`}`);
+  }
+
   console.log('\nproduct_group 업로드:');
-  const upserted = await upsertBatched(
-    sb,
-    'product_group',
-    withBrandId,
-    { onConflict: 'brand_id,title_norm' },
-    'id, brand_id, title_norm',
-  );
+  const upserted = [
+    ...(await upsertBatched(sb, 'product_group', existingRows, { onConflict: 'brand_id,title_norm' }, 'id, brand_id, title_norm')),
+    ...(await upsertBatched(sb, 'product_group', newRows, { onConflict: 'brand_id,title_norm' }, 'id, brand_id, title_norm')),
+  ];
 
   const idMap = new Map(); // "brand_id||title_norm" -> group id
   for (const row of upserted) idMap.set(`${row.brand_id}||${row.title_norm}`, row.id);
