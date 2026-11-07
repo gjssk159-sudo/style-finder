@@ -24,7 +24,7 @@ const BASE = `http://127.0.0.1:${server.address().port}/`;
 // ── 가짜 데이터 ──
 const REF = 'fipjvgglzlvksepdjxjv';
 const UID = '00000000-0000-4000-8000-000000000001';
-const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'].map((n, i) => ({ id: 100 + i, name: n, type: 'cafe24', status: 'active', added_by: null }));
+const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'].map((n, i) => ({ id: 100 + i, name: n, type: 'cafe24', status: 'ready', added_by: null }));
 const products = Array.from({ length: 12 }, (_, i) => ({
   id: 1000 + i, brand: brands[i % 5].name, brand_id: brands[i % 5].id,
   title: ['울 블렌드 오버핏 싱글 코트', '코튼 와이드 데님 팬츠', '라운드넥 캐시미어 니트', '레더 미니 숄더백', '헤비 코튼 후드 집업', '스트라이프 옥스퍼드 셔츠'][i % 6],
@@ -55,13 +55,15 @@ async function open(browser, { login, width = 390, height = 844 }) {
     return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'content-range': `0-${Math.max(0, rows.length - 1)}/${rows.length}`, 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range' }, body: JSON.stringify(body) });
   });
   await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="3" height="4"><rect width="3" height="4" fill="#bbb"/></svg>' }));
+  // 바깥 글꼴(구글·jsdelivr)은 내려받지 않는다 — 인터넷 속도에 따라 시험 결과가 흔들리지 않게(2026-11-07 실제로 멈춤)
+  await ctx.route(/fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net\/npm\/pretendard/, (route) => route.fulfill({ contentType: 'text/css', body: '' }));
   if (login) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-' + REF + '-auth-token', JSON.stringify(session)]);
   const page = await ctx.newPage();
   page.setDefaultTimeout(5000); // 못 찾으면 오래 기다리지 않고 실패로 센다
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('dialog', (d) => d.dismiss()); // alert/confirm 이 뜨면 닫는다(멈춤 방지)
-  await page.goto(BASE, { waitUntil: 'load' });
+  await page.goto(BASE, { waitUntil: 'load', timeout: 30000 });
   await page.waitForTimeout(2200);
   return { ctx, page, calls, errors };
 }
@@ -94,11 +96,28 @@ const browser = await chromium.launch();
   const p = s.page;
   await check('홈: 내 폴더 브랜드 상품을 불러온다', async () => s.calls.some((c) => c.path.endsWith('/product_group') && /brand_id=in\./.test(c.query)));
   await check('홈: 상품 카드가 그려진다', async () => (await p.locator('#grid .card').count()) > 0);
+  await p.waitForTimeout(800);
+  await check('홈(T-04): 브랜드마다 최근 상품 구역이 보인다', async () => (await isOpen(p, '#brandFeed')) && (await p.locator('#brandFeed .bf-sec').count()) >= 2 && (await p.locator('#brandFeed .bf-it').count()) >= 4);
+  await check('홈: 화면이 옆으로 넘치지 않는다(가로 스크롤 없음)', async () => {
+    const r = await p.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+    if (r.s > r.c) console.log(`  (화면 폭 ${r.c}px 인데 내용 폭 ${r.s}px)`);
+    return r.s <= r.c;
+  });
   await shot(p, '2-home');
+  await check('홈(T-04): 브랜드 구역 이름을 누르면 그 브랜드만 보고, 구역은 숨는다', async () => {
+    const name = await p.locator('#brandFeed .bf-name').first().textContent();
+    const n = s.calls.length; await p.locator('#brandFeed .bf-name').first().click(); await p.waitForTimeout(1500);
+    const asked = s.calls.slice(n).some((c) => c.path.endsWith('/product_group') && c.query.includes('brand=eq.' + name));
+    const hidden = !(await isOpen(p, '#brandFeed'));
+    if (!asked || !hidden) console.log(`  (브랜드 '${name}' 요청 ${asked ? '있음' : '없음'} · 구역 ${hidden ? '숨음' : '보임'} · 최근 요청: ${s.calls.slice(n).map((c) => c.path.split('/').pop() + c.query.slice(-160)).join(' | ')} · #brand=${await p.$eval('#brand', (e) => e.value + '/' + [...e.options].map((o) => o.value).join(','))})`);
+    return asked && hidden;
+  });
+  try { await p.evaluate(() => pickBrand('')); await p.waitForTimeout(1200); } catch {}
   await check('검색: 검색어를 넣으면 그 말로 상품을 찾는다', async () => {
     const n = s.calls.length; await p.fill('#q', '코트'); await p.press('#q', 'Enter'); await p.waitForTimeout(1500);
     return s.calls.slice(n).some((c) => c.path.endsWith('/product_group') && c.query.includes('코트'));
   });
+  await check('홈(T-04): 검색 중에는 브랜드 구역이 숨는다', async () => !(await isOpen(p, '#brandFeed')));
   try { await p.fill('#q', ''); await p.press('#q', 'Enter'); await p.waitForTimeout(800); } catch {}
   await check('분류: 분류 칩을 누르면 그 분류로 거른다', async () => {
     const chip = p.locator('#chips button, #chips .chip').nth(1); const n = s.calls.length; await chip.click(); await p.waitForTimeout(1500);
