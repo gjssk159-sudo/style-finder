@@ -165,6 +165,24 @@ const browser = await chromium.launch();
   await s.ctx.close();
 }
 
+// 3) PC 화면(T-04 6단계)
+{
+  const s = await open(browser, { login: true, width: 1280, height: 860 });
+  const p = s.page;
+  await p.waitForTimeout(800);
+  await check('PC: 브랜드 구역과 전체 상품 칸이 보이고 옆으로 넘치지 않는다', async () => {
+    const r = await p.evaluate(() => ({ s: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+    return (await isOpen(p, '#brandFeed')) && (await p.locator('#grid .card').count()) > 0 && r.s <= r.c;
+  });
+  await check('PC: 첫 브랜드 큰 사진이 화면 높이를 넘지 않는다', async () => {
+    const h = await p.$eval('.bf-big', (e) => e.getBoundingClientRect().height).catch(() => 0);
+    return h > 0 && h < 860;
+  });
+  await shot(p, '8-desktop');
+  await check('PC: 화면 오류 없음', async () => s.errors.length === 0 || (console.log(s.errors), false));
+  await s.ctx.close();
+}
+
 await browser.close();
 server.close();
 for (const [r, n] of results) console.log(`${r} ${n}`);

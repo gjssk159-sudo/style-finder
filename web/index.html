@@ -749,6 +749,42 @@
     /* E1: 브랜드 목록 위 영문 제목 */
     #folderDialog .fd-title::before { content: 'BRAND INDEX'; display: block; font-family: 'Archivo', 'Pretendard Variable', sans-serif; font-stretch: 125%; font-variation-settings: 'wdth' 125; font-weight: 200; font-size: 15px; letter-spacing: .08em; margin-bottom: 6px; }
   }
+  /* ── T-04 6단계: 마무리 — 로그인 전·빈 폴더·공유 폴더·PC (D-6·D-8) ── */
+  /* 로그인 전 초대 카드 */
+  .invite-card { background: var(--book-bg); border-radius: 0; box-shadow: none; border-top: 2px solid var(--ink); text-align: left; padding: 26px 22px 24px; gap: 12px; }
+  .invite-card h2 { font-family: 'Noto Serif KR', serif; font-size: 30px; font-weight: 900; letter-spacing: -.02em; }
+  .invite-lead { font-family: 'Archivo', 'Pretendard Variable', sans-serif; font-stretch: 125%; font-variation-settings: 'wdth' 125; font-weight: 200; font-size: 24px; letter-spacing: .02em; text-transform: uppercase; }
+  .invite-lead b { font-weight: 300; letter-spacing: .02em; }
+  .invite-sub { color: var(--book-sub); }
+  .invite-card .qa-cta { border-radius: 0; background: var(--ink); color: #fff; }
+  .invite-skip { color: var(--ink); align-self: flex-start; min-height: 44px; }
+  .a2hs { border-radius: 0; }
+  /* 빈 폴더 */
+  .fc-empty { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .fc-empty::before { content: 'NO BRANDS YET'; font-family: 'Archivo', 'Pretendard Variable', sans-serif; font-stretch: 125%; font-variation-settings: 'wdth' 125; font-weight: 200; font-size: 26px; color: var(--ink); }
+  .fc-empty button { min-height: 44px; border-radius: 0; }
+  .empty { text-align: left; font-size: 13px; line-height: 1.7; padding: 18px 0; color: var(--ink); }
+  /* 공유 폴더 안내 */
+  .shared-banner-bar { background: transparent; border: 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); border-radius: 0; padding: 12px 0; }
+  /* PC: 크기 제한 + 전체 상품 칸도 레퍼런스 모양 */
+  header { background: color-mix(in srgb, var(--book-bg) 95%, transparent); } /* 머리 바탕도 종이색(--book-bg)으로 — 위아래 색이 갈라지지 않게 */
+  @media (min-width: 701px) {
+    body { background: var(--book-bg); }
+    .disp { font-size: 64px; }
+    .bf-name { font-size: 32px; }
+    .bf-feat { grid-template-columns: minmax(0, 320px) minmax(0, 220px); justify-content: start; gap: 22px; }
+    .bf-it { width: 180px; }
+    .bf-row { margin: 0; padding: 0; gap: 12px; }
+    #grid { counter-reset: itemno; }
+    .card { display: flex; flex-direction: column; counter-increment: itemno; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+    .card .body { display: contents; }
+    .card .brand { order: -1; display: flex; flex-direction: column; margin-bottom: 6px; font-size: 12px; font-weight: 500; color: var(--book-sub); letter-spacing: .02em; }
+    .card .brand::before { content: 'NO.' counter(itemno, decimal-leading-zero); font-weight: 600; color: var(--ink); letter-spacing: .1em; }
+    .card .imgwrap, .card img { border-radius: 0; }
+    .card .imgwrap { background: var(--paper); }
+    .card img { object-fit: contain; }
+    .card .title { margin-top: 7px; }
+  }
 </style><style id="intro-css">
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
