@@ -770,6 +770,8 @@
   header { background: color-mix(in srgb, var(--book-bg) 95%, transparent); } /* 머리 바탕도 종이색(--book-bg)으로 — 위아래 색이 갈라지지 않게 */
   @media (min-width: 701px) {
     body { background: var(--book-bg); }
+    /* PC 머리 부분은 화면 위에 붙는데(sticky), 브랜드 구역·브랜드 머리가 들어가면 화면보다 길어져 상품을 다 가린다 → 그때는 붙지 않게 */
+    html.bf-on header, html.bh-on header { position: relative; }
     .disp { font-size: 64px; }
     .bf-name { font-size: 32px; }
     .bf-feat { grid-template-columns: minmax(0, 320px) minmax(0, 220px); justify-content: start; gap: 22px; }

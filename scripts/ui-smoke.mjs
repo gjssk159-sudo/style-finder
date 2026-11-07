@@ -179,6 +179,25 @@ const browser = await chromium.launch();
     return h > 0 && h < 860;
   });
   await shot(p, '8-desktop');
+  // 2026-11-08 사용자 제보 "화면에 가려져서 잘 안 보인다": PC 머리 부분이 붙은 채 길어져 상품을 가렸다
+  const covered = async () => p.evaluate(() => {
+    const card = [...document.querySelectorAll('#grid .card')].find((c) => c.getBoundingClientRect().height > 0);
+    if (!card) return 'no-card';
+    card.scrollIntoView({ block: 'center' });
+    const r = card.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return card.contains(hit) ? '' : (hit && (hit.closest('header') ? 'header' : hit.className || hit.tagName));
+  });
+  await check('PC: 아래로 내려가도 상품이 머리 부분에 가려지지 않는다', async () => { const c = await covered(); if (c) console.log('  (상품을 가린 것: ' + c + ')'); return c === ''; });
+  await check('PC: 검색 결과 화면에서도 상품이 가려지지 않는다', async () => {
+    await p.evaluate(() => window.scrollTo(0, 0)); await p.fill('#q', '코트'); await p.press('#q', 'Enter'); await p.waitForTimeout(1500);
+    const c = await covered(); if (c) console.log('  (상품을 가린 것: ' + c + ')'); return c === '';
+  });
+  try { await p.fill('#q', ''); await p.press('#q', 'Enter'); await p.waitForTimeout(800); } catch {}
+  await check('PC: 브랜드 화면에서도 상품이 가려지지 않는다', async () => {
+    await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#brandFeed .bf-name').first().click(); await p.waitForTimeout(1500);
+    const c = await covered(); if (c) console.log('  (상품을 가린 것: ' + c + ')'); return c === '';
+  });
   await check('PC: 화면 오류 없음', async () => s.errors.length === 0 || (console.log(s.errors), false));
   await s.ctx.close();
 }
