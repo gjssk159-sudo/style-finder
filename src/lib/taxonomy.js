@@ -212,7 +212,42 @@ function siteGroup(raw) {
   return null;
 }
 
+// ── 앞이 열리는가: 사이트 기준(사용자 결정 2026-11-08, #5) ──
+// "앞이 끝까지 열리면 아우터(후드 집업·카디건·베스트), 머리부터 입으면 상의(후드티·맨투맨·니트·반집업)".
+// 쇼핑몰이 어느 갈래에 넣었든 상품명에 그 단서가 있으면 이 기준이 마지막에 정한다.
+// 아노락·바람막이처럼 원래 겉옷인 것, 지갑·목도리처럼 옷이 아닌 것은 건드리지 않는다(상의·아우터 안에서만 옮김).
+const HALF_ZIP = /half[\s-]*zip|quarter[\s-]*zip|1\/4[\s-]*zip|반\s*집업|하프\s*집업/i;
+const FULL_ZIP = /zip[\s-]*up|full[\s-]*zip|zip[\s-]*hood|집업/i;
+const PULLOVER = /pull[\s-]*over|풀오버/i;
+const CARDIGAN = /cardigan|카디건|가디건/i;
+const VEST = /(^|[^a-z])vests?([^a-z]|$)|조끼|(^|[^가-힣])베스트/i;
+const TOP_IDS = new Set((GROUPS.find((g) => g.id === 'top') || { children: [] }).children);
+const OUTER_IDS = new Set((GROUPS.find((g) => g.id === 'outer') || { children: [] }).children);
+function openingRule(title, cat) {
+  const t = String(title || '').replace(/\[[^\]]*\]|\([^)]*\)/g, ' ');
+  if (HALF_ZIP.test(t) || PULLOVER.test(t)) {
+    // 반집업·풀오버라고 적힌 옷은 상의
+    const toTop = { hoodie_zipup: 'hoodie', fleece: 'sweatshirt', track_jacket: 'sweatshirt', cardigan: 'knit' }; // '재킷'이라 적힌 풀오버 재킷·아노락은 겉옷이라 그대로
+    return OUTER_IDS.has(cat) && toTop[cat] ? toTop[cat] : cat;
+  }
+  if (!TOP_IDS.has(cat)) return cat;
+  if (CARDIGAN.test(t)) return 'cardigan';
+  if (VEST.test(t)) return /down|padding|패딩|덕다운|구스/i.test(t) ? 'padding_vest' : 'vest';
+  if (FULL_ZIP.test(t)) {
+    if (cat === 'knit') return 'cardigan';
+    if (cat === 'sleeveless_top') return 'vest'; // 앞 지퍼 민소매는 베스트
+    if (cat === 'hoodie' || /hood|후드/i.test(t)) return 'hoodie_zipup';
+    return 'track_jacket';
+  }
+  return cat;
+}
+
 export function classifyItem(title, raw) {
+  const [cat] = classifyItemBase(title, raw);
+  return [openingRule(title, cat)];
+}
+
+function classifyItemBase(title, raw) {
   const site = siteGroup(raw);
   if (!site) return classify(title, raw); // 쇼핑몰 카테고리가 종류를 말해주지 않으면 기존 방식
   const byTitle = classify(title, '')[0];
