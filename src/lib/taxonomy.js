@@ -132,10 +132,23 @@ function refine(headType, hits) {
 }
 
 function classifyText(text) {
-  const hay = cleanTitle(text);
+  const full = cleanTitle(text);
+  if (!full) return null;
+  // "_" 뒤가 색·소재 옵션인 상품명("BUTTON HAT_SHEARLING CREAM", "NETTING SCARF_KNIT BEIGE")은 앞부분만으로 종류를 정한다.
+  // 앞부분이 브랜드·컬렉션 이름뿐이면("HOTDRYGREY_Twisted ring", "WOODY_CARGO BURMUDA SHORT") 지금처럼 전체를 본다(#5, 2026-11-08)
+  const head = full.includes('_') ? full.replace(/_[^_]*$/, ' ').trim() : '';
+  if (head) {
+    const r = classifyHay(head, true); // 앞부분만 볼 땐 확실한 단어로만(약한 단어 "sleeve" 등은 안 씀)
+    if (r) return r;
+  }
+  return classifyHay(full);
+}
+
+function classifyHay(hay, strongOnly = false) {
   if (!hay) return null;
   const { strong, weak, mods } = findHits(hay);
   const real = (hs) => hs.filter((h) => !MODIFIER_IDS.has(h.id));
+  if (strongOnly && !real(strong).length) return null;
   const heads = real(strong).length ? real(strong) : real(weak);
   if (!heads.length) return null; // 코튼/나일론/카고/leather 같은 수식어만 있으면 판단 보류
   return refine(typeOf(pickHead(heads).id), [...strong, ...weak, ...mods]);
@@ -181,6 +194,14 @@ const DEFAULT_LEAF = { top: 'tshirt', outer: 'jacket', bottom: 'pants', dress_sk
 function siteGroup(raw) {
   if (!raw) return null;
   const segs = String(raw).split(/\s*[>|]\s*/).map((s) => s.trim()).filter(Boolean).reverse();
+  // 분류 칸에 상품 분류 대신 쇼핑몰 메뉴 전체가 들어온 경우("Men > Bottom > Acc > Outer > Women > Top")는 믿지 않는다.
+  // 정상 경로는 갈래가 1~2개("Bottom > SKIRT")라, 3개 이상 섞이면 메뉴 나열로 본다(#5, 2026-11-08 bluesf: 재킷이 티셔츠로 분류됨).
+  const seen = new Set();
+  for (const seg of segs) {
+    if (seg.length > 40) continue;
+    for (const part of seg.split(/\s*,\s*/)) for (const [group, re] of SITE_TYPE_PATTERNS) if (re.test(part)) seen.add(group);
+  }
+  if (seen.size >= 3) return null;
   for (const seg of segs) {
     if (seg.length > 40) continue; // 태그 나열(콤마가 많은 긴 문자열)은 카테고리가 아님
     const parts = seg.split(/\s*,\s*/);
@@ -199,6 +220,10 @@ export function classifyItem(title, raw) {
   if (byTitle && byTitle !== 'etc' && tGroup === site) return [byTitle];
   // 상품명이 명백한 소품·가방·신발·모자면(쇼핑몰이 의류 쪽에 넣어둔 경우, 또는 소품 안에서 칸이 다른 경우) 상품명을 따른다
   if (tGroup && !SOFT_GROUPS.has(tGroup) && tGroup !== 'etc') return [byTitle];
+  // 상품명이 스커트·원피스·드레스면 쇼핑몰이 BOTTOMS·TOPS 에 넣었어도 상품명을 따른다 — 이 단어들은 다른 뜻이 없다
+  // (#5, 2026-11-08: "MIDI SKIRT"가 BOTTOMS 라서 바지로, "ONE PIECE"가 DRESSES > TOPS 라서 티셔츠로 분류됨).
+  // "denim"처럼 소재로도 쓰이는 말이 상품명 본체로 잡힌 경우("Denim Wind Breaker"·"Over Shirt Denim")는 쇼핑몰 갈래가 더 정확해서 그대로 둔다.
+  if (tGroup === 'dress_skirt' && site !== 'dress_skirt' && SOFT_GROUPS.has(site)) return [byTitle];
   const g = GROUPS.find((x) => x.id === site);
   if (!g) return classify(title, raw);
   // 쇼핑몰이 정한 그룹 안에서 가장 알맞은 세부를 고른다

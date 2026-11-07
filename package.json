@@ -7,7 +7,8 @@
     "collect": "node src/run.js",
     "collect:kr": "node src/collect-kr.js",
     "check": "node scripts/check.mjs",
-    "ui-smoke": "node scripts/ui-smoke.mjs"
+    "ui-smoke": "node scripts/ui-smoke.mjs",
+    "test:taxonomy": "node scripts/test-taxonomy.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
