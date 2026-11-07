@@ -64,6 +64,7 @@ let CATEGORIES = [];
 let GROUPS = [];
 function applyTaxonomy(data) {
   CATEGORIES = data.categories;
+  KW_INDEX = null; // 분류표가 바뀌면 검색어 사전도 다시 만든다
   GROUPS = (data.groups || []).map((g) => ({ ...g, subs: g.subs && g.subs.length ? g.subs : g.children.map((c) => ({ id: c, label: (data.categories.find((x) => x.id === c) || {}).label || c, children: [c] })) }));
 }
 // 분류표는 거의 안 바뀌니 저장해둔 걸 바로 쓰고(첫 화면을 기다리게 하지 않음), 최신본은 뒤에서 받아 갱신한다.
@@ -199,6 +200,34 @@ const BILINGUAL = [
   ['trench', '트렌치'],
   ['jogger', 'joggers', '조거', '트레이닝'],
   ['sandals', 'sandal', '샌들', '슬리퍼'],
+  // #6(2026-11-08): 한글로 치면 0개, 영어로 치면 수백 개가 나오던 말. ("레이스/lace"는 necklace 에 섞여서 넣지 않음)
+  ['crop', 'cropped', '크롭', '크롭트'],
+  ['wide', '와이드'],
+  ['turtleneck', 'turtle neck', '터틀넥', '폴라', '목폴라'],
+  ['chiffon', '시폰', '쉬폰'],
+  ['pleats', 'pleat', 'pleated', '플리츠', '주름'],
+  ['straight', '스트레이트'],
+  ['bootcut', 'boot cut', 'bootscut', '부츠컷', '부츠 컷'],
+  ['raglan', '레글런', '라글란', '래글런'],
+  ['waffle', '와플'],
+  ['quilted', 'quilt', 'quilting', '퀼팅', '퀼티드'],
+  ['tweed', '트위드'],
+  ['boucle', 'bouclé', '부클', '부클레'],
+  ['satin', '새틴', '사틴'],
+  ['frill', '프릴'],
+  ['ruffle', '러플'],
+  ['ribbon', '리본'],
+  ['shirring', '셔링'],
+  ['crewneck', 'crew neck', 'crew-neck', '크루넥', '라운드넥', '라운드 넥'],
+  ['v-neck', 'vneck', 'v neck', '브이넥', '브이 넥', 'v넥'],
+  ['mock neck', 'mockneck', 'mock-neck', '모크넥', '모크 넥'],
+  ['slim', '슬림'],
+  ['stitch', 'stitching', '스티치'],
+  ['embroidery', 'embroidered', 'embroider', '자수'],
+  ['graphic', '그래픽'],
+  ['pocket', '포켓', '주머니'],
+  ['2way', '2-way', 'two way', '투웨이'],
+  ['varsity', '바시티', '바서티', '바시티 재킷'],
 ];
 const normTok = (x) => String(x || '').toLowerCase().replace(/[\s\-_/]+/g, '');
 const BI_INDEX = new Map(); // 정규화한 표기 -> 묶음 번호들
@@ -241,6 +270,52 @@ function splitColorPrefix(token) {
   return null;
 }
 
+// ── 한글 표기 흔들림 맞추기 (#6, 2026-11-08) ──
+// "바라클라바"·"발라클라바"처럼 받침 ㄹ 다음에 ㄹ로 시작하는 글자가 오면 받침을 빼고, ㅐ/ㅔ 를 같게 본다. 띄어쓰기·하이픈도 무시.
+function koNorm(s) {
+  const t = String(s || '').toLowerCase().replace(/[\s\-_/]+/g, '');
+  let out = '';
+  for (let i = 0; i < t.length; i++) {
+    const code = t.charCodeAt(i) - 0xac00;
+    if (code < 0 || code >= 11172) { out += t[i]; continue; }
+    const cho = Math.floor(code / 588);
+    let jung = Math.floor((code % 588) / 28);
+    let jong = code % 28;
+    const next = t.charCodeAt(i + 1) - 0xac00;
+    const nextCho = next >= 0 && next < 11172 ? Math.floor(next / 588) : -1;
+    if (jong === 8 && nextCho === 5) jong = 0; // 받침 ㄹ + ㄹ초성 → 받침 빼기(발라→바라)
+    if (jung === 1) jung = 5; // ㅐ → ㅔ
+    out += String.fromCharCode(0xac00 + cho * 588 + jung * 28 + jong);
+  }
+  return out;
+}
+// 분류 사전의 모든 단어를 표기 흔들림을 맞춘 모양으로 찾을 수 있게(분류표를 받은 뒤 만든다)
+let KW_INDEX = null;
+function buildKeywordIndex() {
+  KW_INDEX = new Map();
+  for (const c of CATEGORIES) for (const k of c.keywords || []) { const n = koNorm(k); if (!KW_INDEX.has(n)) KW_INDEX.set(n, k); }
+  for (const grp of BILINGUAL) for (const w of grp) { const n = koNorm(w); if (!KW_INDEX.has(n)) KW_INDEX.set(n, w); }
+}
+// 사전에 그대로는 없지만 표기만 조금 다른 말("바라클라바")을 사전의 그 단어("발라클라바")로 바꾼다. 없으면 그대로.
+function canonicalToken(t) {
+  if (resolveCategoryToken(t).length || BI_INDEX.has(normTok(t))) return t;
+  if (!KW_INDEX) buildKeywordIndex();
+  return KW_INDEX.get(koNorm(t)) || t;
+}
+// 분류 사전에는 어떤 분류의 단어로 들어 있지만 실제로는 "다른 물건"인 말. 이 말로 검색하면 분류 전체(비니 전체)가 아니라
+// 상품명에 이 묶음의 표기가 있는 상품만 찾는다(#6, 2026-11-08 사용자 제보: balaclava 로 치면 비니가 나옴).
+// 같은 제보가 오면 여기에 한 줄씩 더한다. (반소매=티셔츠처럼 "다른 이름"인 말은 넣지 않는다 — 분류 전체로 찾아야 맞다)
+const SUBTYPES = [
+  ['balaclava', '발라클라바', '바라클라바'],
+  // 분류 안의 특정 모양(바지 전체·니트 전체가 나오던 말)
+  ['bootcut', 'boot cut', 'bootscut', 'boots cut', '부츠컷', '부츠 컷'],
+  ['turtleneck', 'turtle neck', '터틀넥', '폴라', '목폴라'],
+  ['mock neck', 'mockneck', 'mock-neck', '모크넥', '모크 넥'],
+  ['crewneck', 'crew neck', 'crew-neck', '크루넥', '라운드넥', '라운드 넥'],
+];
+const SUB_INDEX = new Map();
+SUBTYPES.forEach((grp, i) => grp.forEach((w) => SUB_INDEX.set(koNorm(w), i)));
+
 // 자연어 검색어 -> { categories, colors, keywords, terms }
 //  - categories/colors/keywords: 예전과 같은 형태(칩 표시·안내 문구에 사용)
 //  - terms: 검색어 하나하나의 { text, cats, variants } — 검색할 때 카테고리와 상품명(한/영 표기)을 함께 본다
@@ -255,6 +330,14 @@ function parseQuery(raw) {
     let t = tokens[i];
     const ph = phraseMatch(tokens, i);
     if (ph) { t = ph.phrase; i += ph.n - 1; }
+    const sub = SUB_INDEX.get(koNorm(t));
+    if (sub !== undefined) {
+      // "다른 물건" 목록의 말은 상품명에 그 묶음 표기가 있는 것만(#6)
+      keywords.push(t);
+      terms.push({ text: t, cats: [], variants: [...new Set([t, ...SUBTYPES[sub]])].filter((v) => !SPECIAL.test(v)) });
+      continue;
+    }
+    t = canonicalToken(t); // 표기 흔들림 맞추기(#6)
     let c = resolveCategoryToken(t);
     let col = resolveColorToken(t);
     if (!c.length && !col) {
