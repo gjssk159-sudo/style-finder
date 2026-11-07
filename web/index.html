@@ -662,6 +662,20 @@
     .empty { background: transparent; border-radius: 0; border-top: 1px solid var(--ink); }
     .qa-fab { border-radius: 0; }
   }
+  /* ── T-04 3단계: 브랜드 화면 머리(D-5·D-6·D-7) ── */
+  .brand-head { flex: 1 1 100%; min-width: 0; max-width: 100%; margin-top: 10px; }
+  .brand-head[hidden] { display: none; }
+  html.bh-on .fcard { display: none; }
+  .bh-hero { position: relative; height: 360px; background: var(--book-tile) center 20% / cover no-repeat; overflow: hidden; }
+  .bh-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--book-bg) 0, rgba(243,242,238,0) 42%); }
+  .bh-back { position: absolute; left: 0; top: 0; z-index: 1; min-height: 44px; padding: 0 14px; background: var(--book-bg); color: var(--ink); border: 0; border-radius: 0; font-size: 12px; letter-spacing: .1em; }
+  .bh-corner { position: absolute; right: 0; top: 0; z-index: 1; padding: 8px 12px; background: var(--book-bg); font-size: 12px; letter-spacing: .14em; line-height: 1.6; text-align: right; color: var(--ink); }
+  .bh-name { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 1; margin: 0; font-family: 'Noto Serif KR', serif; font-size: 56px; line-height: 1.05; font-weight: 900; letter-spacing: -.03em; color: var(--ink); word-break: keep-all; overflow-wrap: anywhere; }
+  .bh-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0 6px; border-bottom: 1px solid var(--ink); }
+  .bh-count { font-size: 12px; letter-spacing: .1em; color: var(--ink); }
+  .bh-btn { min-height: 44px; padding: 0 18px; border-radius: 0; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+  .bh-btn.on { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+  .bh-btn:disabled { opacity: .5; }
 </style><style id="intro-css">
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
@@ -800,6 +814,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
       <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
+      <div class="brand-head" id="brandHead" hidden aria-label="브랜드"></div>
       <div class="brand-feed" id="brandFeed" hidden aria-label="브랜드마다 최근 상품"></div>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
@@ -1082,6 +1097,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <script defer src="./app.js"></script>
 <script defer src="./shell.js"></script>
 <script defer src="./brand-feed.js"></script>
+<script defer src="./brand-head.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));

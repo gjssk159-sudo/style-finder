@@ -112,6 +112,19 @@ const browser = await chromium.launch();
     if (!asked || !hidden) console.log(`  (브랜드 '${name}' 요청 ${asked ? '있음' : '없음'} · 구역 ${hidden ? '숨음' : '보임'} · 최근 요청: ${s.calls.slice(n).map((c) => c.path.split('/').pop() + c.query.slice(-160)).join(' | ')} · #brand=${await p.$eval('#brand', (e) => e.value + '/' + [...e.options].map((o) => o.value).join(','))})`);
     return asked && hidden;
   });
+  await check('브랜드 화면(T-04): 고른 브랜드의 큰 이름과 상품 수가 보인다', async () => (await isOpen(p, '#brandHead')) && /\S/.test(await p.locator('#brandHead .bh-name').textContent()) && /상품 \d/.test(await p.locator('#brandHead .bh-count').textContent()));
+  await shot(p, '2b-brand');
+  await check('브랜드 화면(T-04): 뒤로를 누르면 홈(브랜드 구역)으로 돌아온다', async () => {
+    await p.locator('#brandHead [data-act="back"]').click(); await p.waitForTimeout(1500);
+    return !(await isOpen(p, '#brandHead')) && (await isOpen(p, '#brandFeed'));
+  });
+  await check('브랜드 화면(T-04): 담은 브랜드를 누르고 확인하면 폴더에서 빼는 요청을 보낸다', async () => {
+    await p.locator('#brandFeed .bf-name').first().click(); await p.waitForTimeout(1500);
+    const n = s.calls.length; await p.locator('#brandHead [data-act="remove"]').click(); await p.waitForTimeout(400);
+    if (!(await isOpen(p, '#confirmDialog'))) return false;
+    await p.locator('#confirmOkBtn').click(); await p.waitForTimeout(1500);
+    return s.calls.slice(n).some((c) => c.path.endsWith('/user_brands') && c.method === 'DELETE') && !(await isOpen(p, '#brandHead'));
+  });
   try { await p.evaluate(() => pickBrand('')); await p.waitForTimeout(1200); } catch {}
   await check('검색: 검색어를 넣으면 그 말로 상품을 찾는다', async () => {
     const n = s.calls.length; await p.fill('#q', '코트'); await p.press('#q', 'Enter'); await p.waitForTimeout(1500);
