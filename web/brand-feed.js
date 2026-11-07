@@ -24,7 +24,31 @@
     const url = (g.offer && g.offer[0] && g.offer[0].url) || '#';
     const link = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
     const img = /^https?:/i.test(g.image || '') ? `<img src="${thumbUrl(g.image)}" data-orig="${esc(g.image)}" alt="" loading="lazy" decoding="async" onerror="imgFallback(this)">` : '';
-    return `<a class="bf-it" href="${esc(url)}" ${link}><div class="bf-img ${g.in_stock ? '' : 'sold'}"><span class="bf-no">NO.${String(i + 1).padStart(2, '0')}</span>${g.in_stock ? '' : '<span class="bf-sold">품절</span>'}${img}</div><span class="bf-t">${esc(g.title)}</span><span class="bf-p">${price}</span></a>`;
+    // E3: 사진 위 두 줄 캡션(NO.01 / 브랜드), E4: 흰 칸에 사진을 자르지 않고
+    return `<a class="bf-it" href="${esc(url)}" ${link}><span class="bf-cap"><b>NO.${String(i + 1).padStart(2, '0')}</b>${esc(catOf(g))}</span><div class="bf-img ${g.in_stock ? '' : 'sold'}">${g.in_stock ? '' : '<span class="bf-sold">품절</span>'}${img}</div><span class="bf-t">${esc(g.title)}</span><span class="bf-p">${price}</span></a>`;
+  }
+
+  // 캡션 둘째 줄: 레퍼런스의 '2025 FW Collection' 자리 → 상품 분류(아우터·상의…)
+  function catOf(g) {
+    try { const c = (g.categories || [])[0]; return c ? window.StyleFinderTaxonomy.labelOf(c) : g.brand; } catch { return g.brand; }
+  }
+
+  // E5: 첫 브랜드는 큰 사진 + 옆에 번호·이름·가격·작은 사진(비대칭), 나머지는 한 줄
+  function featureHtml(gr) {
+    const [a, b] = gr.items;
+    const url = (g) => esc((g.offer && g.offer[0] && g.offer[0].url) || '#');
+    const link = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
+    const pic = (g) => (/^https?:/i.test(g.image || '') ? `<img src="${thumbUrl(g.image)}" data-orig="${esc(g.image)}" alt="" loading="lazy" decoding="async" onerror="imgFallback(this)">` : '');
+    const price = (g) => (g.min_price === g.max_price ? won(g.min_price) : won(g.min_price) + '~');
+    return `<div class="bf-feat">
+        <a class="bf-big bf-img ${a.in_stock ? '' : 'sold'}" href="${url(a)}" ${link}>${pic(a)}</a>
+        <div class="bf-side">
+          <span class="bf-cap"><b>NO.01</b>${esc(catOf(a))}</span>
+          <a class="bf-side-t" href="${url(a)}" ${link}>${esc(a.title)}</a>
+          <span class="bf-p">${price(a)}</span>
+          ${b ? `<a class="bf-small bf-img ${b.in_stock ? '' : 'sold'}" href="${url(b)}" ${link}>${pic(b)}</a><span class="bf-cap bf-cap2"><b>NO.02</b><span>${esc(b.title)}</span></span>` : ''}
+        </div>
+      </div>`;
   }
 
   function render() {
@@ -32,13 +56,19 @@
     feed.hidden = !show;
     document.documentElement.classList.toggle('bf-on', show);
     if (!show) return;
-    feed.innerHTML = groups.slice(0, MAX_BRANDS).map((gr) => `
+    // E1: 가늘고 넓은 영문 대문자 제목, E2: 꺾쇠 소제목과 짧은 줄
+    feed.innerHTML = '<div class="bf-top"><h2 class="disp">NEW IN</h2><p class="bf-brk">【 내 브랜드의 최근 상품 】</p></div>' +
+      groups.slice(0, MAX_BRANDS).map((gr, s) => `
       <section class="bf-sec">
         <div class="bf-h"><button type="button" class="bf-name" data-brand="${esc(gr.brand)}">${esc(gr.brand)}</button><button type="button" class="bf-more" data-brand="${esc(gr.brand)}">전체 보기 <i aria-hidden="true"></i></button></div>
-        <div class="bf-sub">최근 들어온 상품 ${gr.items.length}</div>
-        <div class="bf-row">${gr.items.slice(0, PER_BRAND).map(itemHtml).join('')}</div>
-      </section>`).join('') + '<div class="bf-all">전체 상품</div>';
+        <div class="bf-sub"><span aria-hidden="true">—</span> 최근 들어온 상품 ${gr.items.length}</div>
+        ${s === 0 && gr.items.length >= 2 ? featureHtml(gr) + `<div class="bf-row">${gr.items.slice(2, PER_BRAND).map((g, i) => itemHtml(g, i + 2)).join('')}</div>` : `<div class="bf-row">${gr.items.slice(0, PER_BRAND).map(itemHtml).join('')}</div>`}
+      </section>`).join('') + '<div class="bf-all"><h2 class="disp">ALL ITEMS</h2><p class="bf-brk">【 내 브랜드 전체 상품 】</p></div>';
   }
+
+  // E6: 로고 줄 오른쪽 작은 날짜 라벨
+  const dateEl = document.getElementById('hdrDate');
+  if (dateEl) { const d = new Date(); dateEl.textContent = `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][d.getDay()]}`; }
 
   async function load() {
     if (typeof currentUser === 'undefined' || !currentUser || typeof myFolderIds === 'undefined') { groups = []; render(); return; }
@@ -48,7 +78,7 @@
     loading = true;
     try {
       const { data, error } = await sb.from('product_group')
-        .select('id,brand,brand_id,title,min_price,max_price,image,in_stock,offer!inner(url)')
+        .select('id,brand,brand_id,title,categories,min_price,max_price,image,in_stock,offer!inner(url)')
         .in('brand_id', myFolderIds)
         .order(RECENT_COL, { ascending: false })
         .limit(FETCH);

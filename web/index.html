@@ -15,7 +15,7 @@
 <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"></noscript>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&display=swap"><!-- D-6 브랜드 이름 세리프 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,200..400&family=Noto+Serif+KR:wght@600;900&display=swap"><!-- D-6 브랜드 이름 세리프 -->
 <link rel="preconnect" href="https://i0.wp.com" crossorigin>
 <link rel="preconnect" href="https://i1.wp.com" crossorigin>
 <link rel="preconnect" href="https://i2.wp.com" crossorigin>
@@ -707,6 +707,48 @@
     #folderDialog .dlg-row button { border-radius: 0; }
   }
   .fd-register { display: block; width: 100%; margin-top: 8px; }
+  /* ── T-04 5단계: 레퍼런스 세부 E1~E6 (D-8) ── */
+  /* E1: 가늘고 넓은 영문 대문자 큰 제목 */
+  .disp { margin: 0; font-family: 'Archivo', 'Pretendard Variable', sans-serif; font-stretch: 125%; font-variation-settings: 'wdth' 125; font-weight: 200; font-size: 40px; line-height: 1; letter-spacing: .01em; text-transform: uppercase; color: var(--ink); }
+  /* E2: 꺾쇠 소제목 */
+  .bf-brk { margin: 8px 0 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--ink); }
+  .bf-top { margin-top: 26px; }
+  .bf-sub span { color: var(--ink); margin-right: 2px; }
+  .bf-all { margin: 34px 0 6px; padding-top: 18px; border-top: 1px solid var(--ink); font-size: inherit; letter-spacing: 0; font-weight: 400; }
+  /* E3: 사진 위 두 줄 캡션 */
+  .bf-cap { display: flex; flex-direction: column; font-size: 12px; line-height: 1.35; color: var(--book-sub); margin-bottom: 6px; letter-spacing: .02em; }
+  .bf-cap b { font-weight: 600; color: var(--ink); letter-spacing: .1em; }
+  .bf-no { display: none; }
+  /* E4: 흰 칸에 상품만, 자르지 않음 */
+  .bf-img { background: var(--paper); }
+  .bf-img img { object-fit: contain; }
+  /* E5: 첫 브랜드 비대칭 */
+  .bf-feat { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; align-items: end; margin-bottom: 14px; }
+  .bf-big { display: block; aspect-ratio: 3/4.2; }
+  .bf-big img { width: 100%; height: 100%; display: block; }
+  .bf-side { display: flex; flex-direction: column; min-width: 0; }
+  .bf-side-t { color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 700; line-height: 1.35; }
+  .bf-side .bf-p { margin: 4px 0 14px; }
+  .bf-small { display: block; aspect-ratio: 1/1; margin-bottom: 6px; }
+  .bf-small img { width: 100%; height: 100%; display: block; }
+  .bf-cap2 { margin: 0; }
+  .bf-cap2 span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* E6: 구석 작은 날짜 */
+  .hdr-date { display: none; font-size: 12px; letter-spacing: .14em; color: var(--book-sub); white-space: nowrap; }
+  @media (max-width: 700px) {
+    .hdr-date { display: inline; margin-left: auto; margin-right: 10px; }
+    /* E3·E4 전체 상품 칸: 브랜드 캡션을 사진 위로, 흰 칸, 자르지 않음 */
+    #grid { counter-reset: itemno; }
+    .card { display: flex; flex-direction: column; counter-increment: itemno; }
+    .card .body { display: contents; }
+    .card .brand { order: -1; display: flex; flex-direction: column; margin-bottom: 6px; font-weight: 500; color: var(--book-sub); }
+    .card .brand::before { content: 'NO.' counter(itemno, decimal-leading-zero); font-weight: 600; color: var(--ink); letter-spacing: .1em; }
+    .card .imgwrap { background: var(--paper); }
+    .card img { object-fit: contain; }
+    .card .title { margin-top: 7px; }
+    /* E1: 브랜드 목록 위 영문 제목 */
+    #folderDialog .fd-title::before { content: 'BRAND INDEX'; display: block; font-family: 'Archivo', 'Pretendard Variable', sans-serif; font-stretch: 125%; font-variation-settings: 'wdth' 125; font-weight: 200; font-size: 15px; letter-spacing: .08em; margin-bottom: 6px; }
+  }
 </style><style id="intro-css">
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
@@ -830,6 +872,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <div class="topbar">
       <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
+      <span class="hdr-date" id="hdrDate" aria-hidden="true"></span>
       <span class="m-actions"><button type="button" class="m-ic" aria-label="이용 안내" onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg></button></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
