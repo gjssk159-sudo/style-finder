@@ -145,6 +145,10 @@ const browser = await chromium.launch();
     const n = s.calls.length; await p.locator('#folderList input[type=checkbox]:checked').nth(1).click(); await p.waitForTimeout(900);
     return s.calls.slice(n).some((c) => c.path.endsWith('/user_brands') && c.method === 'DELETE');
   });
+  await check('브랜드 목록(T-04): "목록에 없는 브랜드 등록"을 누르면 등록 창이 열린다', async () => {
+    await p.locator('#folderDialog .fd-register').click(); await p.waitForTimeout(500);
+    return (await isOpen(p, '#addDialog')) && !(await isOpen(p, '#folderDialog'));
+  });
   await closeAll(p);
   await check('등록: 브랜드 등록 창이 열리고 주소를 넣어 등록 요청을 보낸다', async () => {
     await tab(p, 'add'); await p.waitForTimeout(500); if (!(await isOpen(p, '#addDialog'))) return false; await shot(p, '4-add');
