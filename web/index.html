@@ -306,6 +306,8 @@
     .qa-panel input[type=text], .qa-panel textarea { font-size: 16px; }
   }
   dialog { border: 1px solid var(--ink); border-radius: 0; padding: 0; width: min(500px, 92vw); max-height: 82vh; background: var(--paper); color: var(--ink); }
+  dialog, .dlg-body, .sd-body, .filter-box, .aiview, .qa-panel { overscroll-behavior: contain; }
+  @media (max-width: 700px) { html.scroll-lock, html.scroll-lock body { overflow: hidden; } }
   dialog::backdrop { background: rgba(17,17,17,.4); }
   .dlg-body { padding: 28px; display: flex; flex-direction: column; gap: 12px; max-height: 82vh; overflow-y: auto; }
   .dlg-body h2 { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }

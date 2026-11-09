@@ -191,4 +191,101 @@
     if (box.classList.contains('open')) closeFilter();
     else if (!$('aiView').hidden) hideAi();
   });
+
+  // ── 시트·창이 열려 있는 동안: 뒤 화면은 움직이지 않게, 아래로 끌면 닫히게, 바깥을 누르면 닫히게 ──
+  // 가장 위에 열려 있는 창(대화상자 > 필터 시트 > 질문 패널 > AI 화면)
+  function activeSheet() {
+    const ds = document.querySelectorAll('dialog[open]');
+    if (ds.length) return ds[ds.length - 1];
+    if (box.classList.contains('open')) return box;
+    const qa = document.getElementById('qaPanel');
+    if (qa && qa.classList.contains('open')) return qa;
+    if (!$('aiView').hidden) return $('aiView');
+    return null;
+  }
+  function syncLock() { root.classList.toggle('scroll-lock', !!activeSheet()); }
+  new MutationObserver(syncLock).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['open', 'class', 'hidden'] });
+  syncLock();
+
+  // 손가락이 움직이는 방향으로 실제로 스크롤될 칸이 창 안에 있는지
+  function canScrollWithin(target, sheet, dy) {
+    for (let el = target; el && el.nodeType === 1 && el !== document.documentElement; el = el.parentElement) {
+      const oy = getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) {
+        if (dy > 0 && el.scrollTop > 0) return true;
+        if (dy < 0 && el.scrollTop + el.clientHeight < el.scrollHeight - 1) return true;
+      }
+      if (el === sheet) break;
+    }
+    return false;
+  }
+  const HANDLE_ZONE = 56; // 시트 윗부분(손잡이·제목) 높이: 여기서 끌면 어디서든 시트가 내려간다
+  const CLOSE_DIST = 110; // 이만큼 끌면 닫힌다
+  let drag = null;
+  function dismiss(sheet) {
+    if (sheet === box) closeFilter();
+    else if (sheet.tagName === 'DIALOG') { sheet.close(); if (sheet.id === 'folderDialog' && typeof go === 'function') go(); }
+  }
+  document.addEventListener('touchstart', (e) => {
+    drag = null;
+    if (e.touches.length !== 1) return;
+    const sheet = activeSheet();
+    if (!sheet || !mq.matches || !(sheet === box || sheet.tagName === 'DIALOG')) { if (sheet) drag = { sheet, startY: e.touches[0].clientY, startX: e.touches[0].clientX, can: false, on: false }; return; }
+    const t = e.touches[0], rect = sheet.getBoundingClientRect();
+    const inside = t.clientY >= rect.top && t.clientY <= rect.bottom && t.clientX >= rect.left && t.clientX <= rect.right;
+    const inHandle = inside && t.clientY - rect.top <= HANDLE_ZONE;
+    // 본문이 맨 위에 붙어 있을 때 아래로 끌어도 시트가 내려간다(본문이 더 올라갈 데가 없을 때만)
+    const atTop = inside && !canScrollWithin(e.target, sheet, 1);
+    drag = { sheet, startY: t.clientY, startX: t.clientX, lastY: t.clientY, lastT: Date.now(), v: 0, can: inHandle || atTop, on: false };
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    const sheet = activeSheet();
+    if (!sheet) return;
+    const t = e.touches[0];
+    if (drag && drag.on) {
+      e.preventDefault();
+      const dy = Math.max(0, t.clientY - drag.startY), now = Date.now();
+      drag.v = (t.clientY - drag.lastY) / Math.max(1, now - drag.lastT); drag.lastY = t.clientY; drag.lastT = now;
+      drag.sheet.style.transform = 'translateY(' + dy + 'px)';
+      return;
+    }
+    const dy = t.clientY - (drag ? drag.startY : t.clientY), dx = t.clientX - (drag ? drag.startX : t.clientX);
+    if (drag && drag.can && dy > 6 && Math.abs(dy) > Math.abs(dx)) {
+      drag.on = true; drag.sheet.style.transition = 'none';
+      e.preventDefault();
+      return;
+    }
+    if (Math.abs(dx) > Math.abs(dy)) return; // 가로로 미는 건 그대로 둔다
+    // 창 바깥이거나, 창 안에서도 더 스크롤될 데가 없으면 뒤 화면이 따라 움직이지 않게 막는다
+    const rect = sheet.getBoundingClientRect();
+    const outside = t.clientY < rect.top || t.clientY > rect.bottom || t.clientX < rect.left || t.clientX > rect.right;
+    if (outside || !canScrollWithin(e.target, sheet, dy)) { if (e.cancelable) e.preventDefault(); }
+  }, { passive: false });
+  function endDrag() {
+    if (!drag || !drag.on) { drag = null; return; }
+    const d = drag; drag = null;
+    const dist = d.lastY - d.startY;
+    d.sheet.style.transition = 'transform .22s ease';
+    if (dist > CLOSE_DIST || (d.v > 0.6 && dist > 40)) {
+      d.sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => { dismiss(d.sheet); d.sheet.style.transform = ''; d.sheet.style.transition = ''; }, 200);
+    } else {
+      d.sheet.style.transform = '';
+      setTimeout(() => { d.sheet.style.transition = ''; }, 240);
+    }
+  }
+  document.addEventListener('touchend', endDrag, { passive: true });
+  document.addEventListener('touchcancel', endDrag, { passive: true });
+
+  // 어두운 바깥을 누르면 닫힌다(안에서 누르고 바깥에서 뗀 경우는 제외)
+  ['addDialog', 'folderDialog', 'aboutDialog', 'authDialog', 'myDialog'].forEach((id) => {
+    const dlg = $(id); if (!dlg) return;
+    let downOutside = false;
+    const outsideOf = (e) => { const r = dlg.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
+    dlg.addEventListener('pointerdown', (e) => { downOutside = e.target === dlg && outsideOf(e); });
+    dlg.addEventListener('click', (e) => {
+      if (downOutside && e.target === dlg && outsideOf(e)) { dismiss(dlg); }
+      downOutside = false;
+    });
+  });
 })();

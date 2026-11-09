@@ -8,6 +8,7 @@
     "collect:kr": "node src/collect-kr.js",
     "check": "node scripts/check.mjs",
     "ui-smoke": "node scripts/ui-smoke.mjs",
+    "ui-touch": "node scripts/ui-touch.mjs",
     "test:taxonomy": "node scripts/test-taxonomy.mjs",
     "test:search": "node scripts/test-search.mjs",
     "test:first-seen": "node scripts/test-first-seen.mjs",
