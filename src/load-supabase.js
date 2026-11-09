@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { groupItems } from './dedupe.js';
 import { getSupabaseAdmin } from './lib/supabase.js';
 import { assignFirstSeen, numOf } from './lib/first-seen.js';
+import { estimateListedAt } from './lib/listed-at.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'data', 'out');
@@ -138,14 +139,26 @@ async function main() {
 
   // 최신순 기준 시각(#7): 이미 있던 상품은 first_seen_at 을 보내지 않아 그대로 두고(덮어쓰기 금지),
   // 새로 들어가는 상품만 정해서 보낸다 — 지워졌다 돌아온 옛 상품이 "방금 발견"으로 맨 위에 오지 않게(src/lib/first-seen.js).
+  // #8: 홈페이지 등록 흔적(쇼피파이 등록일·식스샵 사진 시각·카페24 사진 년월)이 있으면 그 날짜로 정한다(src/lib/listed-at.js).
+  //     흔적이 없는 상품(아임웹 등)만 위의 #7 방식.
   const nowIso = new Date().toISOString();
   const existingRows = [];
   const newRows = [];
+  let listedCount = 0;
   const brandIds = [...new Set(withBrandId.map((g) => g.brand_id))];
   const groupsByKey = new Map(groups.filter((g) => g.brand_id).map((g) => [`${g.brand_id}||${g.title_norm}`, g]));
   for (const brandId of brandIds) {
-    const rows = withBrandId.filter((g) => g.brand_id === brandId);
+    const all = withBrandId.filter((g) => g.brand_id === brandId);
     const before = await selectAll(sb, 'product_group', 'brand_id', brandId, 'id,title_norm,first_seen_at');
+    const seenByTitle = new Map(before.map((r) => [r.title_norm, r.first_seen_at]));
+    const listed = estimateListedAt(all.map((r) => ({
+      key: r.title_norm,
+      offers: groupsByKey.get(`${brandId}||${r.title_norm}`).offers,
+      seen: seenByTitle.get(r.title_norm) || null,
+    })));
+    for (const r of all) if (listed.has(r.title_norm)) newRows.push({ ...r, first_seen_at: listed.get(r.title_norm) });
+    listedCount += listed.size;
+    const rows = all.filter((r) => !listed.has(r.title_norm));
     const known = new Set(before.map((r) => r.title_norm));
     const fresh = rows.filter((r) => !known.has(r.title_norm));
     existingRows.push(...rows.filter((r) => known.has(r.title_norm)));
@@ -168,6 +181,7 @@ async function main() {
     console.log(`  ${brandId}: 새 상품 ${fresh.length}개 중 ${before.length ? `옛 상품이 돌아온 것 ${back}개(옛 날짜 유지)` : `브랜드 첫 수집 → 1~90일 전에 나눠 둠`}`);
   }
 
+  console.log(`\n홈페이지 등록일로 최신순을 정한 상품: ${listedCount}개`);
   console.log('\nproduct_group 업로드:');
   const upserted = [
     ...(await upsertBatched(sb, 'product_group', existingRows, { onConflict: 'brand_id,title_norm' }, 'id, brand_id, title_norm')),

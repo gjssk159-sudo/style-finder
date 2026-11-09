@@ -55,6 +55,7 @@ export async function collectShopify(source, { limit = Infinity } = {}) {
         currency: 'KRW',
         images: (p.images ?? []).map((i) => i.src),
         in_stock: (p.variants ?? []).some((v) => v.available),
+        listed_at: p.published_at || p.created_at || null, // 홈페이지 등록 일시(최신순, #8)
         raw_category: [p.product_type, ...(p.tags ?? [])].filter(Boolean).join(', ') || null,
         sizes,
         description: (p.body_html ?? '')

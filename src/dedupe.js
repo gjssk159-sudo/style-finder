@@ -148,6 +148,7 @@ export function groupItems(items) {
       title: it.title,
       price: typeof it.price === 'number' ? it.price : null,
       image: it.images?.[0] || null,
+      listed_at: it.listed_at || null, // 홈페이지 등록 일시(쇼피파이만, #8) — DB offer 에는 올리지 않음
       in_stock: !!it.in_stock,
       colors,
       sizes: it.sizes || [],
