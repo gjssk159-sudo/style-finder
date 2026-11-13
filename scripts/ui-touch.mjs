@@ -166,6 +166,29 @@ await swipe(p, 195, 300, 420);
 note('AI 화면: 아래로 밀어도 뒤 화면이 안 움직인다', (await scrollY(p)) === b2, 'scrollY=' + (await scrollY(p)));
 await p.evaluate(() => hideAiView());
 
+// #9: 세부 분류 줄이 상품 카드를 덮지 않는지, 개수 표시가 버튼을 가리지 않는지, 손가락으로 옆으로 밀리는지
+{
+  const v = await open(browser, { login: true });
+  await v.page.locator('#chips .chip', { hasText: /OUTER/ }).first().click();
+  await v.page.waitForTimeout(1000);
+  const m = await v.page.evaluate(() => {
+    const r = (e) => e.getBoundingClientRect();
+    const sc = document.getElementById('subChips'), row = sc.querySelector('.subrow'), cnt = document.getElementById('subCount');
+    return { subBottom: r(sc).bottom, gridTop: r(document.getElementById('grid')).top, rowRight: r(row).right, cntLeft: r(cnt).left };
+  });
+  note('세부 분류 줄이 상품 카드를 덮지 않는다', m.subBottom <= m.gridTop, `줄 아래 ${m.subBottom} · 카드 위 ${m.gridTop}`);
+  note('개수 표시가 세부 분류 버튼을 가리지 않는다', m.rowRight <= m.cntLeft, `줄 끝 ${m.rowRight} · 개수 ${m.cntLeft}`);
+  const b = await v.page.locator('#subChips .subrow').first().boundingBox();
+  const cdp = await v.ctx.newCDPSession(v.page);
+  const y = b.y + b.height / 2;
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b.x + b.width - 20, y }] });
+  for (let i = 1; i <= 10; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: b.x + b.width - 20 - i * 20, y }] }); await v.page.waitForTimeout(16); }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await v.page.waitForTimeout(300);
+  const sl = await v.page.evaluate(() => document.querySelector('#subChips .subrow').scrollLeft);
+  note('세부 분류 줄이 손가락으로 옆으로 밀린다', sl > 50, `scrollLeft=${sl}`);
+  await v.ctx.close();
+}
 note('화면 오류 없음', s.errors.length === 0, s.errors.slice(0, 2).join(' | '));
 await s.ctx.close();
 await browser.close();
