@@ -574,12 +574,21 @@
     #sizeChips { display: flex; flex-wrap: wrap; gap: 8px; }
     #sizeChips button { padding: 0 14px; height: 36px; border-radius: 12px; background: #f3f4f3; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: 0; }
     #sizeChips button.on { background: #e6f7f0; color: #177656; box-shadow: inset 0 0 0 1.5px var(--accent); }
-    .filter-box .brand-combo input { width: 100%; height: 46px; padding: 0 36px 0 14px; border: 0; border-radius: 12px; background: #f3f4f3; font-size: 15px; }
+    /* 글자 16px 미만 입력칸은 아이폰이 누를 때 화면을 확대·이동시켜 시트가 밀려 내려간다 → 16px */
+    .filter-box .brand-combo input { width: 100%; height: 46px; padding: 0 36px 0 14px; border: 0; border-radius: 12px; background: #f3f4f3; font-size: 16px; }
     .filter-box .brand-combo::after { top: auto; bottom: 21px; right: 16px; }
     .filter-box .brand-combo-list { position: static; min-width: 0; max-height: 200px; border: 0; border-radius: 12px; background: #f3f4f3; margin-top: 6px; }
     .filter-box .brand-combo-item { border-bottom-color: #e8e9e7; }
+    /* 브랜드 찾기: 검색칸을 누르면 시트가 '보이는 화면'(키보드 위) 전체를 쓰고, 검색칸과 목록만 남긴다 */
+    .filter-box.brand-mode { top: calc(var(--vv-top, 0px) + 8px); bottom: auto; height: calc(var(--vv-h, 100dvh) - 8px); max-height: none; overflow: hidden; padding-bottom: 12px; }
+    .filter-box.brand-mode > :not(.sheet-head):not(.brand-combo) { display: none; }
+    .filter-box.brand-mode .sheet-reset { display: none; }
+    .filter-box.brand-mode .brand-combo::before, .filter-box.brand-mode .brand-combo::after, .filter-box.brand-mode .brand-clear { display: none; }
+    .filter-box.brand-mode .brand-combo { margin-top: 10px; }
+    .filter-box.brand-mode .brand-combo-list { max-height: calc(var(--vv-h, 100dvh) - 150px); margin-top: 10px; background: none; border-radius: 0; overscroll-behavior: contain; }
+    .filter-box.brand-mode .brand-combo-item { padding: 0 4px; min-height: 48px; display: flex; align-items: center; font-size: 15px; }
     .filter-box .price-range { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-    .filter-box input[type=number] { width: auto; flex: 1; min-width: 0; height: 46px; padding: 0 14px; border: 0; border-radius: 12px; background: #f3f4f3; font-size: 15px; }
+    .filter-box input[type=number] { width: auto; flex: 1; min-width: 0; height: 46px; padding: 0 14px; border: 0; border-radius: 12px; background: #f3f4f3; font-size: 16px; }
     .filter-box .hsep { flex: none; }
     .filter-box label.chk { align-self: flex-start; margin-top: 18px; padding: 0 14px; height: 36px; border-radius: 12px; background: #f3f4f3; font-size: 13px; font-weight: 600; gap: 8px; }
     .filter-box label.chk:has(input:checked) { background: #e6f7f0; color: #177656; box-shadow: inset 0 0 0 1.5px var(--accent); }

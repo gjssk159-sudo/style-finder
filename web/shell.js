@@ -34,7 +34,38 @@
     box.scrollTop = 0;
     box.classList.add('open'); dim.hidden = false; root.classList.add('sheet-open');
   }
-  function closeFilter() { box.classList.remove('open'); dim.hidden = true; root.classList.remove('sheet-open'); countFilters(); }
+  function closeFilter() {
+    if ($('brandComboList').classList.contains('open')) { closeBrandCombo(); $('brandInput').blur(); }
+    box.classList.remove('open'); dim.hidden = true; root.classList.remove('sheet-open'); countFilters();
+  }
+
+  // 브랜드 찾기: 검색칸을 누르면 키보드가 올라와도 검색칸과 목록이 가려지지 않게
+  // 시트를 지금 보이는 화면(키보드 위) 크기에 맞추고 다른 필터는 잠깐 숨긴다. 고르거나 닫으면 원래대로.
+  const brandList = $('brandComboList');
+  const vv = window.visualViewport;
+  function fitBrandMode() {
+    if (!box.classList.contains('brand-mode') || !vv) { box.style.removeProperty('--vv-top'); box.style.removeProperty('--vv-h'); return; }
+    box.style.setProperty('--vv-top', vv.offsetTop + 'px');
+    box.style.setProperty('--vv-h', vv.height + 'px');
+  }
+  function syncBrandMode() {
+    const on = mq.matches && box.classList.contains('open') && brandList.classList.contains('open');
+    if (on !== box.classList.contains('brand-mode')) {
+      if (on) modeAt = Date.now();
+      box.classList.toggle('brand-mode', on);
+      $('sheetTitle').textContent = on ? '브랜드' : (TITLES[box.dataset.mode] || '필터');
+      box.scrollTop = 0;
+    }
+    fitBrandMode();
+  }
+  new MutationObserver(syncBrandMode).observe(brandList, { attributes: true, attributeFilter: ['class'] });
+  new MutationObserver(syncBrandMode).observe(box, { attributes: true, attributeFilter: ['class'] });
+  if (vv) { vv.addEventListener('resize', fitBrandMode); vv.addEventListener('scroll', fitBrandMode); }
+  // 검색칸을 누른 그 탭의 click은 화면이 바뀐 뒤에 도착해서 엉뚱한 곳(바깥·목록 항목)을 누른 것이 된다 → 그 한 번은 무시
+  let modeAt = 0;
+  window.addEventListener('click', (e) => {
+    if (Date.now() - modeAt < 500 && e.target !== $('brandInput')) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
   $('filterBtn').addEventListener('click', () => openFilter('filter'));
   document.querySelectorAll('.tool-chip').forEach((b) => b.addEventListener('click', () => openFilter(b.dataset.open)));
   dim.addEventListener('click', closeFilter);

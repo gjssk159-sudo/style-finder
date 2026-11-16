@@ -23,7 +23,7 @@ const BASE = `http://127.0.0.1:${server.address().port}/`;
 // ── 가짜 데이터 ──
 const REF = 'fipjvgglzlvksepdjxjv';
 const UID = '00000000-0000-4000-8000-000000000001';
-const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'].map((n, i) => ({ id: 100 + i, name: n, type: 'cafe24', status: 'active', added_by: null }));
+const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'].map((n, i) => ({ id: 100 + i, name: n, type: 'cafe24', status: 'ready', added_by: null }));
 const products = Array.from({ length: 12 }, (_, i) => ({
   id: 1000 + i, brand: brands[i % 5].name, brand_id: brands[i % 5].id,
   title: ['울 블렌드 오버핏 싱글 코트', '코튼 와이드 데님 팬츠', '라운드넥 캐시미어 니트', '레더 미니 숄더백', '헤비 코튼 후드 집업', '스트라이프 옥스퍼드 셔츠'][i % 6],
@@ -187,6 +187,33 @@ await p.evaluate(() => hideAiView());
   await v.page.waitForTimeout(300);
   const sl = await v.page.evaluate(() => document.querySelector('#subChips .subrow').scrollLeft);
   note('세부 분류 줄이 손가락으로 옆으로 밀린다', sl > 50, `scrollLeft=${sl}`);
+  await v.ctx.close();
+}
+// #10: 필터 시트에서 브랜드 검색칸을 누르면(키보드가 올라와 보이는 화면이 줄어도) 검색칸과 목록이 화면 안에 보이는지
+{
+  const v = await open(browser, { login: true });
+  const vp = v.page;
+  await vp.evaluate(() => document.getElementById('filterBtn').click()); await vp.waitForTimeout(600);
+  const fs = await vp.evaluate(() => getComputedStyle(document.getElementById('brandInput')).fontSize);
+  note('브랜드 검색칸 글자가 16px 이상(아이폰 자동 확대 방지)', parseFloat(fs) >= 16, fs);
+  await vp.locator('#brandInput').tap(); await vp.waitForTimeout(300);
+  await vp.setViewportSize({ width: 390, height: 480 }); await vp.waitForTimeout(500); // 키보드가 올라온 것처럼 보이는 화면을 줄임
+  const m = await vp.evaluate(() => {
+    const r = (s) => document.querySelector(s).getBoundingClientRect();
+    const items = [...document.querySelectorAll('#brandComboList .brand-combo-item')];
+    const vh = window.visualViewport.height;
+    const seen = items.filter((e) => { const b = e.getBoundingClientRect(); return b.top >= 0 && b.bottom <= vh; }).length;
+    return { mode: document.querySelector('.filter-box').classList.contains('brand-mode'), boxTop: r('.filter-box').top, boxBottom: r('.filter-box').bottom, inTop: r('#brandInput').top, inBottom: r('#brandInput').bottom, vh, seen, total: items.length };
+  });
+  note('브랜드 찾기: 시트가 보이는 화면 안에 들어온다', m.mode && m.boxTop >= 0 && m.boxBottom <= m.vh + 1, `시트 ${Math.round(m.boxTop)}~${Math.round(m.boxBottom)} · 화면 ${m.vh}`);
+  note('브랜드 찾기: 검색칸이 가려지지 않는다', m.inTop >= 0 && m.inBottom <= m.vh, `검색칸 ${Math.round(m.inTop)}~${Math.round(m.inBottom)}`);
+  note('브랜드 찾기: 목록이 화면 안에 다 보인다', m.total === 6 && m.seen === m.total, `${m.seen}/${m.total}개 보임`);
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'brand-mode.png') });
+  await vp.locator('#brandComboList .brand-combo-item', { hasText: '소요' }).tap(); await vp.waitForTimeout(500);
+  const after = await vp.evaluate(() => ({ v: document.getElementById('brand').value, mode: document.querySelector('.filter-box').classList.contains('brand-mode'), title: document.getElementById('sheetTitle').textContent }));
+  note('브랜드를 고르면 선택되고 원래 필터 화면으로 돌아온다', after.v === '소요' && !after.mode && after.title === '필터', JSON.stringify(after));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'brand-picked.png') });
+  note('브랜드 찾기 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
 note('화면 오류 없음', s.errors.length === 0, s.errors.slice(0, 2).join(' | '));
