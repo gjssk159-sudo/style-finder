@@ -9,7 +9,7 @@
 
 
 ## 2. ▶ 사용자 할 일
-없음
+- #11 GitHub 토큰 새로 만들어 Supabase 함수 비밀값 `GH_DISPATCH_TOKEN` 바꾸기(저장소 style-finder만, 권한 Actions 읽기·쓰기). 이유: 10-27 이후 등록 즉시 수집이 한 번도 안 돎(gosiju 11-07·noahny 11-16 실패), 토큰 만료로 추정
 
 ## 3. 안 되는 것 — 정직하게
 - 자동 테스트 없음. `npm run check`는 문법·JSON·taxonomy 사본만 보고 동작은 보장 안 함.
