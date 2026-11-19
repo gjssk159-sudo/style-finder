@@ -14,6 +14,7 @@ import { collectShopify } from './adapters/shopify.js';
 import { collectCafe24 } from './adapters/cafe24.js';
 import { collectImweb } from './adapters/imweb.js';
 import { collectSixshop } from './adapters/sixshop.js';
+import { collectEcbeing } from './adapters/ecbeing.js';
 import { mapPool } from './lib/concurrency.js';
 import { closeBrowser } from './lib/browser.js';
 
@@ -62,7 +63,7 @@ if (targets.length === 0) {
   process.exit(1);
 }
 
-const ADAPTERS = { shopify: collectShopify, cafe24: collectCafe24, imweb: collectImweb, sixshop: collectSixshop };
+const ADAPTERS = { shopify: collectShopify, cafe24: collectCafe24, imweb: collectImweb, sixshop: collectSixshop, ecbeing: collectEcbeing };
 
 mkdirSync(join(root, 'data', 'out'), { recursive: true });
 

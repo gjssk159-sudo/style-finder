@@ -20,7 +20,11 @@ export async function detectPlatform(rawUrl) {
   const cafe24 = await tryCafe24(shopUrl);
   if (cafe24) return cafe24;
 
-  // 3) 그 외 (아임웹/식스샵/자체제작): 아직 어댑터 없음 -> 검토 대기열
+  // 3) ecbeing(일본 쇼핑몰 프로그램, 예: CA4LA): 전 상품 목록 주소가 상품을 주는지
+  const ecbeing = await tryEcbeing(shopUrl);
+  if (ecbeing) return ecbeing;
+
+  // 4) 그 외 (아임웹/식스샵/자체제작): 아직 어댑터 없음 -> 검토 대기열
   const home = await fetchText(shopUrl, { retries: 1 }).catch(() => null);
   const hint = home?.text ? sniffUnknownPlatform(home.text) : null;
 
@@ -84,6 +88,23 @@ async function tryCafe24(shopUrl) {
     }
   } catch {
     /* 접속 실패 */
+  }
+  return null;
+}
+
+async function tryEcbeing(shopUrl) {
+  try {
+    const { text } = await fetchText(`${shopUrl}/shop/goods/goodslightningsearchajax.aspx?type=all&pagename=all&ps=1&p=1`, { retries: 1, timeout: 10000 });
+    if (text && /js-enhanced-ecommerce-item/.test(text) && /\/shop\/g\//.test(text)) {
+      return {
+        status: 'ready',
+        shopUrl,
+        platform: 'ecbeing',
+        discovery: { method: 'ecbeing_lightning_list', path: '/shop/goods/goodslightningsearchajax.aspx?type=all' },
+      };
+    }
+  } catch {
+    /* ecbeing 아님 */
   }
   return null;
 }
