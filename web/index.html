@@ -121,6 +121,13 @@
   .meta-row { max-width: 1400px; margin: 0 auto 22px; }
   .meta { color: var(--sub); font-size: 12px; letter-spacing: .02em; }
   .meta:empty { display: none; }
+  /* 개수 줄(#13): 개수 + 지금 걸린 조건 표(×로 빼기) */
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .meta-n { color: var(--ink); font-size: 14px; font-weight: 800; letter-spacing: 0; margin-right: 2px; }
+  .mtag { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: 0; cursor: pointer; }
+  .mtag span { color: var(--sub); font-size: 14px; line-height: 1; }
+  .mtag.plain { cursor: default; color: var(--sub); }
+  .mtag:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 38px 20px; }
   .card { position: relative; display: flex; flex-direction: column; }
   .card.sk .imgwrap { animation: skp 1.3s ease-in-out infinite; }
@@ -494,32 +501,40 @@
     .fb { font-size: 12px; }
     .fb.on i { background: #e6f7f0; border-color: var(--accent); color: #177656; }
 
-    /* 카테고리 + 필터 칩(알약형) */
-    .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 8px; margin: 12px -16px 0; padding: 0 16px; }
+    /* #13 줄마다 모양을 다르게: ① 카테고리 = 밑줄 탭 ② 세부 분류 = 네모 테두리 칩 ③ 도구 = 선 아래 글자 버튼 */
+    :root { --accent-ink: #177656; --accent-bg: #e6f7f0; }
+    .chips { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 22px; margin: 14px -16px 0; padding: 0 16px; border-bottom: 1px solid var(--line); }
     .chips::-webkit-scrollbar { display: none; }
-    .chip { height: 34px; padding: 0 15px; display: flex; align-items: center; border: 0; border-radius: 17px; background: #fff; color: #55585a; font-size: 13px; font-weight: 600; letter-spacing: 0; }
-    .chip.on { background: var(--ink); color: #fff; }
+    .chip { height: 44px; padding: 0; display: flex; align-items: center; border: 0; border-bottom: 2.5px solid transparent; margin-bottom: -1px; border-radius: 0; background: none; color: var(--sub); font-size: 15px; font-weight: 600; letter-spacing: 0; }
+    .chip.on { color: var(--ink); font-weight: 800; border-bottom-color: var(--ink); }
     .chip.on::before { display: none; }
-    /* 세부 분류 줄: 상품 목록을 덮지 않게 제자리를 차지한다(#9 — 카드 윗부분이 가려지던 문제) */
-    .subchips { position: relative; left: auto; right: auto; top: auto; z-index: auto; margin: 10px -16px 0; padding: 0 16px; gap: 6px; background: none; border-bottom: 0; overflow: visible; }
-    .chip.sub { height: 30px; padding: 0 12px; font-size: 12.5px; font-weight: 500; border-radius: 15px; background: #fff; }
-    .chip.sub.on { background: var(--accent); color: #fff; font-weight: 600; border: 0; }
-    .chip.sub.tag { height: auto; padding: 0; min-width: 56px; background: none; border-radius: 0; color: var(--ink); }
-    /* 개수 표시는 밀리는 줄 바깥 오른쪽에 따로 — 버튼을 덮거나 손가락 밀기를 가로막지 않게 */
-    .subchips .subrow { padding-right: 0; margin-right: 52px; gap: 6px; align-items: center; overscroll-behavior-x: contain; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
-    .sub-count { right: 16px; padding: 3px 0 3px 4px; background: none; box-shadow: none; }
-    .toolrow { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 0; }
-    .tool-filter, .tool-chip { flex: 1 1 auto; justify-content: center; display: inline-flex; align-items: center; gap: 4px; height: 34px; min-width: 0; padding: 0 8px; border-radius: 17px; background: #fff; color: #55585a; font-size: 12.5px; font-weight: 600; letter-spacing: 0; white-space: nowrap; }
-    .tool-filter svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-    .tool-filter b { min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; line-height: 17px; text-align: center; letter-spacing: 0; }
+    /* 세부 분류 줄: 카테고리 바로 아래, 제자리를 차지한다(#9 — 목록을 덮지 않게) */
+    .subchips { position: relative; left: auto; right: auto; top: auto; z-index: auto; margin: 12px -16px 0; padding: 0 16px; gap: 6px; background: none; border-bottom: 0; overflow: visible; }
+    .chip.sub { height: 36px; margin: 0; padding: 0 12px; gap: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 500; letter-spacing: 0; }
+    .chip.sub.on { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+    .chip.sub.on::before { content: '✓'; display: inline; width: auto; height: auto; margin: 0; background: none; border-radius: 0; font-size: 12px; }
+    .chip.sub.tag { display: none; } /* 위 탭에 이미 대분류 이름이 보인다 */
+    .subchips .subrow { padding-right: 0; margin-right: 0; gap: 6px; align-items: center; overscroll-behavior-x: contain; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
+    .sub-count { display: none; } /* 개수는 바로 아래 개수 줄에 보인다 */
+    .toolrow { display: flex; align-items: center; gap: 4px; margin: 12px -16px 0; padding: 10px 16px 0; border-top: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+    .toolrow::-webkit-scrollbar { display: none; }
+    .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 36px; padding: 0 8px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: 0; white-space: nowrap; }
+    .tool-filter { background: var(--ink); color: var(--paper); padding: 0 11px; margin-right: 2px; }
+    .tool-filter svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .tool-filter b { min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: var(--paper); font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; letter-spacing: 0; }
     .tool-filter b[hidden] { display: none; }
-    .tool-filter.on, .tool-chip.on { background: #e6f7f0; color: #177656; box-shadow: inset 0 0 0 1.5px var(--accent); }
-    #sortSlot, #stockSlot { flex: 1 1 auto; display: block; min-width: 0; }
-    /* 품절 제외: 다른 칩과 똑같이(켜면 연한 초록) */
-    .toolrow label.chk { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 34px; padding: 0 8px; border-radius: 17px; background: #fff; color: #55585a; font-size: 12.5px; font-weight: 600; gap: 0; white-space: nowrap; }
+    .tool-chip::after { content: ''; width: 6px; height: 6px; margin: -3px 0 0 4px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(45deg); }
+    .tool-chip.on { color: var(--accent-ink); font-weight: 700; }
+    #sortSlot { flex: none; display: flex; align-items: center; height: 16px; padding-right: 2px; margin-right: 2px; border-right: 1px solid var(--line); }
+    #stockSlot { flex: none; display: block; }
+    .toolrow select { display: block; width: auto; field-sizing: content; height: 36px; margin: -10px 0; padding: 0 22px 0 8px; border: 0; border-radius: 10px; background-color: transparent; background-position: right 4px center; font-size: 13px; font-weight: 600; color: var(--ink); max-width: none; }
+    /* 품절 제외: 체크박스 모양(켜면 초록 네모에 ✓) */
+    .toolrow label.chk { position: relative; display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 8px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .toolrow label.chk::before { content: ''; flex: none; width: 16px; height: 16px; box-sizing: border-box; border: 1.5px solid var(--sub); border-radius: 4px; display: grid; place-items: center; color: var(--paper); font-size: 11px; font-weight: 800; line-height: 1; }
     .toolrow label.chk input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; }
-    .toolrow label.chk:has(input:checked) { background: #e6f7f0; color: #177656; box-shadow: inset 0 0 0 1.5px var(--accent); }
-    .toolrow select { display: block; width: 100%; height: 34px; padding: 0 20px 0 12px; border-radius: 17px; background-color: #fff; background-position: right 8px center; font-size: 12.5px; font-weight: 600; color: #55585a; max-width: none; }
+    .toolrow label.chk:has(input:checked) { color: var(--accent-ink); font-weight: 700; }
+    .toolrow label.chk:has(input:checked)::before { content: '✓'; background: var(--accent); border-color: var(--accent); }
+    .toolrow label.chk:has(input:focus-visible), .toolrow select:focus-visible, .tool-chip:focus-visible, .tool-filter:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .meta-row { margin: 0 0 10px; }
     .meta { font-size: 12.5px; }
 
@@ -780,8 +795,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       </div>
     </div>
     <div class="chips" id="chips"></div>
+    <div class="chips subchips" id="subChips" style="display:none"></div><!-- 모바일: 카테고리 바로 아래 자리를 차지(목록을 덮지 않음). PC: 헤더 아래에 떠서 표시 -->
     <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn">필터 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><b id="filterCnt" hidden></b></button><span id="sortSlot"></span><button type="button" class="tool-chip" data-open="color" id="colorChip">색상</button><button type="button" class="tool-chip" data-open="size" id="sizeChip">사이즈</button><span id="stockSlot"></span></div>
-    <div class="chips subchips" id="subChips" style="display:none"></div><!-- 모바일: 정렬·필터 줄 아래 자리를 차지(목록을 덮지 않음). PC: 헤더 아래에 떠서 표시 -->
   </div>
 </header>
 <script>document.querySelectorAll("header input, header select").forEach(function (e) { e.setAttribute("autocomplete", "off"); });</script>

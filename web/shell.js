@@ -133,8 +133,10 @@
       fcRow.innerHTML = '<div class="fc-empty"><span>이 폴더는 비어 있어요.</span><button type="button" data-manage="1">브랜드 담기</button></div>';
       return;
     }
+    // 네모 안 글자: 기호를 빼고 앞 두 글자("(I)AMT" → IA, "AFTER PRAY" → AF, "소요" → 소요)
+    const initials = (n) => ((n.match(/[0-9A-Za-z가-힣ぁ-んァ-ン一-龥]/g) || [n.trim().charAt(0)]).slice(0, 2).join('') || '?').toUpperCase();
     fcRow.innerHTML = '<button type="button" class="fb' + (cur ? '' : ' on') + '" data-b=""><i>전체</i><span>' + brands.length + '</span></button>' +
-      brands.map((n) => '<button type="button" class="fb' + (n === cur ? ' on' : '') + '" data-b="' + esc(n) + '"><i>' + esc(n.trim().charAt(0).toUpperCase()) + '</i><span>' + esc(n) + '</span></button>').join('');
+      brands.map((n) => '<button type="button" class="fb' + (n === cur ? ' on' : '') + '" data-b="' + esc(n) + '"><i>' + esc(initials(n)) + '</i><span>' + esc(n) + '</span></button>').join('');
   }
   $('fcTabs').addEventListener('click', async (e) => {
     const t = e.target.closest('.fc-tab'); if (!t || !t.dataset.f) return;
@@ -176,6 +178,7 @@
   box.addEventListener('input', () => setTimeout(countFilters, 0));
   box.addEventListener('change', () => setTimeout(countFilters, 0));
   box.addEventListener('click', () => setTimeout(countFilters, 50));
+  $('meta').addEventListener('click', () => setTimeout(() => { countFilters(); buildFolderCard(); }, 50)); // 개수 줄에서 ×로 조건을 뺐을 때
   setTimeout(countFilters, 1500);
   setTimeout(countFilters, 4000);
 

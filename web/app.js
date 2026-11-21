@@ -1360,17 +1360,7 @@ async function renderCurrentPage() {
   if (error) { meta.textContent = '오류: ' + error.message; grid.innerHTML = ''; return; }
 
   lastTotal = count || 0;
-  const parts = [`${lastTotal.toLocaleString('ko-KR')}개`];
-  if (categories.length) {
-    const T = window.StyleFinderTaxonomy;
-    const names = catSel.length
-      ? catSel.map((id) => { const g = T.GROUPS.find((x) => x.id === id); return g ? g.label : T.labelOf(id); })
-      : categories.map((c) => T.labelOf(c));
-    parts.push('카테고리: ' + names.join(', '));
-  }
-  if (colors.length) parts.push('색상: ' + colors.map((c) => window.StyleFinderTaxonomy.COLOR_LABELS[c] || c).join(', '));
-  if (keywords.length) parts.push('검색어: ' + keywords.join(' '));
-  meta.textContent = parts.join('  ·  ');
+  meta.innerHTML = metaHtml(categories, colors, keywords);
   const subCount = document.getElementById('subCount');
   if (subCount) subCount.textContent = lastTotal.toLocaleString('ko-KR') + '개'; // 세부 카테고리 줄이 개수 줄을 덮으므로 거기에도 표시
 
@@ -1384,7 +1374,7 @@ async function renderCurrentPage() {
     renderedSig = sig;
   }
   updatePager();
-  saveHomeCache(p.toString(), data, lastTotal, meta.textContent);
+  saveHomeCache(p.toString(), data, lastTotal, meta.innerHTML);
   saveScrollState(); // 렌더 직후에도 저장 — 스크롤 이벤트가 한 번도 안 걸린 채로 바로 상품을 눌러도 최신 상태가 남게
 }
 
@@ -1556,6 +1546,38 @@ function renderChips() {
     g.subs.map((sb) => `<span class="chip sub ${catSel.includes(sb.id) ? 'on' : ''}" onclick="toggleSub('${sb.id}')">${sb.label}</span>`).join('') +
     '</span>').join('') + `<span class="sub-count" id="subCount">${lastTotal ? lastTotal.toLocaleString('ko-KR') + '개' : ''}</span>`;
 }
+
+// 개수 줄(#13): "1,204개" 다음에 지금 걸린 조건을 작은 표로 보여 주고, ×를 누르면 그 조건만 뺀다.
+function metaHtml(categories, colors, keywords) {
+  const T = window.StyleFinderTaxonomy;
+  const tag = (label, x) => x
+    ? `<button type="button" class="mtag" data-x="${escHtml(x)}" aria-label="${escHtml(label)} 조건 빼기">${escHtml(label)}<span aria-hidden="true">×</span></button>`
+    : `<span class="mtag plain">${escHtml(label)}</span>`;
+  const out = [`<b class="meta-n">${lastTotal.toLocaleString('ko-KR')}개</b>`];
+  if (catSel.length) catSel.forEach((id) => { const g = T.GROUPS.find((x) => x.id === id); out.push(tag(g ? g.label : T.labelOf(id), 'cat:' + id)); });
+  else categories.forEach((c) => out.push(tag(T.labelOf(c)))); // 검색어로 정해진 분류는 검색창에서 지운다
+  const brand = document.getElementById('brand').value;
+  if (brand) out.push(tag(brand, 'brand'));
+  colors.forEach((c) => out.push(tag(T.COLOR_LABELS[c] || c, colorSel.includes(c) ? 'color:' + c : ''))); // 검색어로 친 색은 검색창에서 지운다
+  const size = getSize();
+  if (size) out.push(tag('사이즈 ' + size, 'size'));
+  const pMin = document.getElementById('priceMin').value, pMax = document.getElementById('priceMax').value;
+  if (pMin || pMax) out.push(tag(`${pMin ? Number(pMin).toLocaleString('ko-KR') : ''}~${pMax ? Number(pMax).toLocaleString('ko-KR') : ''}원`, 'price'));
+  if (keywords.length) out.push(tag('검색어: ' + keywords.join(' ')));
+  return out.join('');
+}
+
+document.getElementById('meta').addEventListener('click', (e) => {
+  const x = e.target.closest('.mtag[data-x]')?.dataset.x;
+  if (!x) return;
+  const [kind, val] = [x.split(':')[0], x.slice(x.indexOf(':') + 1)];
+  if (kind === 'cat') {
+    if (groupById(val)) clearCategories(); else toggleSub(val);
+  } else if (kind === 'brand') pickBrand('');
+  else if (kind === 'color') { colorSel = colorSel.filter((c) => c !== val); renderColorPanel(); go(); }
+  else if (kind === 'size') { pendingSize = ''; document.getElementById('size').value = ''; document.getElementById('size').dispatchEvent(new Event('change', { bubbles: true })); }
+  else if (kind === 'price') { document.getElementById('priceMin').value = ''; document.getElementById('priceMax').value = ''; go(); }
+});
 
 function afterCategoryChange() {
   const q = document.getElementById('q');
@@ -1729,7 +1751,8 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
       armReveal(document.getElementById('grid'));
       renderedSig = sigOf(hc.data);
       lastTotal = hc.count || 0;
-      document.getElementById('meta').textContent = hc.meta || '';
+      const metaEl = document.getElementById('meta'); // 새 형식은 metaHtml()이 만든 것(이름은 escHtml 처리됨), 옛 형식은 글자로만
+      if (String(hc.meta || '').startsWith('<b class="meta-n">')) metaEl.innerHTML = hc.meta; else metaEl.textContent = hc.meta || '';
       updatePager();
       restoreScrollIfMatching(savedAtBoot);
       paintedFromCache = true;

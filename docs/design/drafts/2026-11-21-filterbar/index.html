@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>#13 홈 필터 영역 시안</title>
+<style>
+  :root { --ink:#111; --sub:#75716a; --bg:#f3f4f3; --line:#e2e3e1; --accent:#2fbf8f; --accent-ink:#177656; --accent-bg:#e6f7f0; --mute:#55585a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif; background:#ddd; color:var(--ink); word-break:keep-all; overflow-wrap:anywhere; }
+  .boards { display:flex; gap:28px; padding:24px; align-items:flex-start; }
+  .board { width:390px; background:var(--bg); padding:14px 16px 20px; border-radius:6px; overflow:hidden; }
+  .cap { font-size:13px; font-weight:700; margin:0 0 10px; color:#333; }
+  .fcard { background:#fff; border-radius:20px; padding:11px 16px 9px; }
+  .fc-h { display:flex; justify-content:space-between; font-size:15px; font-weight:600; color:#a3a6a4; margin-bottom:8px; }
+  .fc-h span b { color:var(--ink); margin-right:14px; } .fc-h em { font-style:normal; color:var(--accent-ink); font-size:12.5px; }
+  .fc-row { display:flex; gap:14px; overflow:hidden; }
+  .fb { width:52px; flex:none; text-align:center; font-size:12px; color:var(--mute); }
+  .fb i { display:grid; place-items:center; width:46px; height:46px; margin:0 auto 4px; border-radius:15px; background:#f3f4f3; font-style:normal; font-weight:800; font-size:15px; color:var(--ink); border:1.5px solid transparent; }
+  .fb.on i { background:var(--accent-bg); border-color:var(--accent); color:var(--accent-ink); }
+  .fb span { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .row { display:flex; gap:8px; overflow:hidden; margin:12px -16px 0; padding:0 16px; }
+  .pill { flex:none; height:34px; padding:0 15px; display:flex; align-items:center; border-radius:17px; background:#fff; color:var(--mute); font-size:13px; font-weight:600; white-space:nowrap; }
+  .pill.sm { height:30px; font-size:12.5px; font-weight:500; padding:0 12px; }
+  .pill.on { background:var(--ink); color:#fff; }
+  .tabs { display:flex; gap:20px; overflow:hidden; margin:14px -16px 0; padding:0 16px; border-bottom:1px solid var(--line); }
+  .tab { flex:none; height:44px; display:flex; align-items:center; font-size:15px; font-weight:600; color:#9a9c9a; border-bottom:2.5px solid transparent; margin-bottom:-1px; white-space:nowrap; }
+  .tab.on { color:var(--ink); font-weight:800; border-bottom-color:var(--ink); }
+  .subs { display:flex; gap:6px; overflow:hidden; margin:12px -16px 0; padding:0 16px; }
+  .sc { flex:none; height:36px; padding:0 12px; display:flex; align-items:center; gap:4px; border-radius:10px; background:#fff; border:1px solid var(--line); color:#3d3f3e; font-size:13px; font-weight:500; white-space:nowrap; }
+  .sc.on { background:var(--accent-bg); border-color:var(--accent); color:var(--accent-ink); font-weight:700; }
+  .sc.on::before { content:"\2713"; font-size:12px; }
+  .tools { display:flex; align-items:center; gap:6px; margin:12px -16px 0; padding:10px 16px 0; border-top:1px solid var(--line); overflow:hidden; }
+  .tl { flex:none; height:36px; padding:0 10px; display:flex; align-items:center; gap:4px; border-radius:10px; color:#2c2e2d; font-size:13px; font-weight:600; white-space:nowrap; }
+  .tl svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .tl.main { background:var(--ink); color:#fff; padding:0 12px; }
+  .tl.main b { background:var(--accent); color:#fff; border-radius:9px; min-width:18px; height:18px; font-size:11.5px; display:grid; place-items:center; padding:0 4px; }
+  .tl.set { color:var(--accent-ink); font-weight:700; }
+  .tl .dot { width:16px; height:16px; border-radius:4px; border:1.5px solid #9a9c9a; display:inline-block; }
+  .bar { width:1px; height:16px; background:var(--line); flex:none; }
+  .meta { margin:14px 0 0; font-size:12.5px; color:var(--sub); display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .meta b { color:var(--ink); font-size:14px; }
+  .meta .x { background:#fff; border:1px solid var(--line); border-radius:8px; padding:3px 8px; color:#3d3f3e; font-size:12px; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .cards div { height:120px; background:#fff; border-radius:20px; }
+  .note { font-size:12.5px; line-height:1.7; color:#333; padding:10px 14px; background:#fff; border-radius:10px; }
+</style></head><body>
+<div class="boards">
+  <section class="board">
+    <p class="cap">지금 — 세 줄이 모두 같은 흰 알약</p>
+    <div class="fcard"><div class="fc-h"><span><b>폴더 1</b>폴더 2 &nbsp; 폴더 3</span><em>관리</em></div>
+      <div class="fc-row"><div class="fb on"><i>전체</i><span>88</span></div><div class="fb"><i>(</i><span>(I)AMT…</span></div><div class="fb"><i>A</i><span>AAOA</span></div><div class="fb"><i>A</i><span>AFTER…</span></div><div class="fb"><i>A</i><span>AIEUL</span></div></div></div>
+    <div class="row"><span class="pill">BOTTOM</span><span class="pill on">OUTER</span><span class="pill">SHOES</span><span class="pill">BAG</span><span class="pill">CAP</span></div>
+    <div class="row"><span class="pill">필터</span><span class="pill">브랜드순 ⌄</span><span class="pill">색상</span><span class="pill">사이즈</span><span class="pill">품절 제외</span></div>
+    <div class="row"><span class="pill sm">기타 재킷</span><span class="pill sm">블루종/MA-1</span><span class="pill sm">레더/라이더 재킷</span><span class="pill sm">트렌치</span></div>
+    <div class="meta">5,311개 · 카테고리: OUTER</div>
+    <div class="cards"><div></div><div></div></div>
+  </section>
+  <section class="board">
+    <p class="cap">제안 — 줄마다 모양이 다르게</p>
+    <div class="fcard"><div class="fc-h"><span><b>폴더 1</b>폴더 2 &nbsp; 폴더 3</span><em>관리</em></div>
+      <div class="fc-row"><div class="fb on"><i>전체</i><span>88</span></div><div class="fb"><i>I</i><span>(I)AMT…</span></div><div class="fb"><i>AA</i><span>AAOA</span></div><div class="fb"><i>AF</i><span>AFTER…</span></div><div class="fb"><i>AI</i><span>AIEUL</span></div></div></div>
+    <div class="tabs"><span class="tab">ALL</span><span class="tab">TOP</span><span class="tab on">OUTER</span><span class="tab">BOTTOM</span><span class="tab">SHOES</span><span class="tab">BAG</span></div>
+    <div class="subs"><span class="sc">전체</span><span class="sc on">블루종/MA-1</span><span class="sc">레더/라이더</span><span class="sc">트렌치</span><span class="sc">기타 재킷</span></div>
+    <div class="tools">
+      <span class="tl main"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>필터<b>2</b></span>
+      <span class="tl">브랜드순<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span><span class="bar"></span>
+      <span class="tl set">색상 2<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+      <span class="tl">사이즈<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
+      <span class="tl"><span class="dot"></span>품절 제외</span>
+    </div>
+    <div class="meta"><b>1,204개</b><span class="x">블루종/MA-1 ×</span><span class="x">블랙·네이비 ×</span></div>
+    <div class="cards"><div></div><div></div></div>
+  </section>
+</div>
+<div style="padding:0 24px 24px;max-width:836px"><div class="note"><b>바뀌는 점</b><br>
+① 카테고리 = 밑줄 탭. 지금 보는 칸이 굵은 글자+검은 밑줄로 한눈에.<br>
+② 세부 분류 = 카테고리 바로 아래로 옮기고 네모난 테두리 칩. 고르면 초록+✓.<br>
+③ 정렬·색상·사이즈 = 선 아래 한 줄. 눌러서 여는 것은 ⌄, 고른 값은 초록 글자(예: "색상 2"). 필터 버튼만 검은색. 품절 제외는 체크박스 모양.<br>
+④ 개수 줄 = 고른 조건을 작은 표로 보여 주고 ×로 바로 뺄 수 있게.<br>
+⑤ 브랜드 네모 = "(" 같은 기호 대신 글자 두 개(AA, AF…).<br>
+누르는 칸 높이 34 → 36~44px.</div></div>
+</body></html>

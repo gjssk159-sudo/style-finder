@@ -173,11 +173,12 @@ await p.evaluate(() => hideAiView());
   await v.page.waitForTimeout(1000);
   const m = await v.page.evaluate(() => {
     const r = (e) => e.getBoundingClientRect();
-    const sc = document.getElementById('subChips'), row = sc.querySelector('.subrow'), cnt = document.getElementById('subCount');
-    return { subBottom: r(sc).bottom, gridTop: r(document.getElementById('grid')).top, rowRight: r(row).right, cntLeft: r(cnt).left };
+    const sc = document.getElementById('subChips');
+    return { subBottom: r(sc).bottom, gridTop: r(document.getElementById('grid')).top, toolTop: r(document.querySelector('.toolrow')).top, n: document.querySelector('#meta .meta-n')?.textContent || '' };
   });
   note('세부 분류 줄이 상품 카드를 덮지 않는다', m.subBottom <= m.gridTop, `줄 아래 ${m.subBottom} · 카드 위 ${m.gridTop}`);
-  note('개수 표시가 세부 분류 버튼을 가리지 않는다', m.rowRight <= m.cntLeft, `줄 끝 ${m.rowRight} · 개수 ${m.cntLeft}`);
+  note('세부 분류 줄이 카테고리 바로 아래(도구 줄 위)에 있다', m.subBottom <= m.toolTop, `세부 아래 ${m.subBottom} · 도구 위 ${m.toolTop}`);
+  note('개수는 개수 줄에 보인다', /[0-9]개$/.test(m.n), m.n);
   const b = await v.page.locator('#subChips .subrow').first().boundingBox();
   const cdp = await v.ctx.newCDPSession(v.page);
   const y = b.y + b.height / 2;
@@ -214,6 +215,37 @@ await p.evaluate(() => hideAiView());
   note('브랜드를 고르면 선택되고 원래 필터 화면으로 돌아온다', after.v === '소요' && !after.mode && after.title === '필터', JSON.stringify(after));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'brand-picked.png') });
   note('브랜드 찾기 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// #13: 줄마다 모양이 다르다(카테고리 탭·세부 칩·도구 줄), 누르는 칸 크기, 개수 줄의 조건 ×, 브랜드 네모 글자
+{
+  const v = await open(browser, { login: true });
+  const vp = v.page;
+  await vp.locator('#chips .chip', { hasText: /OUTER/ }).first().click(); await vp.waitForTimeout(1000);
+  const m = await vp.evaluate(() => {
+    const cs = (e) => getComputedStyle(e);
+    const on = document.querySelector('#chips .chip.on'), off = document.querySelector('#chips .chip:not(.on)');
+    const sub = document.querySelector('#subChips .chip.sub:not(.tag)');
+    const tools = [...document.querySelectorAll('.toolrow .tool-filter, .toolrow .tool-chip, .toolrow select, .toolrow label.chk')];
+    return {
+      tabH: on.getBoundingClientRect().height, tabLine: cs(on).borderBottomWidth, offBg: cs(off).backgroundColor,
+      subRadius: parseFloat(cs(sub).borderTopLeftRadius), subH: sub.getBoundingClientRect().height,
+      toolMinH: Math.min(...tools.map((e) => e.getBoundingClientRect().height)), filterBg: cs(document.getElementById('filterBtn')).backgroundColor,
+      tags: [...document.querySelectorAll('#meta .mtag')].map((e) => e.textContent),
+      initials: [...document.querySelectorAll('.fb i')].map((e) => e.textContent),
+    };
+  });
+  note('카테고리: 밑줄 탭(높이 44px 이상, 고른 칸에 밑줄, 배경 없음)', m.tabH >= 44 && parseFloat(m.tabLine) >= 2 && m.offBg === 'rgba(0, 0, 0, 0)', JSON.stringify([m.tabH, m.tabLine, m.offBg]));
+  note('세부 분류: 네모난 칩(모서리 12px 이하, 높이 36px 이상)', m.subRadius <= 12 && m.subH >= 36, JSON.stringify([m.subRadius, m.subH]));
+  note('도구 줄: 누르는 칸 36px 이상, 필터 버튼만 검은색', m.toolMinH >= 36 && m.filterBg === 'rgb(17, 17, 17)', JSON.stringify([m.toolMinH, m.filterBg]));
+  note('개수 줄에 고른 카테고리가 표로 보인다', m.tags.some((t) => /OUTER/.test(t)), JSON.stringify(m.tags));
+  note('브랜드 네모에 기호 대신 글자가 들어간다', m.initials.length > 1 && m.initials.every((t) => /^[0-9A-Z가-힣ぁ-んァ-ン一-龥]{1,2}$|^전체$/.test(t)), JSON.stringify(m.initials));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'filterbar.png') });
+  const tagX = vp.locator('#meta .mtag', { hasText: /OUTER/ }).first();
+  if (await tagX.count()) { await tagX.tap(); await vp.waitForTimeout(1000); }
+  const after = await vp.evaluate(() => ({ cat: document.querySelector('#chips .chip.on')?.textContent, tags: document.querySelectorAll('#meta .mtag').length }));
+  note('조건 표의 ×를 누르면 그 조건이 빠진다', after.cat === 'ALL' && after.tags === 0, JSON.stringify(after));
+  note('필터 줄 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
 note('화면 오류 없음', s.errors.length === 0, s.errors.slice(0, 2).join(' | '));
