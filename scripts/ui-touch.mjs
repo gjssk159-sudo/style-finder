@@ -235,6 +235,9 @@ await p.evaluate(() => hideAiView());
       tags: [...document.querySelectorAll('#meta .mtag')].map((e) => e.textContent),
       initials: [...document.querySelectorAll('.fb i')].map((e) => e.textContent),
       tabFont: parseFloat(cs(on).fontSize),
+      seps: [document.getElementById('sortSlot'), document.querySelector('.tool-sep')].map((e) => e && e.getBoundingClientRect().height),
+      toolFit: (() => { const t = document.querySelector('.toolrow'); return t.scrollWidth - t.clientWidth; })(),
+      weights: [...document.querySelectorAll('.toolrow .tool-chip:not(.on), .toolrow select')].map((e) => cs(e).fontWeight).concat(cs(document.querySelector('#meta .meta-n')).fontWeight),
       toolLine: cs(document.querySelector('.toolrow')).borderTopWidth,
       wobble: ['#chips', '#subChips .subrow', '.toolrow'].map((q) => { const e = document.querySelector(q); return e.scrollHeight - e.clientHeight; }),
       gapAbove: document.getElementById('chips').getBoundingClientRect().top - document.getElementById('fCard').getBoundingClientRect().bottom,
@@ -245,6 +248,9 @@ await p.evaluate(() => hideAiView());
   note('도구 줄: 누르는 칸 36px 이상, 필터 버튼만 검은색', m.toolMinH >= 36 && m.filterBg === 'rgb(17, 17, 17)', JSON.stringify([m.toolMinH, m.filterBg]));
   note('개수 줄에 고른 카테고리가 표로 보인다', m.tags.some((t) => /OUTER/.test(t)), JSON.stringify(m.tags));
   note('브랜드 네모에 기호 대신 글자가 들어간다', m.initials.length > 1 && m.initials.every((t) => /^[0-9A-Z가-힣ぁ-んァ-ン一-龥]{1,2}$|^전체$/.test(t)), JSON.stringify(m.initials));
+  note('정렬 옆·색상 옆에 같은 세로 구분선', m.seps.every((h) => h === 16), JSON.stringify(m.seps));
+  note('도구 줄이 옆으로 밀리지 않고 화면 안에 다 들어온다', m.toolFit <= 0, String(m.toolFit));
+  note('도구 줄·개수 글자가 너무 굵지 않다(600 이하)', m.weights.every((w) => +w <= 600), JSON.stringify(m.weights));
   note('카테고리 글자 14px(조금 작게)', m.tabFont === 14, String(m.tabFont));
   note('회색 선은 탭 줄 아래 하나만(도구 줄 위 선 없음)', m.toolLine === '0px', m.toolLine);
   note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));

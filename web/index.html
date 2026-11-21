@@ -123,7 +123,7 @@
   .meta:empty { display: none; }
   /* 개수 줄(#13): 개수 + 지금 걸린 조건 표(×로 빼기) */
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .meta-n { color: var(--ink); font-size: 14px; font-weight: 800; letter-spacing: 0; margin-right: 2px; }
+  .meta-n { color: var(--ink); font-size: 13.5px; font-weight: 600; letter-spacing: 0; margin-right: 2px; }
   .mtag { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: 0; cursor: pointer; }
   .mtag span { color: var(--sub); font-size: 14px; line-height: 1; }
   .mtag.plain { cursor: default; color: var(--sub); }
@@ -516,23 +516,24 @@
     .chip.sub.tag { display: none; } /* 위 탭에 이미 대분류 이름이 보인다 */
     .subchips .subrow { overflow-y: hidden; padding-right: 0; margin-right: 0; gap: 6px; align-items: center; overscroll-behavior-x: contain; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
     .sub-count { display: none; } /* 개수는 바로 아래 개수 줄에 보인다 */
-    .toolrow { display: flex; align-items: center; gap: 4px; margin: 8px -16px 0; padding: 0 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
+    .toolrow { display: flex; align-items: center; gap: 2px; margin: 8px -16px 0; padding: 0 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
     .toolrow::-webkit-scrollbar { display: none; }
-    .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 36px; padding: 0 8px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: 0; white-space: nowrap; }
-    .tool-filter { background: var(--ink); color: var(--paper); padding: 0 11px; margin-right: 2px; }
+    .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 36px; padding: 0 7px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+    .tool-filter { background: var(--ink); color: var(--paper); padding: 0 10px; margin-right: 4px; }
     .tool-filter svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
     .tool-filter b { min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: var(--paper); font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; letter-spacing: 0; }
     .tool-filter b[hidden] { display: none; }
     .tool-chip::after { content: ''; width: 6px; height: 6px; margin: -3px 0 0 4px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(45deg); }
-    .tool-chip.on { color: var(--accent-ink); font-weight: 700; }
-    #sortSlot { flex: none; display: flex; align-items: center; height: 16px; padding-right: 2px; margin-right: 2px; border-right: 1px solid var(--line); }
+    .tool-chip.on { color: var(--accent-ink); font-weight: 600; }
+    #sortSlot { flex: none; display: flex; align-items: center; height: 16px; padding-right: 0; margin-right: 0; border-right: 1px solid var(--line); }
     #stockSlot { flex: none; display: block; }
-    .toolrow select { display: block; width: auto; field-sizing: content; height: 36px; margin: -10px 0; padding: 0 22px 0 8px; border: 0; border-radius: 10px; background-color: transparent; background-position: right 4px center; font-size: 13px; font-weight: 600; color: var(--ink); max-width: none; }
+    .tool-sep { flex: none; width: 1px; height: 16px; margin: 0; background: var(--line); } /* 색상과 사이즈 사이 구분선(정렬 옆 선과 같은 모양) */
+    .toolrow select { display: block; width: auto; field-sizing: content; height: 36px; margin: -10px 0; padding: 0 22px 0 8px; border: 0; border-radius: 10px; background-color: transparent; background-position: right 4px center; font-size: 13px; font-weight: 500; color: var(--ink); max-width: none; }
     /* 품절 제외: 체크박스 모양(켜면 초록 네모에 ✓) */
-    .toolrow label.chk { position: relative; display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 8px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .toolrow label.chk { position: relative; display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 0 0 7px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 500; white-space: nowrap; }
     .toolrow label.chk::before { content: ''; flex: none; width: 16px; height: 16px; box-sizing: border-box; border: 1.5px solid var(--sub); border-radius: 4px; display: grid; place-items: center; color: var(--paper); font-size: 11px; font-weight: 800; line-height: 1; }
     .toolrow label.chk input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; }
-    .toolrow label.chk:has(input:checked) { color: var(--accent-ink); font-weight: 700; }
+    .toolrow label.chk:has(input:checked) { color: var(--accent-ink); font-weight: 600; }
     .toolrow label.chk:has(input:checked)::before { content: '✓'; background: var(--accent); border-color: var(--accent); }
     .tool-chip:focus-visible, .tool-filter:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .toolrow select:focus, .toolrow select:focus-visible, .toolrow label.chk input:focus { outline: none; box-shadow: none; }
@@ -800,7 +801,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     </div>
     <div class="chips" id="chips"></div>
     <div class="chips subchips" id="subChips" style="display:none"></div><!-- 모바일: 카테고리 바로 아래 자리를 차지(목록을 덮지 않음). PC: 헤더 아래에 떠서 표시 -->
-    <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn">필터 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><b id="filterCnt" hidden></b></button><span id="sortSlot"></span><button type="button" class="tool-chip" data-open="color" id="colorChip">색상</button><button type="button" class="tool-chip" data-open="size" id="sizeChip">사이즈</button><span id="stockSlot"></span></div>
+    <div class="toolrow"><button type="button" class="tool-filter" id="filterBtn">필터 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><b id="filterCnt" hidden></b></button><span id="sortSlot"></span><button type="button" class="tool-chip" data-open="color" id="colorChip">색상</button><span class="tool-sep" aria-hidden="true"></span><button type="button" class="tool-chip" data-open="size" id="sizeChip">사이즈</button><span id="stockSlot"></span></div>
   </div>
 </header>
 <script>document.querySelectorAll("header input, header select").forEach(function (e) { e.setAttribute("autocomplete", "off"); });</script>
