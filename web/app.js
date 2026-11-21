@@ -1363,6 +1363,7 @@ async function renderCurrentPage() {
   meta.innerHTML = metaHtml(categories, colors, keywords);
   const subCount = document.getElementById('subCount');
   if (subCount) subCount.textContent = lastTotal.toLocaleString('ko-KR') + '개'; // 세부 카테고리 줄이 개수 줄을 덮으므로 거기에도 표시
+  setTabCount();
 
   if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없어요.<br>필터를 줄이거나 다른 검색어로 찾아보세요.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
   const sig = sigOf(data);
@@ -1536,6 +1537,7 @@ function renderChips() {
   document.getElementById('chips').innerHTML =
     `<span class="chip ${catSel.length ? '' : 'on'}" onclick="clearCategories()">ALL</span>` +
     T.GROUPS.map((g) => `<span class="chip ${on.includes(g) ? 'on' : ''}" onclick="toggleGroup('${g.id}')">${g.label}</span>`).join('');
+  if (document.querySelector('#chips .chip.on')?.textContent === tabCountKey) setTabCount();
   const sub = document.getElementById('subChips');
   const rows = on.filter((g) => (g.subs || []).length > 1);
   if (!rows.length) { sub.innerHTML = ''; sub.style.display = 'none'; return; }
@@ -1554,7 +1556,7 @@ function metaHtml(categories, colors, keywords) {
     ? `<button type="button" class="mtag" data-x="${escHtml(x)}" aria-label="${escHtml(label)} 조건 빼기">${escHtml(label)}<span aria-hidden="true">×</span></button>`
     : `<span class="mtag plain">${escHtml(label)}</span>`;
   const out = [`<b class="meta-n">${lastTotal.toLocaleString('ko-KR')}개</b>`];
-  if (catSel.length) catSel.forEach((id) => { const g = T.GROUPS.find((x) => x.id === id); out.push(tag(g ? g.label : T.labelOf(id), 'cat:' + id)); });
+  if (catSel.length) catSel.forEach((id) => { if (!T.GROUPS.some((x) => x.id === id)) out.push(tag(T.labelOf(id), 'cat:' + id)); }); // 대분류는 위 탭에 보이므로 세부 분류만
   else categories.forEach((c) => out.push(tag(T.labelOf(c)))); // 검색어로 정해진 분류는 검색창에서 지운다
   const brand = document.getElementById('brand').value;
   if (brand) out.push(tag(brand, 'brand'));
@@ -1578,6 +1580,16 @@ document.getElementById('meta').addEventListener('click', (e) => {
   else if (kind === 'size') { pendingSize = ''; document.getElementById('size').value = ''; document.getElementById('size').dispatchEvent(new Event('change', { bubbles: true })); }
   else if (kind === 'price') { document.getElementById('priceMin').value = ''; document.getElementById('priceMax').value = ''; go(); }
 });
+
+// 결과 개수를 지금 고른 카테고리 탭 옆에 작게 붙인다(#13 — 개수만 따로 한 줄을 차지하지 않게)
+let tabCountKey = ''; // 개수를 붙인 탭(같은 탭을 다시 그릴 때만 개수를 유지 — 다른 탭에 옛 개수가 잠깐 보이지 않게)
+function setTabCount() {
+  document.querySelectorAll('#chips .chip-n').forEach((e) => e.remove());
+  const on = document.querySelector('#chips .chip.on');
+  if (!on) return;
+  tabCountKey = on.textContent;
+  on.insertAdjacentHTML('beforeend', `<span class="chip-n">${Number(lastTotal || 0).toLocaleString('ko-KR')}</span>`);
+}
 
 function afterCategoryChange() {
   const q = document.getElementById('q');
@@ -1751,6 +1763,7 @@ for (const id of ['priceMin', 'priceMax']) document.getElementById(id).addEventL
       armReveal(document.getElementById('grid'));
       renderedSig = sigOf(hc.data);
       lastTotal = hc.count || 0;
+      setTabCount();
       const metaEl = document.getElementById('meta'); // 새 형식은 metaHtml()이 만든 것(이름은 escHtml 처리됨), 옛 형식은 글자로만
       if (String(hc.meta || '').startsWith('<b class="meta-n">')) metaEl.innerHTML = hc.meta; else metaEl.textContent = hc.meta || '';
       updatePager();

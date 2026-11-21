@@ -468,7 +468,7 @@
     .m-actions { display: flex; gap: 8px; margin-left: auto; }
     .m-ic { width: 36px; height: 36px; padding: 0; border-radius: 50%; background: #fff; color: var(--ink); border: 1px solid var(--line); display: grid; place-items: center; }
     .m-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    main { padding: 14px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
+    main { padding: 8px 16px calc(112px + env(safe-area-inset-bottom, 0px)); }
     .foot { padding: 6px 16px calc(120px + env(safe-area-inset-bottom, 0px)); border-top: 0; }
     .qa-fab { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 12px; }
     .qa-fab svg { width: 19px; height: 19px; }
@@ -519,7 +519,7 @@
     .toolrow { display: flex; align-items: center; gap: 2px; margin: 8px -16px 0; padding: 0 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
     .toolrow::-webkit-scrollbar { display: none; }
     .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 36px; padding: 0 7px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
-    .tool-filter { background: var(--ink); color: var(--paper); padding: 0 10px; margin-right: 4px; }
+    .tool-filter { background: none; color: var(--ink); padding: 0 7px; } /* 검은 상자 없이 다른 버튼과 같은 글자 버튼 */
     .tool-filter svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
     .tool-filter b { min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent); color: var(--paper); font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; letter-spacing: 0; }
     .tool-filter b[hidden] { display: none; }
@@ -539,6 +539,10 @@
     .toolrow select:focus, .toolrow select:focus-visible, .toolrow label.chk input:focus { outline: none; box-shadow: none; }
     .toolrow select, .toolrow label.chk { -webkit-tap-highlight-color: transparent; }
     .meta-row { margin: 0 0 10px; }
+    /* 개수는 고른 탭 옆에 보이므로, 고른 조건이 없으면 이 줄은 아예 숨긴다 */
+    .meta .meta-n { display: none; }
+    .meta:has(.meta-n):not(:has(.mtag)) { display: none; }
+    .chip-n { margin-left: 4px; font-size: 11px; font-weight: 500; color: var(--sub); letter-spacing: 0; font-variant-numeric: tabular-nums; }
     .meta { font-size: 12.5px; }
 
     /* 상품 카드 */
