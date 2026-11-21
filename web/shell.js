@@ -89,9 +89,28 @@
   const sizeEl = $('size');
   sizeEl.insertAdjacentHTML('afterend', '<div id="sizeChips"></div>');
   const sizeChips = $('sizeChips');
+  // 사이즈를 옷 / 신발 / 그 밖(바지 허리·모자 등)으로 나눠 보여 준다(#13 — 한 줄로 쫙 나열돼 찾기 불편)
+  function sizeGroup(v) {
+    const s = v.trim().toUpperCase();
+    if (/^(EU|US|UK|IT|JP)\s?\d/.test(s) || /MM$/.test(s)) return 'shoe';
+    if (/^\d{3}$/.test(s) && +s >= 200 && +s <= 320) return 'shoe'; // 250, 265 … (mm)
+    if (/^\d+(\/\d+)?$/.test(s) && parseFloat(s) <= 7) return 'wear'; // 0~7, 0/1, 2/3
+    if (/^\d|^EA$/.test(s)) return 'etc';
+    return 'wear'; // XS·S·M·L·XL·OS·ONE SIZE·S/M …
+  }
+  const SIZE_GROUPS = [['wear', '옷 사이즈'], ['shoe', '신발 사이즈'], ['etc', '그 밖의 사이즈 (바지 허리·모자 등)']];
   function buildSizeChips() {
-    sizeChips.innerHTML = [...sizeEl.options].filter((o) => o.value).map((o) =>
-      '<button type="button" data-v="' + o.value.replace(/"/g, '&quot;') + '">' + o.textContent + '</button>').join('');
+    const opts = [...sizeEl.options].filter((o) => o.value);
+    const by = { wear: [], shoe: [], etc: [] };
+    opts.forEach((o) => by[sizeGroup(o.value)].push(o));
+    // 신발: 250 같은 mm 먼저, 그다음 EU·IT·US… 끼리 숫자 순(US4 → US10)
+    const shoeKey = (v) => { const m = v.toUpperCase().match(/^([A-Z]*)\s?([\d.]+)/); return m ? [m[1], parseFloat(m[2])] : [v, 0]; };
+    by.shoe.sort((a, b) => { const [pa, na] = shoeKey(a.value), [pb, nb] = shoeKey(b.value); return pa === pb ? na - nb : pa.localeCompare(pb); });
+    const h = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const used = SIZE_GROUPS.filter(([k]) => by[k].length);
+    sizeChips.innerHTML = used.map(([k, title]) =>
+      (used.length > 1 ? '<p class="size-group-h">' + title + '</p>' : '') +
+      by[k].map((o) => '<button type="button" data-v="' + h(o.value) + '">' + h(o.textContent) + '</button>').join('')).join('');
     syncSizeChips();
   }
   function syncSizeChips() {

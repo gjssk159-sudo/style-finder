@@ -27,7 +27,7 @@ const brands = ['온결', '무드랩', '소요', '헤이든', '파인스튜디�
 const products = Array.from({ length: 12 }, (_, i) => ({
   id: 1000 + i, brand: brands[i % 5].name, brand_id: brands[i % 5].id,
   title: ['울 블렌드 오버핏 싱글 코트', '코튼 와이드 데님 팬츠', '라운드넥 캐시미어 니트', '레더 미니 숄더백', '헤비 코튼 후드 집업', '스트라이프 옥스퍼드 셔츠'][i % 6],
-  title_norm: '', categories: ['outer'], colors: ['black'], sizes: ['S', 'M', 'L'], min_price: 59000 + i * 1000, max_price: 59000 + i * 1000,
+  title_norm: '', categories: ['outer'], colors: ['black'], sizes: [['S', 'M', 'L'], ['250', '260', 'US9', 'US10', 'EU42'], ['28', '30', 'ONE SIZE']][i % 3], min_price: 59000 + i * 1000, max_price: 59000 + i * 1000,
   image: `https://img.test/p${i}.svg`, in_stock: i % 5 !== 3, offer_count: 1, created_at: '2026-11-01T00:00:00Z', first_seen: '2026-11-01',
   offer: [{ source_id: 'a', url: 'https://shop.test/p' + i, price: 59000, in_stock: true }],
 }));
@@ -102,16 +102,17 @@ const CASES = [
 ];
 for (const [label, sel, open2] of CASES) {
   await p.evaluate(() => window.scrollTo(0, 500)); await p.waitForTimeout(300);
+  const b0 = await scrollY(p); // 화면 길이에 따라 500까지 못 내려갈 수 있어 실제 위치를 기준으로
   await open2(); await p.waitForTimeout(700);
   let r = await rectOf(p, sel);
   await swipe(p, 195, r.top + 18, r.top + 60);
-  note(`${label}: 손잡이를 조금 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === base, 'scrollY=' + (await scrollY(p)));
+  note(`${label}: 손잡이를 조금 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === b0, 'scrollY=' + (await scrollY(p)));
   r = await rectOf(p, sel);
   if (await dlgOpen(p, sel)) {
     await swipe(p, 195, r.top + r.h * 0.5, r.top + r.h * 0.5 + 90);
-    note(`${label}: 본문을 아래로 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === base, 'scrollY=' + (await scrollY(p)));
+    note(`${label}: 본문을 아래로 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === b0, 'scrollY=' + (await scrollY(p)));
     await swipe(p, 195, 60, 160);
-    note(`${label}: 바깥을 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === base, 'scrollY=' + (await scrollY(p)));
+    note(`${label}: 바깥을 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === b0, 'scrollY=' + (await scrollY(p)));
   }
   if (await dlgOpen(p, sel)) {
     r = await rectOf(p, sel);
@@ -233,14 +234,27 @@ await p.evaluate(() => hideAiView());
       toolMinH: Math.min(...tools.map((e) => e.getBoundingClientRect().height)), filterBg: cs(document.getElementById('filterBtn')).backgroundColor,
       tags: [...document.querySelectorAll('#meta .mtag')].map((e) => e.textContent),
       initials: [...document.querySelectorAll('.fb i')].map((e) => e.textContent),
+      tabFont: parseFloat(cs(on).fontSize),
+      toolLine: cs(document.querySelector('.toolrow')).borderTopWidth,
+      wobble: ['#chips', '#subChips .subrow', '.toolrow'].map((q) => { const e = document.querySelector(q); return e.scrollHeight - e.clientHeight; }),
+      gapAbove: document.getElementById('chips').getBoundingClientRect().top - document.getElementById('fCard').getBoundingClientRect().bottom,
     };
   });
-  note('카테고리: 밑줄 탭(높이 44px 이상, 고른 칸에 밑줄, 배경 없음)', m.tabH >= 44 && parseFloat(m.tabLine) >= 2 && m.offBg === 'rgba(0, 0, 0, 0)', JSON.stringify([m.tabH, m.tabLine, m.offBg]));
+  note('카테고리: 밑줄 탭(높이 40px 이상, 고른 칸에 밑줄, 배경 없음)', m.tabH >= 40 && parseFloat(m.tabLine) >= 2 && m.offBg === 'rgba(0, 0, 0, 0)', JSON.stringify([m.tabH, m.tabLine, m.offBg]));
   note('세부 분류: 네모난 칩(모서리 12px 이하, 높이 36px 이상)', m.subRadius <= 12 && m.subH >= 36, JSON.stringify([m.subRadius, m.subH]));
   note('도구 줄: 누르는 칸 36px 이상, 필터 버튼만 검은색', m.toolMinH >= 36 && m.filterBg === 'rgb(17, 17, 17)', JSON.stringify([m.toolMinH, m.filterBg]));
   note('개수 줄에 고른 카테고리가 표로 보인다', m.tags.some((t) => /OUTER/.test(t)), JSON.stringify(m.tags));
   note('브랜드 네모에 기호 대신 글자가 들어간다', m.initials.length > 1 && m.initials.every((t) => /^[0-9A-Z가-힣ぁ-んァ-ン一-龥]{1,2}$|^전체$/.test(t)), JSON.stringify(m.initials));
+  note('카테고리 글자 14px(조금 작게)', m.tabFont === 14, String(m.tabFont));
+  note('회색 선은 탭 줄 아래 하나만(도구 줄 위 선 없음)', m.toolLine === '0px', m.toolLine);
+  note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));
+  note('폴더 카드와 카테고리 탭 사이 여백이 작다(8px 이하)', m.gapAbove <= 8, String(m.gapAbove));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'filterbar.png') });
+  await vp.evaluate(() => document.getElementById('sizeChip').click()); await vp.waitForTimeout(700);
+  const sz = await vp.evaluate(() => [...document.querySelectorAll('#sizeChips > *')].map((e) => (e.tagName === 'P' ? '#' : '') + e.textContent));
+  note('사이즈 시트: 옷·신발·그 밖으로 나뉘고 신발은 US9 → US10 순', JSON.stringify(sz) === JSON.stringify(['#옷 사이즈', 'S', 'M', 'L', 'OS', '#신발 사이즈', '250', '260', 'EU42', 'US9', 'US10', '#그 밖의 사이즈 (바지 허리·모자 등)', '28', '30']), JSON.stringify(sz));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'size-sheet.png') });
+  await vp.evaluate(() => document.querySelector('.sheet-x').click()); await vp.waitForTimeout(500);
   const tagX = vp.locator('#meta .mtag', { hasText: /OUTER/ }).first();
   if (await tagX.count()) { await tagX.tap(); await vp.waitForTimeout(1000); }
   const after = await vp.evaluate(() => ({ cat: document.querySelector('#chips .chip.on')?.textContent, tags: document.querySelectorAll('#meta .mtag').length }));
