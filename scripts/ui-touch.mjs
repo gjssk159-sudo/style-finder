@@ -264,7 +264,7 @@ await p.evaluate(() => hideAiView());
   note('카테고리 글자 14px(조금 작게)', m.tabFont === 14, String(m.tabFont));
   note('회색 선은 탭 줄 아래 하나만(도구 줄 위 선 없음)', m.toolLine === '0px', m.toolLine);
   note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));
-  note('넘겨 보는 카드와 카테고리 탭 사이 여백이 작다(8px 이하)', m.gapAbove <= 8, String(m.gapAbove));
+  note('넘겨 보는 카드와 카테고리 탭 사이 여백 20~32px(참고 화면처럼 넉넉하게)', m.gapAbove >= 20 && m.gapAbove <= 32, String(m.gapAbove));
   note('도구 줄 글자 위·아래 여백이 같고(차이 2px 이하) 크지 않다(14px 이하)', Math.abs(m.toolGap[0] - m.toolGap[1]) <= 2 && m.toolGap.every((g) => g <= 14), JSON.stringify(m.toolGap));
   note('고른 카테고리·폴더 탭·브랜드 글자가 너무 굵지 않다(600 이하)', +m.tabW[0] <= 600 && +m.fcTabW <= 600 && +m.fbW <= 600, JSON.stringify([m.tabW, m.fcTabW, m.fbW]));
   const bar = await vp.evaluate(() => [...new Set([...document.querySelectorAll('.tabbar button')].map((b) => getComputedStyle(b).color))]);
@@ -327,6 +327,15 @@ await p.evaluate(() => hideAiView());
   note('장바구니 화면: ×를 누르면 빼기 요청을 보낸다', !!del, del ? del.query : '');
   await vp.evaluate(() => document.querySelector('.tabbar [data-tab=home]').click()); await vp.waitForTimeout(500);
   note('장바구니: 홈 칸을 누르면 장바구니 화면이 닫힌다', await vp.evaluate(() => document.getElementById('cartView').hidden));
+  await vp.evaluate(() => window.openCartTab()); await vp.waitForTimeout(500);
+  await vp.locator('#cartClose').tap(); await vp.waitForTimeout(400);
+  note('위시리스트: × 버튼으로 닫힌다', await vp.evaluate(() => document.getElementById('cartView').hidden));
+  await vp.evaluate(() => window.openCartTab()); await vp.waitForTimeout(500);
+  await swipe(vp, 195, 120, 420);
+  note('위시리스트: 맨 위에서 아래로 끌면 닫힌다', await vp.evaluate(() => document.getElementById('cartView').hidden));
+  await vp.evaluate(() => window.openCartTab()); await vp.waitForTimeout(500);
+  await swipe(vp, 195, 120, 160);
+  note('위시리스트: 조금만 끌면 그대로 열려 있다', await vp.evaluate(() => !document.getElementById('cartView').hidden));
   note('장바구니 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
@@ -340,6 +349,8 @@ await p.evaluate(() => hideAiView());
     return {
       rank: document.getElementById('rankLine').textContent, rankShown: !document.getElementById('rank').hidden,
       rankVis: (() => { const l = document.getElementById('rankLine'); const i = l.querySelector('.rank-i'); const b = i && i.getBoundingClientRect(); const w = document.querySelector('.rank-win').getBoundingClientRect(); return [getComputedStyle(l).opacity, b && Math.round(b.width), Math.round(w.width), Math.round(w.height), getComputedStyle(i).color, l.className]; })(),
+      rankSize: [parseFloat(getComputedStyle(document.querySelector('.rank-i')).fontSize), Math.round(r('#rank').height), Math.round(r('.search-wrap').top - r('#rank').bottom), Math.round(r('#rank').top - r('.logo').bottom)],
+      heroGap: Math.round(r('#hero').top - r('.search-wrap').bottom),
       order: [r('#rank').top < r('.search-wrap').top, r('.search-wrap').bottom <= r('#hero').top, r('#hero').bottom <= r('#chips').top],
       slides: document.querySelectorAll('#heroTrack .hero-slide').length, slideW: Math.round(r('#heroTrack .hero-slide').width),
       fcard: getComputedStyle(document.getElementById('fCard')).display,
@@ -349,6 +360,8 @@ await p.evaluate(() => hideAiView());
   });
   note('랭킹: 맨 위에 1위가 보인다(폴더에 가장 많이 담긴 무드랩)', h.rankShown && h.rank === '1무드랩' && h.rankVis[0] === '1' && h.rankVis[1] > 40, h.rank + ' ' + JSON.stringify(h.rankVis));
   note('홈 순서: 랭킹 → 검색 → 넘겨 보는 카드 → 카테고리', h.order.every(Boolean), JSON.stringify(h.order));
+  note('랭킹 글자 14px·줄 높이 32px·위아래 여백 작게(16px 이하)', h.rankSize[0] === 14 && h.rankSize[1] === 32 && h.rankSize[2] <= 16 && h.rankSize[3] <= 16, JSON.stringify(h.rankSize));
+  note('검색과 넘겨 보는 카드 사이 여백 20px', h.heroGap === 20, String(h.heroGap));
   note('넘겨 보는 카드 3장, 옆 카드가 살짝 보인다', h.slides === 3 && h.slideW < 390 - 32, JSON.stringify([h.slides, h.slideW]));
   note('홈 폴더 카드는 안 보인다', h.fcard === 'none', h.fcard);
   note('하단바 그림 22px·글자 11px(조금 작게)', h.tab[0] === 22 && h.tab[1] === 11, JSON.stringify(h.tab));
@@ -367,6 +380,8 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => rankDialog.close());
   await vp.evaluate(() => document.getElementById('newsBtn').click()); await vp.waitForTimeout(500);
   const nw = await vp.evaluate(() => ({ open: newsDialog.open, n: document.querySelectorAll('#newsList .news-item').length, dot: !document.querySelector('#newsBtn .news-dot').hidden }));
+  const ng = await vp.evaluate(() => { const d = document.getElementById('newsDialog').getBoundingClientRect(); const rg = document.createRange(); rg.selectNodeContents(document.querySelector('#newsDialog .sd-title')); const t = rg.getBoundingClientRect(); const items = document.querySelectorAll('#newsList .news-item'); const first = items[0].getBoundingClientRect(); const b = document.getElementById('newsList'); b.scrollTop = b.scrollHeight; const last = items[items.length - 1].getBoundingClientRect(); return [Math.round(t.top - d.top), Math.round(first.top - t.bottom), Math.round(b.getBoundingClientRect().bottom - last.bottom)]; });
+  note('새 소식: 제목 위·아래 여백이 같고(차이 4px 이하) 맨 아래 칸 밑 여백 28px 이상', Math.abs(ng[0] - ng[1]) <= 4 && ng[2] >= 28, JSON.stringify(ng));
   note('알림 종을 누르면 새 소식이 열리고 초록 점이 사라진다', nw.open && nw.n >= 3 && !nw.dot, JSON.stringify(nw));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'news.png') });
   await vp.evaluate(() => newsDialog.close());

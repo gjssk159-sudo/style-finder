@@ -159,12 +159,12 @@
   .hero-slide:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* #16 브랜드 랭킹: 한 줄씩 위로 넘어가며 1~10위 */
   .rank { display: none; }
-  .rank-badge { flex: none; height: 26px; padding: 0 11px; border-radius: 13px; background: var(--ink); color: var(--paper); font-size: 12.5px; font-weight: 600; line-height: 26px; }
-  .rank-win { flex: 1; min-width: 0; height: 24px; overflow: hidden; }
+  .rank-badge { flex: none; height: 22px; padding: 0 9px; border-radius: 11px; background: var(--ink); color: var(--paper); font-size: 11.5px; font-weight: 600; line-height: 22px; }
+  .rank-win { flex: 1; min-width: 0; height: 20px; overflow: hidden; }
   .rank-line { display: block; transition: transform .26s ease, opacity .26s ease; }
   .rank-line.out { transform: translateY(-100%); opacity: 0; }
   .rank-line.in { transform: translateY(100%); opacity: 0; transition: none; }
-  .rank-i { display: flex; align-items: center; gap: 12px; height: 24px; font-size: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-i { display: flex; align-items: center; gap: 10px; height: 20px; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rank-i em, .rank-list em { flex: none; min-width: 16px; font-style: normal; font-weight: 600; color: var(--sub); text-align: center; font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) { .rank-line, .rank-line.out, .rank-line.in { transition: none; transform: none; opacity: 1; } }
   .rank-note { margin: 0 4px; font-size: 13px; color: var(--sub); }
@@ -188,9 +188,15 @@
   .my-wish > span:first-of-type { flex: 1; }
   .my-wish .cart-cnt { margin: 0; }
   .my-wish i { font-style: normal; font-size: 20px; color: var(--sub); }
-  .cart-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 0 4px; }
+  .cart-head { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 4px; }
   .cart-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
-  .cart-head span { font-size: 13px; color: var(--sub); }
+  .cart-head span { flex: 1; margin-left: 10px; font-size: 13px; color: var(--sub); }
+  .cart-x { flex: none; width: 44px; height: 44px; margin: -10px -10px 0 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); display: grid; place-items: center; letter-spacing: 0; }
+  .cart-x svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .cart-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cart-grab { width: 40px; height: 4px; margin: -8px auto 10px; border-radius: 2px; background: var(--line); }
+  .cartview { transition: transform .22s ease; }
+  @media (prefers-reduced-motion: reduce) { .cartview { transition: none; } }
   .cart-seg { display: flex; gap: 16px; overflow-x: auto; scrollbar-width: none; margin: 4px -16px 0; padding: 0 16px; background: linear-gradient(var(--line), var(--line)) bottom / 100% 1px no-repeat; }
   .cart-seg[hidden] { display: none; }
   .cart-seg::-webkit-scrollbar { display: none; }
@@ -270,6 +276,10 @@
   .sd-top { position: relative; flex: none; height: 84px; background: linear-gradient(180deg, #e6e4ea 0%, #eeecf0 60%, #f3f2f0 100%); display: flex; align-items: flex-end; padding: 0 24px 14px; }
   .sd-title { font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
   .sd-body { overflow-y: auto; padding: 4px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  /* #16 새 소식·랭킹 창: 제목 위아래 여백을 같게, 맨 아래 칸 밑 여백 넉넉히 */
+  #newsDialog .sd-top, #rankDialog .sd-top { height: 70px; align-items: center; padding: 0 24px; }
+  #newsDialog .qa-close, #rankDialog .qa-close { top: 16px; }
+  #newsDialog .sd-body, #rankDialog .sd-body { padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
   .my-id { display: flex; align-items: center; gap: 14px; }
   .my-id .qa-avatar svg { width: 24px; height: 24px; fill: none; stroke: #6f6c66; stroke-width: 1.6; stroke-linecap: round; }
   .my-id-text { min-width: 0; }
@@ -570,8 +580,8 @@
 
     /* 내 폴더 카드 */
     .fcard, .fcard[hidden] { display: none; } /* #16 홈 폴더 카드 없앰 — 하단바 "내 폴더"로 */
-    .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 14px -16px 0; }
-    .rank { display: flex; flex: 1 1 100%; min-width: 0; align-items: center; gap: 12px; height: 44px; margin: 0 0 8px; padding: 0 2px; border: 0; background: none; color: var(--ink); text-align: left; letter-spacing: 0; cursor: pointer; }
+    .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 20px -16px 24px; }
+    .rank { display: flex; flex: 1 1 100%; min-width: 0; align-items: center; gap: 10px; height: 32px; margin: -6px 0 8px; padding: 0 2px; border: 0; background: none; color: var(--ink); text-align: left; letter-spacing: 0; cursor: pointer; }
     .rank[hidden] { display: none; }
     .fcard-old { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 20px; padding: 11px 16px 9px; margin-top: 10px; }
     .fcard[hidden] { display: none; }
@@ -1162,7 +1172,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 <div class="sheet-dim" id="sheetDim" hidden></div>
 <section class="aiview cartview" id="cartView" hidden aria-label="위시리스트"><div class="ai-in">
-  <div class="cart-head"><h1>위시리스트</h1><span id="cartN">0개</span></div>
+  <div class="cart-grab" aria-hidden="true"></div>
+  <div class="cart-head"><h1>위시리스트</h1><span id="cartN">0개</span><button type="button" class="cart-x" id="cartClose" aria-label="위시리스트 닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="cart-seg" id="cartSeg" hidden></div>
   <div id="cartList"></div>
 </div></section>

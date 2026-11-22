@@ -248,6 +248,13 @@
   $('aiBack').addEventListener('click', hideAi);
   $('cartNavBtn').addEventListener('click', () => { closeFilter(); showCart(); });
   $('myWish').addEventListener('click', () => { closeFilter(); showCart(); });
+  $('cartClose').addEventListener('click', hideAi);
+  { // 위시리스트 맨 위에서 아래로 끌면 닫힌다(끄는 만큼 따라 내려옴)
+    const cv = $('cartView'); let y0 = null, dy = 0;
+    cv.addEventListener('touchstart', (e) => { y0 = cv.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
+    cv.addEventListener('touchmove', (e) => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) { cv.style.transition = 'none'; cv.style.transform = 'translateY(' + dy + 'px)'; } }, { passive: true });
+    cv.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; cv.style.transition = ''; cv.style.transform = ''; if (dy > 90) hideAi(); });
+  }
   // #16 홈 위 넘겨 보는 큰 카드: 누르면 해당 기능으로(내용은 임시, 나중에 바꿈)
   $('heroTrack').addEventListener('click', (e) => {
     const k = e.target.closest('[data-hero]')?.dataset.hero;
