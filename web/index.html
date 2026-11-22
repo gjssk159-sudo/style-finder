@@ -487,8 +487,8 @@
     .fc-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .fc-tabs { display: flex; gap: 16px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
     .fc-tabs::-webkit-scrollbar { display: none; }
-    .fc-h .fc-tab { flex: none; background: none; padding: 0; color: #a3a6a4; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
-    .fc-h .fc-tab.on { color: var(--ink); font-weight: 700; }
+    .fc-h .fc-tab { flex: none; background: none; padding: 0; color: #a3a6a4; font-size: 15px; font-weight: 500; letter-spacing: -.01em; }
+    .fc-h .fc-tab.on { color: var(--ink); font-weight: 600; }
     .fc-empty { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 6px; font-size: 13px; color: var(--sub); }
     .fc-empty button { flex: none; height: 34px; padding: 0 14px; border-radius: 17px; background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
     .fc-h b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
@@ -496,7 +496,7 @@
     .fc-row { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
     .fc-row::-webkit-scrollbar { display: none; }
     .fb { flex: none; width: 52px; padding: 0; background: none; color: #55585a; font-size: 12px; font-weight: 500; letter-spacing: 0; text-align: center; }
-    .fb i { display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 4px; border-radius: 15px; background: #f3f4f3; border: 1.5px solid transparent; color: var(--ink); font-style: normal; font-size: 15px; font-weight: 800; }
+    .fb i { display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 4px; border-radius: 15px; background: #f3f4f3; border: 1.5px solid transparent; color: var(--ink); font-style: normal; font-size: 15px; font-weight: 600; }
     .fb span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .fb { font-size: 12px; }
     .fb.on i { background: #e6f7f0; border-color: var(--accent); color: #177656; }
@@ -506,7 +506,7 @@
     .chips { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 20px; margin: 4px -16px 0; padding: 0 16px; background: linear-gradient(var(--line), var(--line)) bottom / 100% 1px no-repeat; }
     .chips::-webkit-scrollbar { display: none; }
     .chip { height: 42px; padding: 0; display: flex; align-items: center; border: 0; border-bottom: 2.5px solid transparent; margin-bottom: 0; border-radius: 0; background: none; color: var(--sub); font-size: 14px; font-weight: 600; letter-spacing: 0; }
-    .chip.on { color: var(--ink); font-weight: 800; border-bottom-color: var(--ink); }
+    .chip.on { color: var(--ink); font-weight: 700; border-bottom-color: var(--ink); }
     .chip.on::before { display: none; }
     /* 세부 분류 줄: 카테고리 바로 아래, 제자리를 차지한다(#9 — 목록을 덮지 않게) */
     .subchips { position: relative; left: auto; right: auto; top: auto; z-index: auto; margin: 10px -16px 0; padding: 0 16px; gap: 6px; background: none; border-bottom: 0; overflow: visible; }
@@ -516,7 +516,7 @@
     .chip.sub.tag { display: none; } /* 위 탭에 이미 대분류 이름이 보인다 */
     .subchips .subrow { overflow-y: hidden; padding-right: 0; margin-right: 0; gap: 6px; align-items: center; overscroll-behavior-x: contain; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
     .sub-count { display: none; } /* 개수는 바로 아래 개수 줄에 보인다 */
-    .toolrow { display: flex; align-items: center; gap: 2px; margin: 8px -16px 0; padding: 0 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
+    .toolrow { display: flex; align-items: center; gap: 2px; margin: 2px -16px -7px; padding: 0 16px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none; }
     .toolrow::-webkit-scrollbar { display: none; }
     .tool-filter, .tool-chip { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 36px; padding: 0 7px; border-radius: 10px; background: none; color: var(--ink); font-size: 13px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
     .tool-filter { background: none; color: var(--ink); padding: 0 7px; } /* 검은 상자 없이 다른 버튼과 같은 글자 버튼 */
@@ -538,7 +538,8 @@
     .tool-chip:focus-visible, .tool-filter:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .toolrow select:focus, .toolrow select:focus-visible, .toolrow label.chk input:focus { outline: none; box-shadow: none; }
     .toolrow select, .toolrow label.chk { -webkit-tap-highlight-color: transparent; }
-    .meta-row { margin: 0 0 10px; }
+    .meta-row { margin: 0; } /* 조건이 없으면 빈 여백도 남기지 않는다 */
+    .meta-row .meta { margin: 9px 0 10px; }
     /* 개수는 고른 탭 옆에 보이므로, 고른 조건이 없으면 이 줄은 아예 숨긴다 */
     .meta .meta-n { display: none; }
     .meta:has(.meta-n):not(:has(.mtag)) { display: none; }
@@ -551,7 +552,7 @@
     .card .imgwrap, .card img { border-radius: 14px; }
     .badge { left: 8px; top: 8px; bottom: auto; background: rgba(255,255,255,.92); color: var(--ink); font-size: 12px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 8px; }
     .card .body { padding: 9px 4px 0; gap: 2px; }
-    .brand { font-size: 12px; color: var(--sub); letter-spacing: .04em; font-weight: 600; }
+    .brand { font-size: 12px; color: var(--sub); letter-spacing: .04em; font-weight: 500; }
     .title { font-size: 13px; font-weight: 500; color: var(--ink); }
     .price { font-size: 14px; font-weight: 800; margin-top: 4px; }
     .tags { margin-top: 4px; }
@@ -620,11 +621,11 @@
 
     /* 하단 탭바 */
     .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); padding: 10px 0 calc(14px + env(safe-area-inset-bottom, 0px)); }
-    .tabbar button { background: none; color: #9a9d9b; padding: 2px 0 0; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0; }
-    .tabbar button.on { color: var(--ink); }
+    .tabbar button { background: none; color: var(--sub); padding: 2px 0 0; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0; }
+    .tabbar button.on { color: var(--sub); } /* 고른 탭도 옆 글자·그림과 같은 색·굵기(#13) */
     .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     .tabbar button.on svg.fill, .tabbar .ai-ic path { fill: currentColor; stroke: none; }
-    .tabbar .plus { color: #55585a; }
+    .tabbar .plus { color: var(--sub); }
     .tabbar .plus i { display: grid; place-items: center; width: 56px; height: 56px; margin: -30px auto -2px; border-radius: 50%; background: var(--accent); border: 4px solid #fff; box-shadow: 0 8px 18px rgba(47,191,143,.38); }
     .tabbar .plus svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2.4; }
 

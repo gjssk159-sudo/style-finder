@@ -242,6 +242,8 @@ await p.evaluate(() => hideAiView());
       toolLine: cs(document.querySelector('.toolrow')).borderTopWidth,
       wobble: ['#chips', '#subChips .subrow', '.toolrow'].map((q) => { const e = document.querySelector(q); return e.scrollHeight - e.clientHeight; }),
       gapAbove: document.getElementById('chips').getBoundingClientRect().top - document.getElementById('fCard').getBoundingClientRect().bottom,
+      toolGap: (() => { const sc = document.getElementById('subChips'); const prev = sc && sc.getBoundingClientRect().height > 0 ? sc : document.getElementById('chips'); const rg = document.createRange(); rg.selectNodeContents(document.getElementById('filterBtn').firstChild); const t = rg.getBoundingClientRect(); const g = document.getElementById('grid').getBoundingClientRect(); return [Math.round(t.top - prev.getBoundingClientRect().bottom), Math.round(g.top - t.bottom)]; })(),
+      tabW: [cs(on).fontWeight, cs(off).fontWeight], fcTabW: cs(document.querySelector('.fc-tab.on') || on).fontWeight, fbW: cs(document.querySelector('.fb i')).fontWeight,
     };
   });
   note('카테고리: 밑줄 탭(높이 40px 이상, 고른 칸에 밑줄, 배경 없음)', m.tabH >= 40 && parseFloat(m.tabLine) >= 2 && m.offBg === 'rgba(0, 0, 0, 0)', JSON.stringify([m.tabH, m.tabLine, m.offBg]));
@@ -256,6 +258,10 @@ await p.evaluate(() => hideAiView());
   note('회색 선은 탭 줄 아래 하나만(도구 줄 위 선 없음)', m.toolLine === '0px', m.toolLine);
   note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));
   note('폴더 카드와 카테고리 탭 사이 여백이 작다(8px 이하)', m.gapAbove <= 8, String(m.gapAbove));
+  note('도구 줄 글자 위·아래 여백이 같고(차이 2px 이하) 크지 않다(14px 이하)', Math.abs(m.toolGap[0] - m.toolGap[1]) <= 2 && m.toolGap.every((g) => g <= 14), JSON.stringify(m.toolGap));
+  note('고른 카테고리·폴더 탭·브랜드 글자가 너무 굵지 않다(700 이하, 브랜드 네모 600 이하)', +m.tabW[0] <= 700 && +m.fcTabW <= 600 && +m.fbW <= 600, JSON.stringify([m.tabW, m.fcTabW, m.fbW]));
+  const bar = await vp.evaluate(() => [...new Set([...document.querySelectorAll('.tabbar button')].map((b) => getComputedStyle(b).color))]);
+  note('하단바: 홈·브랜드 등록도 옆 글자와 같은 색', bar.length === 1, JSON.stringify(bar));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'filterbar.png') });
   await vp.evaluate(() => document.getElementById('sizeChip').click()); await vp.waitForTimeout(700);
   const sz = await vp.evaluate(() => [...document.querySelectorAll('#sizeChips > *')].map((e) => (e.tagName === 'P' ? '#' : '') + e.textContent));
