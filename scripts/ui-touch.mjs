@@ -376,8 +376,8 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => document.getElementById('rank').click()); await vp.waitForTimeout(500);
   const rl = await vp.evaluate(() => ({ open: rankDialog.open, list: [...document.querySelectorAll('#rankList li')].map((l) => l.textContent) }));
   note('랭킹을 누르면 1~10위 목록이 열린다', rl.open && rl.list[0] === '1무드랩' && rl.list[1] === '2소요' && rl.list.length === 5, JSON.stringify(rl));
-  const rt = await vp.evaluate(() => { const t = document.querySelector('#rankDialog .sd-title'); const rg = document.createRange(); rg.selectNodeContents(t); const n = document.createRange(); n.selectNodeContents(document.querySelector('.rank-note')); const cs = getComputedStyle(t); return [Math.round(rg.getBoundingClientRect().left), Math.round(n.getBoundingClientRect().left), cs.fontSize, cs.fontWeight, t.textContent, document.querySelector('.rank-badge').textContent]; });
-  note('인기 브랜드 창: 제목 20px·덜 굵게, 설명 글자와 왼쪽 줄 맞춤, 쉬운 이름', Math.abs(rt[0] - rt[1]) <= 1 && rt[2] === '20px' && +rt[3] <= 600 && /인기 브랜드/.test(rt[4]) && rt[5] === '인기 브랜드', JSON.stringify(rt));
+  const rt = await vp.evaluate(() => { const t = document.querySelector('#rankDialog .sd-title'); const rg = document.createRange(); rg.selectNodeContents(t); const n = document.createRange(); n.selectNodeContents(document.querySelector('.rank-note')); const cs = getComputedStyle(t); return [Math.round(rg.getBoundingClientRect().left), Math.round(n.getBoundingClientRect().left), cs.fontSize, cs.fontWeight, t.textContent, document.querySelector('.rank-badge').textContent, document.querySelector('.rank-note').textContent]; });
+  note('랭킹 창: 제목 20px·덜 굵게, 설명 글자와 왼쪽 줄 맞춤, 설명은 질문으로', Math.abs(rt[0] - rt[1]) <= 1 && rt[2] === '20px' && +rt[3] <= 600 && rt[4] === '랭킹 TOP 10' && rt[5] === '랭킹' && rt[6] === '사람들이 내 폴더에 가장 많이 추가한 브랜드는?', JSON.stringify(rt));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'rank.png') });
   await vp.evaluate(() => rankDialog.close());
   await vp.evaluate(() => document.getElementById('newsBtn').click()); await vp.waitForTimeout(500);
@@ -413,6 +413,7 @@ await p.evaluate(() => hideAiView());
     pwInline: !!document.querySelector('#myView input[type=password]'),
     rowH: Math.min(...[...document.querySelectorAll('#myView .my-row')].map((e) => e.getBoundingClientRect().height)),
   }));
+  note('마이 화면 제목과 하단바 글자가 Mypage', await vp.evaluate(() => document.querySelector('.my-top h1').textContent === 'Mypage' && document.querySelector('.tabbar [data-tab=my]').textContent.trim() === 'Mypage'));
   note('마이: 전체 화면으로 열리고 하단바 마이가 굵다', my.shown && my.tabOn, JSON.stringify([my.shown, my.tabOn]));
   note('마이: 프로필 앞글자·이름', my.av === 'T' && my.name === 'tester', JSON.stringify([my.av, my.name]));
   note('마이: 숫자 세 칸(위시리스트 2·담은 브랜드 5·내 폴더 1)', JSON.stringify(my.stats) === '["2","5","1"]', JSON.stringify(my.stats));

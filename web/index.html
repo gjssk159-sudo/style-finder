@@ -902,7 +902,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <span id="authArea"></span>
     </div>
     <div class="row">
-      <button type="button" class="rank" id="rank" hidden aria-label="인기 브랜드 1~10위 보기"><span class="rank-badge">인기 브랜드</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
+      <button type="button" class="rank" id="rank" hidden aria-label="브랜드 랭킹 1~10위 보기"><span class="rank-badge">랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
       <div class="search-wrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
@@ -1111,12 +1111,12 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
   <div class="sd-body" id="newsList"></div>
 </dialog>
-<dialog id="rankDialog" class="soft-dlg" aria-label="인기 브랜드">
+<dialog id="rankDialog" class="soft-dlg" aria-label="랭킹">
   <div class="sd-top">
     <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="rankDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <span class="sd-title">인기 브랜드 TOP 10</span>
+    <span class="sd-title">랭킹 TOP 10</span>
   </div>
-  <div class="sd-body"><p class="rank-note">사람들이 '내 폴더'에 가장 많이 추가한 브랜드 순위예요.</p><ol class="rank-list" id="rankList"></ol></div>
+  <div class="sd-body"><p class="rank-note">사람들이 내 폴더에 가장 많이 추가한 브랜드는?</p><ol class="rank-list" id="rankList"></ol></div>
 </dialog>
 <dialog id="aboutDialog">
   <div class="dlg-body">
@@ -1185,8 +1185,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 
 <div class="sheet-dim" id="sheetDim" hidden></div>
-<section class="aiview myview" id="myView" hidden aria-label="마이"><div class="ai-in">
-  <div class="my-top"><h1>마이</h1><button type="button" class="my-ic" data-my="news" aria-label="새 소식"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="news-dot" hidden></span></button></div>
+<section class="aiview myview" id="myView" hidden aria-label="Mypage"><div class="ai-in">
+  <div class="my-top"><h1>Mypage</h1><button type="button" class="my-ic" data-my="news" aria-label="새 소식"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="news-dot" hidden></span></button></div>
   <div class="my-prof"><span class="my-av" id="myAv" aria-hidden="true"></span><div class="my-prof-t"><b id="myName"></b><small id="myEmail"></small></div></div>
   <div class="my-stats">
     <button type="button" data-my="wish"><em class="cart-num">0</em><span>위시리스트</span></button>
@@ -1227,7 +1227,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true" class="ai-ic"><path class="spk" d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6zM18.5 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>AI 서비스</button>
   <button type="button" data-tab="add" class="plus"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</button>
   <button type="button" data-tab="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg>내 폴더</button>
-  <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</button>
+  <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>Mypage</button>
 </nav>
 <script defer src="./taxonomy-client.js"></script>
 <script defer src="./config.js"></script>
