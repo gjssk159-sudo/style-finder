@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>#15 장바구니 시안</title>
+<style>
+  :root { --ink:#111; --sub:#75716a; --bg:#f9f8f5; --line:#dedbd4; --paper:#fff; --accent:#2fbf8f; --accent-ink:#177656; --accent-bg:#e6f7f0; --ph:#ecebe6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif; background:#d9d9d6; color:var(--ink); word-break:keep-all; overflow-wrap:anywhere; }
+  .boards { display:flex; gap:28px; padding:24px; align-items:flex-start; }
+  .board { position:relative; width:390px; height:780px; background:var(--bg); border-radius:6px; overflow:hidden; }
+  .cap { font-size:13px; font-weight:700; margin:0 0 10px; color:#333; }
+  .note { font-size:12px; color:#444; margin:10px 0 0; line-height:1.5; max-width:390px; }
+  .in { padding:14px 16px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .card { background:var(--paper); border-radius:18px; padding:8px 8px 12px; }
+  .img { position:relative; aspect-ratio:3/4; border-radius:12px; background:var(--ph); }
+  .cartbtn { position:absolute; right:6px; bottom:6px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.92); display:grid; place-items:center; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+  .cartbtn svg { width:19px; height:19px; fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .cartbtn.on { background:var(--accent); } .cartbtn.on svg { stroke:#fff; }
+  .b { display:block; font-size:12px; color:var(--sub); margin:8px 4px 2px; }
+  .t { display:block; font-size:13.5px; margin:0 4px; }
+  .p { display:block; font-size:14px; font-weight:700; margin:4px 4px 0; }
+  .toast { position:absolute; left:16px; right:16px; bottom:96px; background:var(--ink); color:#fff; border-radius:14px; padding:13px 16px; font-size:13.5px; display:flex; justify-content:space-between; }
+  .toast b { color:#8ee7c3; font-weight:600; }
+  .tabbar { position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(5,1fr); background:#fff; border-top:1px solid var(--line); padding:10px 0 18px; }
+  .tb { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--sub); position:relative; }
+  .tb svg { width:25px; height:25px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .tb .cnt { position:absolute; top:-4px; left:calc(50% + 6px); min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:var(--accent); color:#fff; font-size:11px; font-weight:600; line-height:18px; text-align:center; }
+  .plus i { display:grid; place-items:center; width:56px; height:56px; margin:-30px auto -2px; border-radius:50%; background:var(--accent); border:4px solid #fff; }
+  .plus i svg { stroke:#fff; stroke-width:2.4; width:26px; height:26px; }
+  .head { display:flex; align-items:baseline; justify-content:space-between; padding:20px 20px 6px; }
+  .head h1 { margin:0; font-size:22px; font-weight:700; letter-spacing:-.02em; } .head span { font-size:13px; color:var(--sub); }
+  .seg { display:flex; gap:16px; padding:8px 20px 0; border-bottom:1px solid var(--line); font-size:14px; color:var(--sub); }
+  .seg span { height:38px; display:flex; align-items:center; border-bottom:2.5px solid transparent; }
+  .seg .on { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
+  .list { padding:6px 16px; }
+  .item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .item .th { flex:none; width:76px; height:100px; border-radius:10px; background:var(--ph); }
+  .item .mid { flex:1; min-width:0; }
+  .item .mid .b { margin:2px 0; } .item .mid .t { margin:0; } .item .mid .p { margin:6px 0 0; }
+  .item .go { display:inline-block; margin-top:8px; font-size:12.5px; color:var(--accent-ink); font-weight:600; }
+  .item .x { flex:none; width:32px; height:32px; display:grid; place-items:center; color:var(--sub); font-size:18px; }
+  .item.gone .th { opacity:.45; } .item.gone .t, .item.gone .p { color:var(--sub); }
+  .gone-tag { display:inline-block; font-size:11.5px; color:var(--sub); border:1px solid var(--line); border-radius:6px; padding:1px 6px; margin-top:6px; }
+  .sold { position:absolute; left:6px; top:6px; font-size:11px; background:rgba(255,255,255,.92); border-radius:6px; padding:2px 6px; font-weight:600; }
+  .empty { text-align:center; padding:120px 30px 0; color:var(--sub); font-size:14px; line-height:1.6; }
+  .empty b { display:block; color:var(--ink); font-size:16px; font-weight:600; margin-bottom:6px; }
+  .empty a { display:inline-block; margin-top:16px; padding:11px 20px; border-radius:22px; background:var(--ink); color:#fff; font-size:13.5px; text-decoration:none; }
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="bag" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+</defs></svg>
+<div class="boards">
+  <div>
+    <p class="cap">① 홈: 상품 사진 오른쪽 아래 장바구니 버튼</p>
+    <div class="board"><div class="in"><div class="grid">
+      <div class="card"><div class="img"><span class="cartbtn on"><svg><use href="#bag"/></svg></span></div><span class="b">온결</span><span class="t">울 블렌드 싱글 코트</span><span class="p">₩59,000</span></div>
+      <div class="card"><div class="img"><span class="cartbtn"><svg><use href="#bag"/></svg></span></div><span class="b">무드랩</span><span class="t">코튼 와이드 데님 팬츠</span><span class="p">₩60,000</span></div>
+      <div class="card"><div class="img"><span class="cartbtn"><svg><use href="#bag"/></svg></span></div><span class="b">소요</span><span class="t">라운드 니트 가디건</span><span class="p">₩48,000</span></div>
+      <div class="card"><div class="img"><span class="sold">품절</span><span class="cartbtn"><svg><use href="#bag"/></svg></span></div><span class="b">파인스튜디오</span><span class="t">나일론 후드 집업</span><span class="p">₩72,000</span></div>
+    </div></div>
+    <div class="toast">장바구니에 담았어요 <b>보러 가기</b></div>
+    <nav class="tabbar">
+      <span class="tb"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</span>
+      <span class="tb"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z"/></svg>AI 서비스</span>
+      <span class="tb plus"><i><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</span>
+      <span class="tb"><svg><use href="#bag"/></svg><span class="cnt">3</span>장바구니</span>
+      <span class="tb"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</span>
+    </nav></div>
+    <p class="note">버튼을 누르면 초록색으로 바뀌고 아래에 "담았어요"가 잠깐 떠요. 한 번 더 누르면 빠져요. 하단바 "내 폴더" 자리가 "장바구니"가 되고 담은 개수가 붙어요. 내 폴더 관리는 홈 폴더 카드의 "관리"로 들어가요.</p>
+  </div>
+  <div>
+    <p class="cap">② 장바구니 화면</p>
+    <div class="board">
+      <div class="head"><h1>장바구니</h1><span>3개</span></div>
+      <div class="seg"><span class="on">전체</span><span>온결</span><span>소요</span><span>무드랩</span></div>
+      <div class="list">
+        <div class="item"><div class="th"></div><div class="mid"><span class="b">온결</span><span class="t">울 블렌드 싱글 코트</span><span class="p">₩59,000</span><span class="go">쇼핑몰에서 보기 ›</span></div><span class="x">×</span></div>
+        <div class="item"><div class="th"></div><div class="mid"><span class="b">소요</span><span class="t">라운드 니트 가디건</span><span class="p">₩48,000</span><span class="go">쇼핑몰에서 보기 ›</span></div><span class="x">×</span></div>
+        <div class="item gone"><div class="th"></div><div class="mid"><span class="b">무드랩</span><span class="t">린넨 셔츠 자켓</span><span class="p">₩89,000</span><span class="gone-tag">판매 끝남</span></div><span class="x">×</span></div>
+      </div>
+      <nav class="tabbar">
+        <span class="tb"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</span>
+        <span class="tb"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z"/></svg>AI 서비스</span>
+        <span class="tb plus"><i><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</span>
+        <span class="tb"><svg><use href="#bag"/></svg><span class="cnt">3</span>장바구니</span>
+        <span class="tb"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</span>
+      </nav>
+    </div>
+    <p class="note">최근 담은 순. 위 탭으로 브랜드별로 볼 수 있어요. 상품을 누르면 그 쇼핑몰로 가요. 쇼핑몰에서 사라진 상품은 지우지 않고 "판매 끝남"으로 흐리게 남겨요(×로 직접 지움).</p>
+  </div>
+  <div>
+    <p class="cap">③ 아무것도 안 담았을 때</p>
+    <div class="board">
+      <div class="head"><h1>장바구니</h1><span>0개</span></div>
+      <div class="empty"><b>아직 담은 상품이 없어요</b>상품 사진 오른쪽 아래<br>장바구니 버튼을 눌러 담아 보세요.<br><a>상품 보러 가기</a></div>
+      <nav class="tabbar">
+        <span class="tb"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</span>
+        <span class="tb"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6z"/></svg>AI 서비스</span>
+        <span class="tb plus"><i><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</span>
+        <span class="tb"><svg><use href="#bag"/></svg>장바구니</span>
+        <span class="tb"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</span>
+      </nav>
+    </div>
+    <p class="note">로그인 안 한 사람이 버튼을 누르면 로그인 창이 떠요.</p>
+  </div>
+</div>
+</body></html>
