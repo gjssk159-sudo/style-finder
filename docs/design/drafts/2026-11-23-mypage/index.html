@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>#17 마이 페이지 시안</title>
+<style>
+  :root { --ink:#111; --sub:#75716a; --bg:#f3f4f3; --line:#e4e2dc; --paper:#fff; --accent:#2fbf8f; --accent-ink:#177656; --accent-bg:#e6f7f0; --faint:#eeece6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif; background:#d9d9d6; color:var(--ink); word-break:keep-all; overflow-wrap:anywhere; }
+  .boards { display:flex; gap:28px; padding:24px; align-items:flex-start; }
+  .cap { font-size:13px; font-weight:700; margin:0 0 10px; color:#333; }
+  .note { font-size:12px; color:#444; margin:10px 0 0; line-height:1.55; max-width:390px; }
+  .board { position:relative; width:390px; height:844px; background:var(--bg); border-radius:6px; overflow:hidden; }
+  .top { display:flex; align-items:center; justify-content:space-between; padding:18px 20px 6px; }
+  .top h1 { margin:0; font-size:22px; font-weight:700; letter-spacing:-.02em; }
+  .ic { width:40px; height:40px; display:grid; place-items:center; }
+  .ic svg, .row svg, .stat svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .ic svg { width:22px; height:22px; }
+  .prof { display:flex; align-items:center; gap:14px; padding:14px 20px 18px; }
+  .av { width:56px; height:56px; border-radius:50%; background:var(--ink); color:var(--paper); display:grid; place-items:center; font-size:22px; font-weight:600; }
+  .prof b { display:block; font-size:17px; font-weight:600; }
+  .prof small { font-size:12.5px; color:var(--sub); }
+  .stats { margin:0 16px; display:grid; grid-template-columns:repeat(3,1fr); background:var(--paper); border-radius:18px; padding:16px 0; }
+  .stat { text-align:center; border-left:1px solid var(--line); }
+  .stat:first-child { border-left:0; }
+  .stat em { display:block; font-style:normal; font-size:19px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .stat span { font-size:12.5px; color:var(--sub); }
+  .grp { margin:14px 16px 0; background:var(--paper); border-radius:18px; overflow:hidden; }
+  .grp h2 { margin:0; padding:14px 18px 4px; font-size:12px; font-weight:600; color:var(--sub); }
+  .row { display:flex; align-items:center; gap:12px; height:52px; padding:0 18px; font-size:15px; border-top:1px solid var(--faint); }
+  .grp h2 + .row { border-top:0; }
+  .row svg { width:20px; height:20px; color:var(--ink); flex:none; }
+  .row span { flex:1; }
+  .row i { font-style:normal; color:var(--sub); font-size:13px; }
+  .row .chev { width:7px; height:7px; border-right:1.6px solid var(--sub); border-bottom:1.6px solid var(--sub); transform:rotate(-45deg); margin-right:3px; }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .out { display:block; margin:18px auto 0; font-size:13px; color:var(--sub); text-decoration:underline; text-underline-offset:3px; text-align:center; }
+  .ver { text-align:center; font-size:11.5px; color:var(--sub); margin-top:8px; }
+  .tabbar { position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(5,1fr); background:#fff; border-top:1px solid var(--line); padding:9px 0 16px; font-size:11px; color:var(--sub); text-align:center; }
+  .tabbar b { font-weight:700; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--paper); border-radius:24px 24px 0 0; padding:22px 20px 26px; box-shadow:0 -10px 30px rgba(0,0,0,.12); }
+  .dim { position:absolute; inset:0; background:rgba(17,17,17,.4); }
+  .sheet h3 { margin:0 0 14px; font-size:18px; font-weight:700; }
+  .inp { height:50px; border-radius:14px; background:var(--bg); margin-bottom:10px; padding:0 16px; display:flex; align-items:center; color:var(--sub); font-size:15px; }
+  .cta { height:52px; border-radius:26px; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:15px; font-weight:600; margin-top:6px; }
+  .link { text-align:center; font-size:13px; color:var(--sub); margin-top:14px; text-decoration:underline; }
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></symbol>
+  <symbol id="folder" viewBox="0 0 24 24"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8.5v7M8.5 12h7"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></symbol>
+  <symbol id="chat" viewBox="0 0 24 24"><path d="M4 6.5C4 5.7 4.7 5 5.5 5h13c.8 0 1.5.7 1.5 1.5v9c0 .8-.7 1.5-1.5 1.5H10l-4 3v-3h-.5C4.7 17 4 16.3 4 15.5z"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+</defs></svg>
+<div class="boards">
+  <div>
+    <p class="cap">① 마이 (전체 화면)</p>
+    <div class="board">
+      <div class="top"><h1>마이</h1><span class="ic"><svg><use href="#bell"/></svg></span></div>
+      <div class="prof"><span class="av">M</span><div><b>myname</b><small>myname@example.com</small></div></div>
+      <div class="stats">
+        <div class="stat"><em>12</em><span>위시리스트</span></div>
+        <div class="stat"><em>34</em><span>담은 브랜드</span></div>
+        <div class="stat"><em>2</em><span>내 폴더</span></div>
+      </div>
+      <div class="grp"><h2>쇼핑</h2>
+        <div class="row"><svg><use href="#heart"/></svg><span>위시리스트</span><i>12</i><b class="chev"></b></div>
+        <div class="row"><svg><use href="#folder"/></svg><span>내 폴더 관리</span><b class="chev"></b></div>
+        <div class="row"><svg><use href="#plus"/></svg><span>브랜드 등록</span><b class="chev"></b></div>
+      </div>
+      <div class="grp"><h2>소식·도움</h2>
+        <div class="row"><svg><use href="#bell"/></svg><span>새 소식</span><b class="dot"></b><b class="chev"></b></div>
+        <div class="row"><svg><use href="#help"/></svg><span>이용 안내</span><b class="chev"></b></div>
+        <div class="row"><svg><use href="#chat"/></svg><span>문의하기</span><b class="chev"></b></div>
+      </div>
+      <div class="grp"><h2>계정</h2>
+        <div class="row"><svg><use href="#lock"/></svg><span>비밀번호 변경</span><b class="chev"></b></div>
+      </div>
+      <span class="out">로그아웃</span>
+      <nav class="tabbar"><span>홈</span><span>AI 서비스</span><span>브랜드 등록</span><span>내 폴더</span><b>마이</b></nav>
+    </div>
+    <p class="note">팝업 대신 홈처럼 전체 화면. 위에 프로필(이메일 앞글자), 그 아래 숫자 세 칸(누르면 그 화면으로). 메뉴는 쇼핑 / 소식·도움 / 계정으로 묶어 한 줄씩. 비밀번호 칸은 화면에서 빼고 "비밀번호 변경"을 누르면 아래에서 올라와요. 로그아웃은 맨 아래 작은 글자.</p>
+  </div>
+  <div>
+    <p class="cap">② 비밀번호 변경을 눌렀을 때</p>
+    <div class="board">
+      <div class="top"><h1>마이</h1><span class="ic"><svg><use href="#bell"/></svg></span></div>
+      <div class="prof"><span class="av">M</span><div><b>myname</b><small>myname@example.com</small></div></div>
+      <div class="dim"></div>
+      <div class="sheet"><h3>비밀번호 변경</h3>
+        <div class="inp">새 비밀번호 (6자 이상)</div>
+        <div class="inp">새 비밀번호 확인</div>
+        <div class="cta">변경하기</div>
+        <div class="link">비밀번호를 잊으셨나요? 재설정 메일 받기</div>
+      </div>
+    </div>
+    <p class="note">자주 안 쓰는 기능이라 따로 띄워서 마이 화면을 깔끔하게.</p>
+  </div>
+</div>
+</body></html>
