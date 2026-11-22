@@ -1,4 +1,4 @@
-// #15 장바구니(D-10): 마음에 든 상품을 내 계정(cart_items)에 담아 두는 목록. 결제는 없고, 누르면 그 쇼핑몰로 간다.
+// #15 위시리스트(D-10): 마음에 든 상품을 내 계정(cart_items)에 담아 두는 목록. 마이 → 위시리스트에서 본다. 결제는 없고, 누르면 그 쇼핑몰로 간다.
 // app.js 의 sb·currentUser·openAuthDialog 를 쓴다. 표가 아직 없으면(SQL 적용 전) 버튼을 숨기고 조용히 넘어간다.
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -12,7 +12,6 @@
   const cards = new Map(); // 화면에 그린 상품: 담을 때 이름·사진·가격·링크를 같이 저장하려고
 
   window.cartRemember = (list) => { for (const g of list || []) cards.set(g.id, g); };
-  window.cartBtnHtml = (g) => `<button type="button" class="cart-btn${ids.has(g.id) ? ' on' : ''}" data-gid="${g.id}" aria-pressed="${ids.has(g.id)}" aria-label="장바구니에 담기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg></button>`;
 
   function sync() {
     ids = new Set(items.map((x) => x.group_id).filter((x) => x != null));
@@ -20,7 +19,7 @@
       const on = ids.has(+b.dataset.gid);
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', on);
-      b.setAttribute('aria-label', on ? '장바구니에서 빼기' : '장바구니에 담기');
+      b.setAttribute('aria-label', on ? '위시리스트에서 빼기' : '위시리스트에 담기');
     });
     document.querySelectorAll('.cart-cnt').forEach((c) => { c.textContent = items.length > 99 ? '99+' : items.length; c.hidden = !items.length; });
     if (!$('cartView').hidden) render();
@@ -54,7 +53,7 @@
       items = items.filter((x) => x.group_id !== gid); sync();
       const { error } = await sb.from('cart_items').delete().eq('group_id', gid);
       if (error) { items = before; sync(); toast('빼지 못했어요. 잠시 뒤 다시 해 주세요.'); return; }
-      toast('장바구니에서 뺐어요');
+      toast('위시리스트에서 뺐어요');
       return;
     }
     const g = cards.get(gid) || {};
@@ -62,10 +61,10 @@
     const before = items;
     items = [{ ...row, id: -gid, added_at: new Date().toISOString(), product_group: { in_stock: g.in_stock, min_price: g.min_price, image: g.image, offer: g.offer || [] } }, ...items]; sync();
     const { data: saved, error } = await sb.from('cart_items').insert(row).select('id').single();
-    if (error) { items = before; sync(); toast(/row-level|policy/i.test(error.message) ? '장바구니는 300개까지 담을 수 있어요' : '담지 못했어요. 잠시 뒤 다시 해 주세요.'); return; }
+    if (error) { items = before; sync(); toast(/row-level|policy/i.test(error.message) ? '위시리스트는 300개까지 담을 수 있어요' : '담지 못했어요. 잠시 뒤 다시 해 주세요.'); return; }
     const it = items.find((x) => x.group_id === gid);
     if (it && saved) it.id = saved.id; // 임시 번호를 실제 번호로(빼기에 씀)
-    toast('장바구니에 담았어요 <button type="button" data-cart-open>보러 가기</button>');
+    toast('위시리스트에 담았어요 <button type="button" data-cart-open>보러 가기</button>');
   }
 
   async function removeItem(id, gid) {
@@ -83,8 +82,8 @@
     $('cartSeg').hidden = brands.length < 2;
     $('cartSeg').innerHTML = ['', ...brands].map((b) => `<button type="button" class="${b === brandTab ? 'on' : ''}" data-b="${esc(b)}">${b ? esc(b) : '전체'}</button>`).join('');
     const list = items.filter((x) => !brandTab || x.brand === brandTab);
-    if (!uid) { $('cartList').innerHTML = '<div class="cart-empty"><b>로그인하면 장바구니를 쓸 수 있어요</b><button type="button" class="cart-go" data-cart-login>로그인</button></div>'; return; }
-    if (!list.length) { $('cartList').innerHTML = '<div class="cart-empty"><b>아직 담은 상품이 없어요</b>상품 사진 오른쪽 아래<br>장바구니 버튼을 눌러 담아 보세요.<button type="button" class="cart-go" data-cart-home>상품 보러 가기</button></div>'; return; }
+    if (!uid) { $('cartList').innerHTML = '<div class="cart-empty"><b>로그인하면 위시리스트를 쓸 수 있어요</b><button type="button" class="cart-go" data-cart-login>로그인</button></div>'; return; }
+    if (!list.length) { $('cartList').innerHTML = '<div class="cart-empty"><b>위시리스트가 비어 있어요</b>상품 사진 오른쪽 아래<br>하트를 눌러 담아 보세요.<button type="button" class="cart-go" data-cart-home>상품 보러 가기</button></div>'; return; }
     $('cartList').innerHTML = list.map((x) => {
       const pg = x.product_group;
       const gone = x.group_id == null || !pg;
@@ -95,7 +94,7 @@
       const th = /^https?:/i.test(img || '') ? `<img src="${esc(typeof thumbUrl === 'function' ? thumbUrl(img) : img)}" alt="" loading="lazy" decoding="async">` : '';
       const mid = `<span class="ci-th">${th}</span><span class="ci-mid"><span class="ci-b">${esc(x.brand)}</span><span class="ci-t">${esc(x.title)}</span><span class="ci-p">${won(price)}</span>${gone ? '<span class="ci-tag">판매 끝남</span>' : sold ? '<span class="ci-tag">품절</span>' : '<span class="ci-go">쇼핑몰에서 보기 ›</span>'}</span>`;
       const body = gone || !url ? `<div class="ci-link">${mid}</div>` : `<a class="ci-link" href="${esc(url)}" target="_blank" rel="noopener">${mid}</a>`;
-      return `<div class="ci${gone ? ' gone' : ''}">${body}<button type="button" class="ci-x" data-id="${x.id}" data-gid="${x.group_id ?? ''}" aria-label="${esc(x.title)} 장바구니에서 빼기">×</button></div>`;
+      return `<div class="ci${gone ? ' gone' : ''}">${body}<button type="button" class="ci-x" data-id="${x.id}" data-gid="${x.group_id ?? ''}" aria-label="${esc(x.title)} 위시리스트에서 빼기">×</button></div>`;
     }).join('');
   }
 

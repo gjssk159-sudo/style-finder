@@ -1199,7 +1199,7 @@ function hintShopOrigins(data) {
   });
 }
 
-const CART_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>';
+const CART_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg>'; // #15 위시리스트(하트)
 function cardsHtml(data) {
   if (window.cartRemember) window.cartRemember(data); // #15 담을 때 이름·사진·가격을 같이 저장하려고
   return data
@@ -1212,7 +1212,7 @@ function cardsHtml(data) {
         })
         .join('');
       const linkAttrs = OPEN_IN_PLACE ? '' : 'target="_blank" rel="noopener"';
-      // #15 장바구니 버튼은 링크(a) 안에 넣지 않고 옆에 둔다(누르는 것 안에 누르는 것을 겹치지 않게)
+      // #15 위시리스트 버튼은 링크(a) 안에 넣지 않고 옆에 둔다(누르는 것 안에 누르는 것을 겹치지 않게)
       return `<div class="cw"><a class="card" href="${url}" ${linkAttrs}>
         <div class="imgwrap ${g.in_stock ? '' : 'sold'}">
           ${/^https?:/i.test(g.image || '') ? `<img src="${thumbUrl(g.image)}" data-orig="${g.image}" alt="" loading="${idx < 6 ? 'eager' : 'lazy'}"${idx < 4 ? ' fetchpriority="high"' : ''} decoding="async" onerror="imgFallback(this)" onload="if(this.naturalWidth<200)this.remove()">` : ''}
@@ -1224,7 +1224,7 @@ function cardsHtml(data) {
           <span class="price">${price}</span>
           ${tags ? `<div class="tags">${tags}</div>` : ''}
           ${g.offer_count > 1 ? `<span class="multi">${g.offer_count}개 색상/판매처</span>` : ''}
-        </div></a><button type="button" class="cart-btn" data-gid="${g.id}" aria-pressed="false" aria-label="장바구니에 담기">${CART_ICON}</button></div>`;
+        </div></a><button type="button" class="cart-btn" data-gid="${g.id}" aria-pressed="false" aria-label="위시리스트에 담기">${CART_ICON}</button></div>`;
     })
     .join('');
 }

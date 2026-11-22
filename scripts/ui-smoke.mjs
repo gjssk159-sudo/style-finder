@@ -104,8 +104,8 @@ const browser = await chromium.launch();
     const chip = p.locator('#chips button, #chips .chip').nth(1); const n = s.calls.length; await chip.click(); await p.waitForTimeout(1500);
     return s.calls.slice(n).some((c) => c.path.endsWith('/product_group') && /categories/.test(c.query));
   });
-  await check('폴더: (홈 폴더 카드 관리) 폴더 관리 창이 열리고 담은 브랜드 5개가 보인다', async () => {
-    await p.evaluate(() => { window.scrollTo(0, 0); document.getElementById('fcManage').click(); }); await p.waitForTimeout(700); // 하단바 내 폴더 칸은 장바구니로 바뀜(#15) — 홈 폴더 카드의 관리로 연다 await shot(p, '3-folder');
+  await check('폴더: 폴더 관리 창이 열리고 담은 브랜드 5개가 보인다', async () => {
+    await tab(p, 'folder'); await p.waitForTimeout(700); await shot(p, '3-folder');
     return (await isOpen(p, '#folderDialog')) && (await p.locator('#folderList input[type=checkbox]').count()) >= 5;
   });
   await check('폴더: 브랜드 체크를 풀면 폴더에서 빼는 요청을 보낸다', async () => {

@@ -33,7 +33,7 @@ const products = Array.from({ length: 12 }, (_, i) => ({
 }));
 const tables = {
   brands, folders: [{ id: 1, name: '내 폴더', share_id: 'abc123', user_id: UID }],
-  user_brands: brands.map((b) => ({ folder_id: 1, brand_id: b.id })), product_group: products, qna_posts: [],
+  user_brands: brands.map((b) => ({ folder_id: 1, brand_id: b.id, user_id: UID })).concat([[9, 101, 'u2'], [9, 102, 'u2'], [8, 101, 'u3']].map(([f, b, u]) => ({ folder_id: f, brand_id: b, user_id: u }))), product_group: products, qna_posts: [],
   // #15 장바구니: 담긴 상품 1개 + 쇼핑몰에서 사라진 상품 1개(product_group 없음)
   cart_items: [
     { id: 1, group_id: 1001, brand: '무드랩', title: '코튼 와이드 데님 팬츠', image: 'https://img.test/p1.svg', price: 60000, url: 'https://shop.test/p1', added_at: '2026-11-22T00:00:00Z', product_group: { in_stock: true, min_price: 60000, image: 'https://img.test/p1.svg', offer: [{ url: 'https://shop.test/p1' }] } },
@@ -247,7 +247,7 @@ await p.evaluate(() => hideAiView());
       weights: [...document.querySelectorAll('.toolrow .tool-chip:not(.on), .toolrow select')].map((e) => cs(e).fontWeight).concat(cs(document.querySelector('#meta .meta-n')).fontWeight),
       toolLine: cs(document.querySelector('.toolrow')).borderTopWidth,
       wobble: ['#chips', '#subChips .subrow', '.toolrow'].map((q) => { const e = document.querySelector(q); return e.scrollHeight - e.clientHeight; }),
-      gapAbove: document.getElementById('chips').getBoundingClientRect().top - document.getElementById('fCard').getBoundingClientRect().bottom,
+      gapAbove: document.getElementById('chips').getBoundingClientRect().top - document.getElementById('hero').getBoundingClientRect().bottom,
       toolGap: (() => { const sc = document.getElementById('subChips'); const prev = sc && sc.getBoundingClientRect().height > 0 ? sc : document.getElementById('chips'); const rg = document.createRange(); rg.selectNodeContents(document.getElementById('filterBtn').firstChild); const t = rg.getBoundingClientRect(); const g = document.getElementById('grid').getBoundingClientRect(); return [Math.round(t.top - prev.getBoundingClientRect().bottom), Math.round(g.top - t.bottom)]; })(),
       tabW: [cs(on).fontWeight, cs(off).fontWeight], fcTabW: cs(document.querySelector('.fc-tab.on') || on).fontWeight, fbW: cs(document.querySelector('.fb i')).fontWeight,
     };
@@ -264,7 +264,7 @@ await p.evaluate(() => hideAiView());
   note('카테고리 글자 14px(조금 작게)', m.tabFont === 14, String(m.tabFont));
   note('회색 선은 탭 줄 아래 하나만(도구 줄 위 선 없음)', m.toolLine === '0px', m.toolLine);
   note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));
-  note('폴더 카드와 카테고리 탭 사이 여백이 작다(8px 이하)', m.gapAbove <= 8, String(m.gapAbove));
+  note('넘겨 보는 카드와 카테고리 탭 사이 여백이 작다(8px 이하)', m.gapAbove <= 8, String(m.gapAbove));
   note('도구 줄 글자 위·아래 여백이 같고(차이 2px 이하) 크지 않다(14px 이하)', Math.abs(m.toolGap[0] - m.toolGap[1]) <= 2 && m.toolGap.every((g) => g <= 14), JSON.stringify(m.toolGap));
   note('고른 카테고리·폴더 탭·브랜드 글자가 너무 굵지 않다(600 이하)', +m.tabW[0] <= 600 && +m.fcTabW <= 600 && +m.fbW <= 600, JSON.stringify([m.tabW, m.fcTabW, m.fbW]));
   const bar = await vp.evaluate(() => [...new Set([...document.querySelectorAll('.tabbar button')].map((b) => getComputedStyle(b).color))]);
@@ -301,24 +301,25 @@ await p.evaluate(() => hideAiView());
     const b = document.querySelectorAll('#grid .cart-btn');
     const card = document.querySelector('#grid .cw');
     const img = card.querySelector('.imgwrap').getBoundingClientRect(), r = b[0].getBoundingClientRect();
-    const tab = document.querySelector('.tabbar [data-tab=cart]');
+    const tab = document.getElementById('myWish');
     return { n: b.length, inA: !!document.querySelector('a.card .cart-btn'), onIds: [...b].filter((x) => x.classList.contains('on')).map((x) => x.dataset.gid),
       inImg: r.right <= img.right && r.bottom <= img.bottom && r.top >= img.top && img.right - r.right <= 12 && img.bottom - r.bottom <= 12,
-      size: [r.width, r.height], tab: tab && tab.textContent.trim(), cnt: tab && tab.querySelector('.cart-cnt').textContent, folderTab: !!document.querySelector('.tabbar [data-tab=folder]') };
+      size: [r.width, r.height], tab: tab && tab.textContent.trim(), cnt: tab && tab.querySelector('.cart-cnt').textContent, folderTab: !!document.querySelector('.tabbar [data-tab=folder]'), cartTab: !!document.querySelector('.tabbar [data-tab=cart]') };
   });
   note('장바구니: 카드마다 버튼이 있고 링크 안에 겹치지 않는다', c0.n >= 12 && !c0.inA, JSON.stringify([c0.n, c0.inA]));
   note('장바구니: 버튼이 사진 오른쪽 아래 안쪽에 있다(36px)', c0.inImg && c0.size[0] === 36, JSON.stringify([c0.inImg, c0.size]));
   note('장바구니: 이미 담은 상품은 버튼이 켜져 있다', JSON.stringify(c0.onIds) === '["1001"]', JSON.stringify(c0.onIds));
-  note('하단바: 내 폴더 대신 장바구니 칸, 담은 개수 2', !c0.folderTab && /장바구니/.test(c0.tab) && c0.cnt === '2', JSON.stringify(c0));
+  note('하단바엔 내 폴더(장바구니 칸 없음), 마이 안 위시리스트 칸에 담은 개수 2', c0.folderTab && !c0.cartTab && /위시리스트/.test(c0.tab) && c0.cnt === '2', JSON.stringify(c0));
   let n = v.calls.length;
   await vp.locator('#grid .cart-btn[data-gid="1000"]').tap(); await vp.waitForTimeout(600);
   const add = await vp.evaluate(() => ({ on: document.querySelector('#grid .cart-btn[data-gid="1000"]').classList.contains('on'), toast: document.getElementById('cartToast').textContent, url: location.href }));
   const post = v.calls.slice(n).find((c) => c.path.endsWith('/cart_items') && c.method === 'POST');
-  note('장바구니: 버튼을 누르면 담기 요청을 보내고 켜지며 "담았어요"가 뜬다(쇼핑몰로 안 넘어감)', !!post && add.on && /담았어요/.test(add.toast) && !/shop\.test/.test(add.url), JSON.stringify([!!post, add]));
+  note('위시리스트: 하트를 누르면 담기 요청을 보내고 켜지며 "담았어요"가 뜬다(쇼핑몰로 안 넘어감)', !!post && add.on && /담았어요/.test(add.toast) && !/shop\.test/.test(add.url), JSON.stringify([!!post, add]));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'cart-home.png') });
-  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=cart]').click()); await vp.waitForTimeout(800);
-  const cv = await vp.evaluate(() => ({ shown: !document.getElementById('cartView').hidden, items: [...document.querySelectorAll('#cartList .ci')].map((e) => e.querySelector('.ci-t').textContent + (e.classList.contains('gone') ? '(끝남)' : '')), links: [...document.querySelectorAll('#cartList a.ci-link')].map((a) => a.getAttribute('href')), on: document.querySelector('.tabbar [data-tab=cart]').classList.contains('on') }));
-  note('장바구니 화면: 담은 상품이 보이고 사라진 상품은 "판매 끝남"(링크 없음)', cv.shown && cv.on && cv.items.includes('린넨 셔츠 자켓(끝남)') && cv.items.includes('코튼 와이드 데님 팬츠') && !cv.links.includes('https://shop.test/old'), JSON.stringify(cv));
+  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=my]').click()); await vp.waitForTimeout(500);
+  await vp.evaluate(() => document.getElementById('myWish').click()); await vp.waitForTimeout(800);
+  const cv = await vp.evaluate(() => ({ shown: !document.getElementById('cartView').hidden, items: [...document.querySelectorAll('#cartList .ci')].map((e) => e.querySelector('.ci-t').textContent + (e.classList.contains('gone') ? '(끝남)' : '')), links: [...document.querySelectorAll('#cartList a.ci-link')].map((a) => a.getAttribute('href')), on: !document.getElementById('myDialog').open }));
+  note('위시리스트 화면(마이 → 위시리스트): 담은 상품이 보이고 사라진 상품은 "판매 끝남"(링크 없음)', cv.shown && cv.on && cv.items.includes('린넨 셔츠 자켓(끝남)') && cv.items.includes('코튼 와이드 데님 팬츠') && !cv.links.includes('https://shop.test/old'), JSON.stringify(cv));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'cart-view.png') });
   n = v.calls.length;
   await vp.locator('#cartList .ci-x').first().tap(); await vp.waitForTimeout(600);
@@ -327,6 +328,56 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => document.querySelector('.tabbar [data-tab=home]').click()); await vp.waitForTimeout(500);
   note('장바구니: 홈 칸을 누르면 장바구니 화면이 닫힌다', await vp.evaluate(() => document.getElementById('cartView').hidden));
   note('장바구니 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// #16 새 홈: 랭킹 한 줄, 넘겨 보는 큰 카드, 폴더 카드 없음, 알림 종, 하단바 조금 작게
+{
+  const v = await open(browser, { login: true });
+  const vp = v.page;
+  const h = await vp.evaluate(() => {
+    const r = (q) => document.querySelector(q).getBoundingClientRect();
+    const svg = document.querySelector('.tabbar button svg').getBoundingClientRect();
+    return {
+      rank: document.getElementById('rankLine').textContent, rankShown: !document.getElementById('rank').hidden,
+      rankVis: (() => { const l = document.getElementById('rankLine'); const i = l.querySelector('.rank-i'); const b = i && i.getBoundingClientRect(); const w = document.querySelector('.rank-win').getBoundingClientRect(); return [getComputedStyle(l).opacity, b && Math.round(b.width), Math.round(w.width), Math.round(w.height), getComputedStyle(i).color, l.className]; })(),
+      order: [r('#rank').top < r('.search-wrap').top, r('.search-wrap').bottom <= r('#hero').top, r('#hero').bottom <= r('#chips').top],
+      slides: document.querySelectorAll('#heroTrack .hero-slide').length, slideW: Math.round(r('#heroTrack .hero-slide').width),
+      fcard: getComputedStyle(document.getElementById('fCard')).display,
+      tab: [Math.round(svg.width), parseFloat(getComputedStyle(document.querySelector('.tabbar button')).fontSize)],
+      dot: !document.querySelector('#newsBtn .news-dot').hidden, bellLeftOfHelp: r('#newsBtn').right <= r('.m-actions .m-ic:last-child').left,
+    };
+  });
+  note('랭킹: 맨 위에 1위가 보인다(폴더에 가장 많이 담긴 무드랩)', h.rankShown && h.rank === '1무드랩' && h.rankVis[0] === '1' && h.rankVis[1] > 40, h.rank + ' ' + JSON.stringify(h.rankVis));
+  note('홈 순서: 랭킹 → 검색 → 넘겨 보는 카드 → 카테고리', h.order.every(Boolean), JSON.stringify(h.order));
+  note('넘겨 보는 카드 3장, 옆 카드가 살짝 보인다', h.slides === 3 && h.slideW < 390 - 32, JSON.stringify([h.slides, h.slideW]));
+  note('홈 폴더 카드는 안 보인다', h.fcard === 'none', h.fcard);
+  note('하단바 그림 22px·글자 11px(조금 작게)', h.tab[0] === 22 && h.tab[1] === 11, JSON.stringify(h.tab));
+  note('알림 종은 이용 안내 왼쪽, 새 소식이 있으면 초록 점', h.bellLeftOfHelp && h.dot, JSON.stringify([h.bellLeftOfHelp, h.dot]));
+  await vp.waitForTimeout(3500);
+  const r2 = await vp.evaluate(() => document.getElementById('rankLine').textContent);
+  note('랭킹: 잠시 뒤 2위로 넘어간다', r2 === '2소요', r2);
+  await vp.locator('#heroTrack').evaluate((e) => e.scrollTo({ left: e.scrollWidth }));
+  await vp.waitForTimeout(500);
+  note('넘겨 보는 카드가 옆으로 넘어간다', await vp.evaluate(() => document.getElementById('heroTrack').scrollLeft > 100));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'home16.png') });
+  await vp.evaluate(() => document.getElementById('rank').click()); await vp.waitForTimeout(500);
+  const rl = await vp.evaluate(() => ({ open: rankDialog.open, list: [...document.querySelectorAll('#rankList li')].map((l) => l.textContent) }));
+  note('랭킹을 누르면 1~10위 목록이 열린다', rl.open && rl.list[0] === '1무드랩' && rl.list[1] === '2소요' && rl.list.length === 5, JSON.stringify(rl));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'rank.png') });
+  await vp.evaluate(() => rankDialog.close());
+  await vp.evaluate(() => document.getElementById('newsBtn').click()); await vp.waitForTimeout(500);
+  const nw = await vp.evaluate(() => ({ open: newsDialog.open, n: document.querySelectorAll('#newsList .news-item').length, dot: !document.querySelector('#newsBtn .news-dot').hidden }));
+  note('알림 종을 누르면 새 소식이 열리고 초록 점이 사라진다', nw.open && nw.n >= 3 && !nw.dot, JSON.stringify(nw));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'news.png') });
+  await vp.evaluate(() => newsDialog.close());
+  const w = () => vp.evaluate(() => [...document.querySelectorAll('.tabbar button')].map((b) => b.dataset.tab + ':' + getComputedStyle(b).fontWeight).join(' '));
+  const w0 = await w();
+  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=folder]').click()); await vp.waitForTimeout(400);
+  const w1 = await w();
+  await vp.evaluate(() => folderDialog.close()); await vp.waitForTimeout(300);
+  const w2 = await w();
+  note('하단바: 고른 칸만 글자가 굵다(홈 → 내 폴더 → 닫으면 다시 홈)', /home:700/.test(w0) && (w0.match(/:700/g) || []).length === 1 && /folder:700/.test(w1) && (w1.match(/:700/g) || []).length === 1 && w2 === w0, [w0, w1, w2].join(' / '));
+  note('새 홈 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴
@@ -345,7 +396,7 @@ await p.evaluate(() => hideAiView());
 {
   const v = await open(browser, { login: false });
   note('로그인 전: 상품이 없어 장바구니 버튼도 없다(오류 없음)', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
-  await v.page.evaluate(() => document.querySelector('.tabbar [data-tab=cart]').click()); await v.page.waitForTimeout(500);
+  await v.page.evaluate(() => window.openCartTab()); await v.page.waitForTimeout(500);
   note('로그인 전: 장바구니 화면에 로그인 안내', await v.page.evaluate(() => /로그인/.test(document.getElementById('cartList').textContent)));
   await v.ctx.close();
 }

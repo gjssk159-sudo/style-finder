@@ -136,12 +136,58 @@
   .cart-btn { position: absolute; z-index: 2; right: calc(var(--cpad) + 8px); top: calc(var(--cpad) + (100cqw - 2 * var(--cpad)) * 4 / 3 - 44px); width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--paper) 92%, transparent); color: var(--ink); box-shadow: 0 1px 4px color-mix(in srgb, var(--ink) 14%, transparent); letter-spacing: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .cart-btn::after { content: ''; position: absolute; inset: -4px; } /* 누르는 칸 44px */
   .cart-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .cart-btn.on { background: var(--accent); color: var(--paper); }
+  .cart-btn.on { color: var(--accent); }
+  .cart-btn.on svg { fill: currentColor; }
   .cart-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .no-cart .cart-btn { display: none; }
   .reveal-on .cw:has(.card.pre:not(.in)) .cart-btn { opacity: 0; }
   .cart-cnt { display: inline-block; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: var(--paper); font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; letter-spacing: 0; margin-left: 4px; }
   .cart-cnt[hidden] { display: none; }
+  /* #16 홈 위 넘겨 보는 큰 카드(모바일만) */
+  .hero { display: none; }
+  .hero-track { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding: 0 16px; padding: 0 16px; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .hero-track::-webkit-scrollbar { display: none; }
+  .hero-slide { position: relative; flex: none; width: calc(100% - 44px); aspect-ratio: 5 / 4; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 0; padding: 22px; border: 0; border-radius: 22px; overflow: hidden; text-align: left; letter-spacing: 0; word-break: keep-all; overflow-wrap: anywhere; cursor: pointer; }
+  .hero-slide small { font-size: 13px; font-weight: 600; opacity: .8; letter-spacing: .02em; }
+  .hero-slide b { margin-top: 6px; font-size: 26px; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
+  .hero-sub { margin-top: 8px; font-size: 13.5px; font-weight: 400; line-height: 1.5; opacity: .85; }
+  .hero-n { position: absolute; top: 16px; right: 16px; padding: 4px 10px; border-radius: 12px; background: color-mix(in srgb, var(--paper) 22%, transparent); font-size: 12px; font-weight: 600; }
+  .hs-ink { background: radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--accent) 55%, var(--ink)) 0%, var(--ink) 62%); color: var(--paper); }
+  .hs-accent { background: linear-gradient(150deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, var(--ink)) 100%); color: var(--paper); }
+  .hs-paper { background: var(--paper); color: var(--ink); }
+  .hs-paper .hero-n { background: var(--faint); }
+  .hero-slide:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* #16 브랜드 랭킹: 한 줄씩 위로 넘어가며 1~10위 */
+  .rank { display: none; }
+  .rank-badge { flex: none; height: 26px; padding: 0 11px; border-radius: 13px; background: var(--ink); color: var(--paper); font-size: 12.5px; font-weight: 600; line-height: 26px; }
+  .rank-win { flex: 1; min-width: 0; height: 24px; overflow: hidden; }
+  .rank-line { display: block; transition: transform .26s ease, opacity .26s ease; }
+  .rank-line.out { transform: translateY(-100%); opacity: 0; }
+  .rank-line.in { transform: translateY(100%); opacity: 0; transition: none; }
+  .rank-i { display: flex; align-items: center; gap: 12px; height: 24px; font-size: 16px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-i em, .rank-list em { flex: none; min-width: 16px; font-style: normal; font-weight: 600; color: var(--sub); text-align: center; font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { .rank-line, .rank-line.out, .rank-line.in { transition: none; transform: none; opacity: 1; } }
+  .rank-note { margin: 0 4px; font-size: 13px; color: var(--sub); }
+  .rank-list { list-style: none; margin: 0; padding: 4px 18px; background: var(--paper); border-radius: 18px; }
+  .rank-list li { display: flex; align-items: center; gap: 14px; min-height: 48px; border-bottom: 1px solid var(--line); font-size: 15px; word-break: keep-all; overflow-wrap: anywhere; }
+  .rank-list li:last-child { border-bottom: 0; }
+  .rank-list li:nth-child(-n+3) em { color: var(--accent-ink, var(--accent)); }
+  /* #16 새 소식(알림 종) */
+  #newsBtn, #newsNavBtn { position: relative; }
+  .news-dot { position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  #newsNavBtn .news-dot { top: 0; right: -8px; }
+  .news-dot[hidden] { display: none; }
+  .news-item { background: var(--paper); border-radius: 18px; padding: 16px 18px; word-break: keep-all; overflow-wrap: anywhere; }
+  .news-item time { font-size: 12px; color: var(--sub); }
+  .news-item b { display: block; margin: 4px 0 6px; font-size: 15px; font-weight: 600; }
+  .news-item p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
+  .news-item.new b::after { content: 'NEW'; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--accent); color: var(--paper); font-size: 10.5px; font-weight: 600; vertical-align: 2px; }
+  /* #15 마이 안 위시리스트 칸 */
+  .my-wish { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; color: var(--ink); font-size: 15px; font-weight: 600; letter-spacing: 0; text-align: left; cursor: pointer; }
+  .my-wish svg { flex: none; width: 22px; height: 22px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; }
+  .my-wish > span:first-of-type { flex: 1; }
+  .my-wish .cart-cnt { margin: 0; }
+  .my-wish i { font-style: normal; font-size: 20px; color: var(--sub); }
   .cart-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 0 4px; }
   .cart-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
   .cart-head span { font-size: 13px; color: var(--sub); }
@@ -523,7 +569,11 @@
     input[type=text]#q { height: 46px; padding: 0 14px 0 42px; font-size: 15px; }
 
     /* 내 폴더 카드 */
-    .fcard { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 20px; padding: 11px 16px 9px; margin-top: 10px; }
+    .fcard, .fcard[hidden] { display: none; } /* #16 홈 폴더 카드 없앰 — 하단바 "내 폴더"로 */
+    .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 14px -16px 0; }
+    .rank { display: flex; flex: 1 1 100%; min-width: 0; align-items: center; gap: 12px; height: 44px; margin: 0 0 8px; padding: 0 2px; border: 0; background: none; color: var(--ink); text-align: left; letter-spacing: 0; cursor: pointer; }
+    .rank[hidden] { display: none; }
+    .fcard-old { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 20px; padding: 11px 16px 9px; margin-top: 10px; }
     .fcard[hidden] { display: none; }
     .fc-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .fc-tabs { display: flex; gap: 16px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
@@ -593,8 +643,6 @@
     .card { background: #fff; border-radius: 20px; padding: 8px 8px 12px; }
     .cw { --cpad: 8px; }
     .cart-toast { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-    .tabbar button { position: relative; }
-    .tabbar .cart-cnt { position: absolute; top: -2px; left: calc(50% + 5px); margin: 0; }
     .card .imgwrap, .card img { border-radius: 14px; }
     .badge { left: 8px; top: 8px; bottom: auto; background: rgba(255,255,255,.92); color: var(--ink); font-size: 12px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 8px; }
     .card .body { padding: 9px 4px 0; gap: 2px; }
@@ -667,9 +715,9 @@
 
     /* 하단 탭바 */
     .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: #fff; border-top: 1px solid var(--line); padding: 10px 0 calc(14px + env(safe-area-inset-bottom, 0px)); }
-    .tabbar button { background: none; color: var(--sub); padding: 2px 0 0; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0; }
-    .tabbar button.on { color: var(--sub); } /* 고른 탭도 옆 글자·그림과 같은 색·굵기(#13) */
-    .tabbar svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .tabbar button { background: none; color: var(--sub); padding: 2px 0 0; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; letter-spacing: 0; }
+    .tabbar button.on { color: var(--sub); font-weight: 700; } /* 고른 탭은 색은 같고 글자만 굵게(#16) */
+    .tabbar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
     .tabbar button.on svg.fill, .tabbar .ai-ic path { fill: currentColor; stroke: none; }
     .tabbar .plus { color: var(--sub); }
     .tabbar .plus i { display: grid; place-items: center; width: 56px; height: 56px; margin: -30px auto -2px; border-radius: 50%; background: var(--accent); border: 4px solid #fff; box-shadow: 0 8px 18px rgba(47,191,143,.38); }
@@ -811,22 +859,31 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <div class="topbar">
       <p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p>
       <span class="spacer"></span>
-      <span class="m-actions"><button type="button" class="m-ic" aria-label="이용 안내" onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg></button></span>
+      <span class="m-actions"><button type="button" class="m-ic" id="newsBtn" aria-label="새 소식" onclick="openNews()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="news-dot" hidden></span></button><button type="button" class="m-ic" aria-label="이용 안내" onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg></button></span>
       <div class="nav-links">
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
         <button class="nav-ai" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/><circle cx="12" cy="12" r="2.2"/></svg><span class="lbl">AI 서비스</span></button>
-        <button type="button" id="cartNavBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="lbl">장바구니</span><span class="cart-cnt" hidden></span></button>
+        <button type="button" id="cartNavBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg><span class="lbl">위시리스트</span><span class="cart-cnt" hidden></span></button>
+        <button type="button" id="newsNavBtn" onclick="openNews()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="lbl">새 소식</span><span class="news-dot" hidden></span></button>
         <button class="primary" id="addBrandBtn" onclick="openAddDialog()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8.5v7M8.5 12h7"/></svg><span class="lbl">브랜드 등록</span></button>
       </div>
       <span id="authArea"></span>
     </div>
     <div class="row">
+      <button type="button" class="rank" id="rank" hidden aria-label="브랜드 랭킹 1~10위 보기"><span class="rank-badge">랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
       <div class="search-wrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
       <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
+      <section class="hero" id="hero" aria-label="추천">
+        <div class="hero-track" id="heroTrack">
+          <button type="button" class="hero-slide hs-ink" data-hero="recent"><span class="hero-n">1/3</span><small>NEW</small><b>새로 들어온 상품</b><span class="hero-sub">내 폴더 브랜드의 신상품을 최신순으로 봐요</span></button>
+          <button type="button" class="hero-slide hs-accent" data-hero="ai"><span class="hero-n">2/3</span><small>AI 서비스</small><b>사진 한 장으로<br>비슷한 옷 찾기</b><span class="hero-sub">마음에 든 옷 사진으로 내 폴더에서 골라 드려요</span></button>
+          <button type="button" class="hero-slide hs-paper" data-hero="add"><span class="hero-n">3/3</span><small>브랜드 등록</small><b>좋아하는 브랜드를<br>더해 보세요</b><span class="hero-sub">자사몰 주소만 넣으면 매일 새 상품을 모아 와요</span></button>
+        </div>
+      </section>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
       <select id="size"><option value="">사이즈 전체</option></select>
@@ -1010,6 +1067,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <span class="qa-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg></span>
       <div class="my-id-text"><small>내 계정</small><b id="myEmail"></b></div>
     </div>
+    <button type="button" class="qa-card my-wish" id="myWish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg><span>위시리스트</span><span class="cart-cnt" hidden></span><i aria-hidden="true">›</i></button>
     <div class="qa-card my-pw">
       <h3>비밀번호 변경</h3>
       <input type="password" id="myNewPw" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password">
@@ -1022,6 +1080,20 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
 </dialog>
 
+<dialog id="newsDialog" class="soft-dlg" aria-label="새 소식">
+  <div class="sd-top">
+    <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="newsDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="sd-title">새 소식</span>
+  </div>
+  <div class="sd-body" id="newsList"></div>
+</dialog>
+<dialog id="rankDialog" class="soft-dlg" aria-label="브랜드 랭킹">
+  <div class="sd-top">
+    <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="rankDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="sd-title">브랜드 랭킹</span>
+  </div>
+  <div class="sd-body"><p class="rank-note">내 폴더에 가장 많은 사람이 담은 브랜드 순이에요.</p><ol class="rank-list" id="rankList"></ol></div>
+</dialog>
 <dialog id="aboutDialog">
   <div class="dlg-body">
     <h2>MY SELECT SHOP 이용 안내</h2>
@@ -1089,8 +1161,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 
 <div class="sheet-dim" id="sheetDim" hidden></div>
-<section class="aiview cartview" id="cartView" hidden aria-label="장바구니"><div class="ai-in">
-  <div class="cart-head"><h1>장바구니</h1><span id="cartN">0개</span></div>
+<section class="aiview cartview" id="cartView" hidden aria-label="위시리스트"><div class="ai-in">
+  <div class="cart-head"><h1>위시리스트</h1><span id="cartN">0개</span></div>
   <div class="cart-seg" id="cartSeg" hidden></div>
   <div id="cartList"></div>
 </div></section>
@@ -1106,7 +1178,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</button>
   <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true" class="ai-ic"><path class="spk" d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6zM18.5 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>AI 서비스</button>
   <button type="button" data-tab="add" class="plus"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</button>
-  <button type="button" data-tab="cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="cart-cnt" hidden></span>장바구니</button>
+  <button type="button" data-tab="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg>내 폴더</button>
   <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</button>
 </nav>
 <script defer src="./taxonomy-client.js"></script>
@@ -1114,6 +1186,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <script defer src="./app.js"></script>
 <script defer src="./shell.js"></script>
 <script defer src="./cart.js"></script>
+<script defer src="./news.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));

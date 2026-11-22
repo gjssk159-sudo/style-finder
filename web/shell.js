@@ -222,10 +222,11 @@
     root.classList.remove('ai-open');
     setTab('home');
   }
-  function showCart() { // #15 장바구니 화면(AI 화면과 같은 전체 화면 방식)
+  function showCart() { // #15 위시리스트 화면(AI 화면과 같은 전체 화면 방식, 마이 → 위시리스트에서 연다)
     $('aiView').hidden = true;
+    if (myDialog.open) myDialog.close();
     root.classList.add('ai-open');
-    setTab('cart');
+    setTab('my');
     window.showCartView();
   }
   window.openCartTab = showCart;
@@ -235,13 +236,25 @@
     home() { closeFilter(); hideAi(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
     ai() { closeFilter(); showAi(); },
     add() { closeFilter(); openAddDialog(); },
-    cart() { closeFilter(); showCart(); },
+    folder() { closeFilter(); folderDialog.showModal(); renderFolderList(); },
     my() { closeFilter(); if (currentUser) openMyPage(); else openAuthDialog(); },
   };
   tabs.forEach((b) => b.addEventListener('click', () => go2[b.dataset.tab]()));
+  // 고른 칸 표시: 창(내 폴더·브랜드 등록·마이)을 여는 칸도 열려 있는 동안 굵게, 닫으면 지금 화면(AI 또는 홈)으로
+  tabs.forEach((b) => b.addEventListener('click', () => { if (['folder', 'add', 'my'].includes(b.dataset.tab)) setTab(b.dataset.tab); }));
+  const backTab = () => setTimeout(() => { if (!document.querySelector('dialog[open]')) setTab(!$('aiView').hidden ? 'ai' : !$('cartView').hidden ? 'my' : 'home'); }, 0);
+  ['folderDialog', 'addDialog', 'myDialog', 'authDialog'].forEach((id) => $(id).addEventListener('close', backTab));
   document.querySelectorAll('.nav-ai').forEach((b) => b.addEventListener('click', showAi));
   $('aiBack').addEventListener('click', hideAi);
   $('cartNavBtn').addEventListener('click', () => { closeFilter(); showCart(); });
+  $('myWish').addEventListener('click', () => { closeFilter(); showCart(); });
+  // #16 홈 위 넘겨 보는 큰 카드: 누르면 해당 기능으로(내용은 임시, 나중에 바꿈)
+  $('heroTrack').addEventListener('click', (e) => {
+    const k = e.target.closest('[data-hero]')?.dataset.hero;
+    if (k === 'ai') showAi();
+    else if (k === 'add') openAddDialog();
+    else if (k === 'recent') { const s = $('sort'); s.value = 'recent'; s.dispatchEvent(new Event('change')); $('chips').scrollIntoView({ block: 'start' }); }
+  });
   // 로고를 누르면 검색·필터·카테고리를 모두 처음 상태로(앱 쪽 초기화 + 새 화면 요소들도 같이 맞춘다)
   const baseReset = window.resetAll;
   window.resetAll = function () {
@@ -346,7 +359,7 @@
   document.addEventListener('touchcancel', endDrag, { passive: true });
 
   // 어두운 바깥을 누르면 닫힌다(안에서 누르고 바깥에서 뗀 경우는 제외)
-  ['addDialog', 'folderDialog', 'aboutDialog', 'authDialog', 'myDialog'].forEach((id) => {
+  ['addDialog', 'folderDialog', 'aboutDialog', 'authDialog', 'myDialog', 'newsDialog', 'rankDialog'].forEach((id) => {
     const dlg = $(id); if (!dlg) return;
     let downOutside = false;
     const outsideOf = (e) => { const r = dlg.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
