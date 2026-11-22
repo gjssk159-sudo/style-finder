@@ -184,7 +184,7 @@
   .news-item.new b::after { content: 'NEW'; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--accent); color: var(--paper); font-size: 10.5px; font-weight: 600; vertical-align: 2px; }
   /* #17 마이: 프로필 → 숫자 세 칸 → 묶음 메뉴 → 로그아웃 */
   .my-top { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 4px; }
-  .my-top h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .my-top h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.02em; }
   .my-ic { position: relative; width: 44px; height: 44px; margin-right: -10px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); display: grid; place-items: center; letter-spacing: 0; }
   .my-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .my-ic .news-dot { top: 9px; right: 10px; }
@@ -210,7 +210,7 @@
   .my-row:focus-visible, .my-stats button:focus-visible, .my-ic:focus-visible, .my-out:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .my-out { display: block; min-height: 44px; margin: 14px auto 0; padding: 0 12px; border: 0; background: none; color: var(--sub); font-size: 13px; font-weight: 400; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
   .cart-head { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 4px; }
-  .cart-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .cart-head h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.02em; }
   .cart-head span { flex: 1; margin-left: 10px; font-size: 13px; color: var(--sub); }
   .cart-x { flex: none; width: 44px; height: 44px; margin: -10px -10px 0 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); display: grid; place-items: center; letter-spacing: 0; }
   .cart-x svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
@@ -295,10 +295,10 @@
   dialog.soft-dlg[open] { display: flex; flex-direction: column; }
   dialog.soft-dlg::backdrop { background: rgba(17,17,17,.45); }
   .sd-top { position: relative; flex: none; height: 84px; background: linear-gradient(180deg, #e6e4ea 0%, #eeecf0 60%, #f3f2f0 100%); display: flex; align-items: flex-end; padding: 0 24px 14px; }
-  .sd-title { font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+  .sd-title { font-size: 20px; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; } /* 창 제목: 덜 크고 덜 굵게(#16) */
   .sd-body { overflow-y: auto; padding: 4px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
   /* #16 새 소식·랭킹 창: 제목 위아래 여백을 같게, 맨 아래 칸 밑 여백 넉넉히 */
-  #newsDialog .sd-top, #rankDialog .sd-top, #pwDialog .sd-top { height: 70px; align-items: center; padding: 0 24px; }
+  #newsDialog .sd-top, #rankDialog .sd-top, #pwDialog .sd-top { height: 70px; align-items: center; padding: 0 20px; } /* 제목을 아래 글자·칸과 같은 왼쪽 줄에 */
   #newsDialog .qa-close, #rankDialog .qa-close, #pwDialog .qa-close { top: 16px; }
   #newsDialog .sd-body, #rankDialog .sd-body, #pwDialog .sd-body { padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
   .my-id { display: flex; align-items: center; gap: 14px; }
@@ -380,7 +380,7 @@
   .qa-page { font-size: 13px; color: var(--sub); }
   .qa-panel:not([data-view="home"]) .qa-top { height: 72px; }
   .qa-panel:not([data-view="home"]) .qa-brand { display: none; }
-  .qa-panel:not([data-view="home"]) .qa-page { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+  .qa-panel:not([data-view="home"]) .qa-page { font-size: 20px; font-weight: 600; color: var(--ink); letter-spacing: -.02em; }
   .qa-round { position: absolute; top: 16px; width: 38px; height: 38px; padding: 0; border-radius: 50%; background: rgba(255,255,255,.7); color: var(--ink); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
   .qa-close { right: 16px; }
   .qa-back { left: 16px; display: none; }
@@ -509,7 +509,7 @@
   @media (max-width: 700px) {
     header { position: relative; padding: 14px 16px 0; }
     .topbar { flex-wrap: wrap; gap: 12px 8px; padding-bottom: 12px; }
-    .logo { font-size: 19px; letter-spacing: -.03em; word-spacing: 0; gap: 8px; }
+    .logo { font-size: 20px; letter-spacing: -.03em; word-spacing: 0; gap: 8px; }
     .logo-mark { width: 7px; height: 7px; min-width: 7px; border-radius: 2px; }
     .nav-links { order: 3; flex-basis: 100%; gap: 16px; }
     #authArea .who { display: none; }
@@ -601,7 +601,7 @@
 
     /* 내 폴더 카드 */
     .fcard, .fcard[hidden] { display: none; } /* #16 홈 폴더 카드 없앰 — 하단바 "내 폴더"로 */
-    .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 20px -16px 24px; }
+    .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 20px -16px 16px; } /* 위아래 여백 같게(아래는 탭 줄 4px 포함 20px) */
     .rank { display: flex; flex: 1 1 100%; min-width: 0; align-items: center; gap: 10px; height: 32px; margin: -6px 0 8px; padding: 0 2px; border: 0; background: none; color: var(--ink); text-align: left; letter-spacing: 0; cursor: pointer; }
     .rank[hidden] { display: none; }
     .fcard-old { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 20px; padding: 11px 16px 9px; margin-top: 10px; }
@@ -692,7 +692,7 @@
     .filter-box > * { flex: none; }
     .filter-box::before { content: ''; order: -1; align-self: center; flex: none; width: 40px; height: 4px; border-radius: 2px; background: #ddd; margin: 0 0 6px; }
     .sheet-head { display: flex; align-items: center; gap: 14px; order: 0; position: sticky; top: -10px; z-index: 2; background: #fff; margin: 0 -20px; padding: 10px 20px 4px; }
-    .sheet-head b { flex: 1; font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+    .sheet-head b { flex: 1; font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
     .sheet-reset { background: none; color: var(--sub); padding: 2px 0; font-size: 13px; font-weight: 500; letter-spacing: 0; }
     .sheet-x { background: none; color: var(--ink); padding: 0; width: 24px; height: 24px; display: grid; place-items: center; }
     .sheet-x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
@@ -758,7 +758,7 @@
     #addDialog, #folderDialog, #aboutDialog, #authDialog, dialog.soft-dlg { width: 100%; max-width: 100%; margin: auto 0 0; border: 0; border-radius: 28px 28px 0 0; max-height: 90vh; max-height: 90dvh; animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
     #addDialog::before, #folderDialog::before, #aboutDialog::before, #authDialog::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: #ddd; margin: 10px auto 0; }
     #addDialog .dlg-body, #folderDialog .dlg-body, #aboutDialog .dlg-body, #authDialog .dlg-body { max-height: calc(90vh - 14px); max-height: calc(90dvh - 14px); padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px)); gap: 12px; }
-    .dlg-body h2 { font-size: 18px; font-weight: 700; letter-spacing: -.02em; text-transform: none; margin-bottom: 2px; }
+    .dlg-body h2 { font-size: 18px; font-weight: 600; letter-spacing: -.02em; text-transform: none; margin-bottom: 2px; }
     .dlg-body input:not([type=checkbox]) { padding: 0 16px; height: 48px; border: 0; border-radius: 14px; background: #f3f4f3; }
     .dlg-body textarea { padding: 12px 16px; border: 0; border-radius: 14px; background: #f3f4f3; }
     .dlg-row { gap: 10px; }
@@ -902,7 +902,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <span id="authArea"></span>
     </div>
     <div class="row">
-      <button type="button" class="rank" id="rank" hidden aria-label="브랜드 랭킹 1~10위 보기"><span class="rank-badge">랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
+      <button type="button" class="rank" id="rank" hidden aria-label="인기 브랜드 1~10위 보기"><span class="rank-badge">인기 브랜드</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
       <div class="search-wrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
@@ -1111,12 +1111,12 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
   <div class="sd-body" id="newsList"></div>
 </dialog>
-<dialog id="rankDialog" class="soft-dlg" aria-label="브랜드 랭킹">
+<dialog id="rankDialog" class="soft-dlg" aria-label="인기 브랜드">
   <div class="sd-top">
     <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="rankDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <span class="sd-title">브랜드 랭킹</span>
+    <span class="sd-title">인기 브랜드 TOP 10</span>
   </div>
-  <div class="sd-body"><p class="rank-note">내 폴더에 가장 많은 사람이 담은 브랜드 순이에요.</p><ol class="rank-list" id="rankList"></ol></div>
+  <div class="sd-body"><p class="rank-note">사람들이 '내 폴더'에 가장 많이 추가한 브랜드 순위예요.</p><ol class="rank-list" id="rankList"></ol></div>
 </dialog>
 <dialog id="aboutDialog">
   <div class="dlg-body">
