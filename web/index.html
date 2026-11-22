@@ -130,6 +130,47 @@
   .mtag:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .grid { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 38px 20px; }
   .card { position: relative; display: flex; flex-direction: column; }
+  /* #15 장바구니: 카드 감싸개(.cw) 안에서 링크 옆에 버튼을 사진 오른쪽 아래로 띄운다 */
+  .cw { position: relative; display: flex; flex-direction: column; container-type: inline-size; --cpad: 0px; }
+  .cw > .card { flex: 1; }
+  .cart-btn { position: absolute; z-index: 2; right: calc(var(--cpad) + 8px); top: calc(var(--cpad) + (100cqw - 2 * var(--cpad)) * 4 / 3 - 44px); width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--paper) 92%, transparent); color: var(--ink); box-shadow: 0 1px 4px color-mix(in srgb, var(--ink) 14%, transparent); letter-spacing: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .cart-btn::after { content: ''; position: absolute; inset: -4px; } /* 누르는 칸 44px */
+  .cart-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .cart-btn.on { background: var(--accent); color: var(--paper); }
+  .cart-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .no-cart .cart-btn { display: none; }
+  .reveal-on .cw:has(.card.pre:not(.in)) .cart-btn { opacity: 0; }
+  .cart-cnt { display: inline-block; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: var(--paper); font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; letter-spacing: 0; margin-left: 4px; }
+  .cart-cnt[hidden] { display: none; }
+  .cart-head { display: flex; align-items: baseline; justify-content: space-between; margin: 6px 0 4px; }
+  .cart-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .cart-head span { font-size: 13px; color: var(--sub); }
+  .cart-seg { display: flex; gap: 16px; overflow-x: auto; scrollbar-width: none; margin: 4px -16px 0; padding: 0 16px; background: linear-gradient(var(--line), var(--line)) bottom / 100% 1px no-repeat; }
+  .cart-seg[hidden] { display: none; }
+  .cart-seg::-webkit-scrollbar { display: none; }
+  .cart-seg button { flex: none; height: 42px; padding: 0; border: 0; border-bottom: 2.5px solid transparent; border-radius: 0; background: none; color: var(--sub); font-size: 14px; font-weight: 500; letter-spacing: 0; }
+  .cart-seg button.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+  .ci { display: flex; align-items: flex-start; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .ci-link { flex: 1; min-width: 0; display: flex; gap: 12px; color: inherit; text-decoration: none; }
+  .ci-th { flex: none; width: 76px; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; background: var(--faint); }
+  .ci-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ci-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-top: 2px; word-break: keep-all; overflow-wrap: anywhere; }
+  .ci-b { font-size: 12px; color: var(--sub); }
+  .ci-t { font-size: 14px; color: var(--ink); }
+  .ci-p { margin-top: 4px; font-size: 14px; font-weight: 700; }
+  .ci-go { margin-top: 6px; font-size: 12.5px; font-weight: 600; color: var(--accent-ink, var(--ink)); }
+  .ci-tag { align-self: flex-start; margin-top: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 11.5px; color: var(--sub); }
+  .ci.gone .ci-th { opacity: .45; }
+  .ci.gone .ci-t, .ci.gone .ci-p { color: var(--sub); }
+  .ci-x { flex: none; width: 44px; height: 44px; margin: -8px -12px 0 0; padding: 0; border: 0; background: none; color: var(--sub); font-size: 20px; letter-spacing: 0; }
+  .cart-empty { display: flex; flex-direction: column; align-items: center; padding: 110px 20px 0; text-align: center; color: var(--sub); font-size: 14px; line-height: 1.6; word-break: keep-all; }
+  .cart-empty b { margin-bottom: 6px; color: var(--ink); font-size: 16px; font-weight: 600; }
+  .cart-go { margin-top: 16px; height: 44px; padding: 0 22px; border: 0; border-radius: 22px; background: var(--ink); color: var(--paper); font-size: 13.5px; font-weight: 600; letter-spacing: 0; }
+  .cart-toast { position: fixed; left: 16px; right: 16px; bottom: 24px; z-index: 40; max-width: 520px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; border-radius: 14px; background: var(--ink); color: var(--paper); font-size: 13.5px; opacity: 0; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; }
+  .cart-toast.show { opacity: 1; transform: none; }
+  .cart-toast[hidden] { display: none; }
+  .cart-toast button { flex: none; min-height: 32px; padding: 0; border: 0; background: none; color: var(--accent); font-size: 13.5px; font-weight: 600; letter-spacing: 0; }
+  @media (prefers-reduced-motion: reduce) { .cart-toast { transition: none; transform: none; } }
   .card.sk .imgwrap { animation: skp 1.3s ease-in-out infinite; }
   .card.sk .body i { display: block; height: 10px; border-radius: 5px; background: var(--faint); margin-top: 8px; }
   .card.sk .body i.s { width: 55%; }
@@ -550,6 +591,10 @@
     /* 상품 카드 */
     .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .card { background: #fff; border-radius: 20px; padding: 8px 8px 12px; }
+    .cw { --cpad: 8px; }
+    .cart-toast { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+    .tabbar button { position: relative; }
+    .tabbar .cart-cnt { position: absolute; top: -2px; left: calc(50% + 5px); margin: 0; }
     .card .imgwrap, .card img { border-radius: 14px; }
     .badge { left: 8px; top: 8px; bottom: auto; background: rgba(255,255,255,.92); color: var(--ink); font-size: 12px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 8px; }
     .card .body { padding: 9px 4px 0; gap: 2px; }
@@ -771,6 +816,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <button onclick="aboutDialog.showModal()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5C4.7 19 4 18.3 4 17.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg><span class="lbl">이용 안내</span></button>
         <button id="folderNavBtn" onclick="folderDialog.showModal(); renderFolderList()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span class="lbl">내 폴더</span></button>
         <button class="nav-ai" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3"/><circle cx="12" cy="12" r="2.2"/></svg><span class="lbl">AI 서비스</span></button>
+        <button type="button" id="cartNavBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="lbl">장바구니</span><span class="cart-cnt" hidden></span></button>
         <button class="primary" id="addBrandBtn" onclick="openAddDialog()"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8.5v7M8.5 12h7"/></svg><span class="lbl">브랜드 등록</span></button>
       </div>
       <span id="authArea"></span>
@@ -1043,6 +1089,12 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 
 <div class="sheet-dim" id="sheetDim" hidden></div>
+<section class="aiview cartview" id="cartView" hidden aria-label="장바구니"><div class="ai-in">
+  <div class="cart-head"><h1>장바구니</h1><span id="cartN">0개</span></div>
+  <div class="cart-seg" id="cartSeg" hidden></div>
+  <div id="cartList"></div>
+</div></section>
+<div class="cart-toast" id="cartToast" role="status" aria-live="polite" hidden></div>
 <section class="aiview" id="aiView" hidden aria-label="AI 서비스"><div class="ai-in">
   <div class="ai-top"><p class="logo" onclick="resetAll()" aria-label="My Select Shop"><span class="logo-mark"></span>MY SELECT SHOP</p><button type="button" class="ai-back" id="aiBack">돌아가기</button></div>
   <div class="ai-hero"><small>AI</small><h1>사진 한 장으로<br>내 폴더에서 찾아드려요</h1><p>마음에 든 옷 사진을 올리면 내 폴더 브랜드에서 가장 비슷한 옷을 골라줘요.</p></div>
@@ -1054,13 +1106,14 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/></svg>홈</button>
   <button type="button" data-tab="ai"><svg viewBox="0 0 24 24" aria-hidden="true" class="ai-ic"><path class="spk" d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6zM18.5 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/></svg>AI 서비스</button>
   <button type="button" data-tab="add" class="plus"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>브랜드 등록</button>
-  <button type="button" data-tab="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg>내 폴더</button>
+  <button type="button" data-tab="cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="cart-cnt" hidden></span>장바구니</button>
   <button type="button" data-tab="my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg>마이</button>
 </nav>
 <script defer src="./taxonomy-client.js"></script>
 <script defer src="./config.js"></script>
 <script defer src="./app.js"></script>
 <script defer src="./shell.js"></script>
+<script defer src="./cart.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));

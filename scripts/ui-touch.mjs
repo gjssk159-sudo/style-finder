@@ -34,6 +34,11 @@ const products = Array.from({ length: 12 }, (_, i) => ({
 const tables = {
   brands, folders: [{ id: 1, name: '내 폴더', share_id: 'abc123', user_id: UID }],
   user_brands: brands.map((b) => ({ folder_id: 1, brand_id: b.id })), product_group: products, qna_posts: [],
+  // #15 장바구니: 담긴 상품 1개 + 쇼핑몰에서 사라진 상품 1개(product_group 없음)
+  cart_items: [
+    { id: 1, group_id: 1001, brand: '무드랩', title: '코튼 와이드 데님 팬츠', image: 'https://img.test/p1.svg', price: 60000, url: 'https://shop.test/p1', added_at: '2026-11-22T00:00:00Z', product_group: { in_stock: true, min_price: 60000, image: 'https://img.test/p1.svg', offer: [{ url: 'https://shop.test/p1' }] } },
+    { id: 2, group_id: null, brand: '소요', title: '린넨 셔츠 자켓', image: null, price: 89000, url: 'https://shop.test/old', added_at: '2026-11-20T00:00:00Z', product_group: null },
+  ],
 };
 const user = { id: UID, email: 'tester@example.com', aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-11-01T00:00:00Z' };
 const session = { access_token: 'x.' + Buffer.from(JSON.stringify({ sub: UID, exp: 4102444800 })).toString('base64url') + '.y', refresh_token: 'r', token_type: 'bearer', expires_in: 3600, expires_at: 4102444800, user };
@@ -286,6 +291,62 @@ await p.evaluate(() => hideAiView());
   const after = await vp.evaluate(() => ({ cat: document.querySelector('#chips .chip.on')?.firstChild?.textContent, tags: document.querySelectorAll('#meta .mtag').length }));
   note('조건 표의 ×를 누르면 그 조건이 빠진다', after.cat === 'OUTER' && after.tags === 0, JSON.stringify(after));
   note('필터 줄 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// #15 장바구니: 카드의 버튼으로 담고/빼고, 하단바 장바구니 칸에서 목록을 본다
+{
+  const v = await open(browser, { login: true });
+  const vp = v.page;
+  const c0 = await vp.evaluate(() => {
+    const b = document.querySelectorAll('#grid .cart-btn');
+    const card = document.querySelector('#grid .cw');
+    const img = card.querySelector('.imgwrap').getBoundingClientRect(), r = b[0].getBoundingClientRect();
+    const tab = document.querySelector('.tabbar [data-tab=cart]');
+    return { n: b.length, inA: !!document.querySelector('a.card .cart-btn'), onIds: [...b].filter((x) => x.classList.contains('on')).map((x) => x.dataset.gid),
+      inImg: r.right <= img.right && r.bottom <= img.bottom && r.top >= img.top && img.right - r.right <= 12 && img.bottom - r.bottom <= 12,
+      size: [r.width, r.height], tab: tab && tab.textContent.trim(), cnt: tab && tab.querySelector('.cart-cnt').textContent, folderTab: !!document.querySelector('.tabbar [data-tab=folder]') };
+  });
+  note('장바구니: 카드마다 버튼이 있고 링크 안에 겹치지 않는다', c0.n >= 12 && !c0.inA, JSON.stringify([c0.n, c0.inA]));
+  note('장바구니: 버튼이 사진 오른쪽 아래 안쪽에 있다(36px)', c0.inImg && c0.size[0] === 36, JSON.stringify([c0.inImg, c0.size]));
+  note('장바구니: 이미 담은 상품은 버튼이 켜져 있다', JSON.stringify(c0.onIds) === '["1001"]', JSON.stringify(c0.onIds));
+  note('하단바: 내 폴더 대신 장바구니 칸, 담은 개수 2', !c0.folderTab && /장바구니/.test(c0.tab) && c0.cnt === '2', JSON.stringify(c0));
+  let n = v.calls.length;
+  await vp.locator('#grid .cart-btn[data-gid="1000"]').tap(); await vp.waitForTimeout(600);
+  const add = await vp.evaluate(() => ({ on: document.querySelector('#grid .cart-btn[data-gid="1000"]').classList.contains('on'), toast: document.getElementById('cartToast').textContent, url: location.href }));
+  const post = v.calls.slice(n).find((c) => c.path.endsWith('/cart_items') && c.method === 'POST');
+  note('장바구니: 버튼을 누르면 담기 요청을 보내고 켜지며 "담았어요"가 뜬다(쇼핑몰로 안 넘어감)', !!post && add.on && /담았어요/.test(add.toast) && !/shop\.test/.test(add.url), JSON.stringify([!!post, add]));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'cart-home.png') });
+  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=cart]').click()); await vp.waitForTimeout(800);
+  const cv = await vp.evaluate(() => ({ shown: !document.getElementById('cartView').hidden, items: [...document.querySelectorAll('#cartList .ci')].map((e) => e.querySelector('.ci-t').textContent + (e.classList.contains('gone') ? '(끝남)' : '')), links: [...document.querySelectorAll('#cartList a.ci-link')].map((a) => a.getAttribute('href')), on: document.querySelector('.tabbar [data-tab=cart]').classList.contains('on') }));
+  note('장바구니 화면: 담은 상품이 보이고 사라진 상품은 "판매 끝남"(링크 없음)', cv.shown && cv.on && cv.items.includes('린넨 셔츠 자켓(끝남)') && cv.items.includes('코튼 와이드 데님 팬츠') && !cv.links.includes('https://shop.test/old'), JSON.stringify(cv));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'cart-view.png') });
+  n = v.calls.length;
+  await vp.locator('#cartList .ci-x').first().tap(); await vp.waitForTimeout(600);
+  const del = v.calls.slice(n).find((c) => c.path.endsWith('/cart_items') && c.method === 'DELETE');
+  note('장바구니 화면: ×를 누르면 빼기 요청을 보낸다', !!del, del ? del.query : '');
+  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=home]').click()); await vp.waitForTimeout(500);
+  note('장바구니: 홈 칸을 누르면 장바구니 화면이 닫힌다', await vp.evaluate(() => document.getElementById('cartView').hidden));
+  note('장바구니 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴
+{
+  const v = await open(browser, { login: true, width: 1280, height: 900 });
+  const pc = await v.page.evaluate(() => {
+    const cw = document.querySelector('#grid .cw'); const img = cw.querySelector('.imgwrap').getBoundingClientRect(); const r = cw.querySelector('.cart-btn').getBoundingClientRect();
+    const nav = document.getElementById('cartNavBtn').getBoundingClientRect();
+    return { inImg: r.right <= img.right && r.bottom <= img.bottom && img.right - r.right <= 12 && img.bottom - r.bottom <= 12, nav: nav.width > 0 };
+  });
+  note('PC: 장바구니 버튼이 사진 오른쪽 아래, 머리글에 장바구니 메뉴', pc.inImg && pc.nav, JSON.stringify(pc));
+  if (shotDir) await v.page.screenshot({ path: join(shotDir, 'cart-pc.png') });
+  await v.ctx.close();
+}
+// 로그인 전에는 장바구니 버튼이 로그인 창을 연다
+{
+  const v = await open(browser, { login: false });
+  note('로그인 전: 상품이 없어 장바구니 버튼도 없다(오류 없음)', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.page.evaluate(() => document.querySelector('.tabbar [data-tab=cart]').click()); await v.page.waitForTimeout(500);
+  note('로그인 전: 장바구니 화면에 로그인 안내', await v.page.evaluate(() => /로그인/.test(document.getElementById('cartList').textContent)));
   await v.ctx.close();
 }
 note('화면 오류 없음', s.errors.length === 0, s.errors.slice(0, 2).join(' | '));

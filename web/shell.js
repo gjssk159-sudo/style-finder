@@ -210,6 +210,7 @@
   const tabs = document.querySelectorAll('.tabbar button');
   function setTab(name) { tabs.forEach((b) => b.classList.toggle('on', b.dataset.tab === name)); }
   function showAi() {
+    $('cartView').hidden = true;
     $('aiView').hidden = false;
     root.classList.add('ai-open');
     setTab('ai');
@@ -217,21 +218,30 @@
   }
   function hideAi() {
     $('aiView').hidden = true;
+    $('cartView').hidden = true;
     root.classList.remove('ai-open');
     setTab('home');
   }
+  function showCart() { // #15 장바구니 화면(AI 화면과 같은 전체 화면 방식)
+    $('aiView').hidden = true;
+    root.classList.add('ai-open');
+    setTab('cart');
+    window.showCartView();
+  }
+  window.openCartTab = showCart;
   window.showAiView = showAi;
   window.hideAiView = hideAi;
   const go2 = {
     home() { closeFilter(); hideAi(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
     ai() { closeFilter(); showAi(); },
     add() { closeFilter(); openAddDialog(); },
-    folder() { closeFilter(); folderDialog.showModal(); renderFolderList(); },
+    cart() { closeFilter(); showCart(); },
     my() { closeFilter(); if (currentUser) openMyPage(); else openAuthDialog(); },
   };
   tabs.forEach((b) => b.addEventListener('click', () => go2[b.dataset.tab]()));
   document.querySelectorAll('.nav-ai').forEach((b) => b.addEventListener('click', showAi));
   $('aiBack').addEventListener('click', hideAi);
+  $('cartNavBtn').addEventListener('click', () => { closeFilter(); showCart(); });
   // 로고를 누르면 검색·필터·카테고리를 모두 처음 상태로(앱 쪽 초기화 + 새 화면 요소들도 같이 맞춘다)
   const baseReset = window.resetAll;
   window.resetAll = function () {
