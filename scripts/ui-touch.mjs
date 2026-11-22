@@ -268,6 +268,8 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => document.getElementById('filterBtn').click()); await vp.waitForTimeout(700);
   const fs1 = await vp.evaluate(() => ['.filter-box .msel', '#sizeChips', '.filter-box .brand-combo'].map((q) => getComputedStyle(document.querySelector(q)).display !== 'none'));
   note('필터 시트 안에 색상·사이즈·브랜드 칸이 다 있다', fs1.every(Boolean), JSON.stringify(fs1));
+  const ord = await vp.evaluate(() => ['.filter-box .brand-combo', '.filter-box .price-range', '.filter-box .msel', '#sizeChips'].map((q) => Math.round(document.querySelector(q).getBoundingClientRect().top)));
+  note('필터 순서: 브랜드 → 가격 → 색상 → 사이즈', ord.every((t, i) => i === 0 || t > ord[i - 1]), JSON.stringify(ord));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'filter-sheet.png') });
   await vp.evaluate(() => document.querySelector('.sheet-x').click()); await vp.waitForTimeout(500);
   await vp.evaluate(() => document.getElementById('sizeChip').click()); await vp.waitForTimeout(700);

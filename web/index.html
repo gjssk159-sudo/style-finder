@@ -576,11 +576,11 @@
     .filter-box[data-mode=color] #sizeChips, .filter-box[data-mode=color] .brand-combo, .filter-box[data-mode=color] .price-range { display: none; }
     .filter-box[data-mode=size] .msel, .filter-box[data-mode=size] .brand-combo, .filter-box[data-mode=size] .price-range { display: none; }
     .filter-box[data-mode=color] .msel::before, .filter-box[data-mode=size] #sizeChips::before { display: none; }
-    .filter-box .msel { order: 1; width: 100%; }
+    .filter-box .msel { order: 3; width: 100%; } /* 필터 순서: 브랜드 → 가격 → 색상 → 사이즈 */
     .filter-box > #size { display: none; }
-    .filter-box #sizeChips { order: 2; }
-    .filter-box .brand-combo { order: 3; flex: none; width: 100%; }
-    .filter-box .price-range { order: 4; width: 100%; }
+    .filter-box #sizeChips { order: 4; }
+    .filter-box .brand-combo { order: 1; flex: none; width: 100%; }
+    .filter-box .price-range { order: 2; width: 100%; }
     .filter-box label.chk { order: 5; }
     .filter-box .sheet-cta { order: 9; }
     .filter-box .msel::before, .filter-box #sizeChips::before, .filter-box .brand-combo::before, .filter-box .price-range::before { display: block; flex: 0 0 100%; font-size: 13px; font-weight: 700; margin: 18px 0 10px; }
