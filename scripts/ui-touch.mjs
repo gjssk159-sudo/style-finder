@@ -232,11 +232,12 @@ await p.evaluate(() => hideAiView());
     return {
       tabH: on.getBoundingClientRect().height, tabLine: cs(on).borderBottomWidth, offBg: cs(off).backgroundColor,
       subRadius: parseFloat(cs(sub).borderTopLeftRadius), subH: sub.getBoundingClientRect().height,
-      toolMinH: Math.min(...tools.map((e) => e.getBoundingClientRect().height)), filterBg: cs(document.getElementById('filterBtn')).backgroundColor,
+      toolMinH: Math.min(...tools.filter((e) => e.getBoundingClientRect().width > 0).map((e) => e.getBoundingClientRect().height)), filterBg: cs(document.getElementById('filterBtn')).backgroundColor,
       tags: [...document.querySelectorAll('#meta .mtag')].map((e) => e.textContent),
       initials: [...document.querySelectorAll('.fb i')].map((e) => e.textContent),
       tabFont: parseFloat(cs(on).fontSize),
-      seps: [document.getElementById('sortSlot'), document.querySelector('.tool-sep')].map((e) => e && e.getBoundingClientRect().height),
+      toolsShown: [...document.querySelectorAll('.toolrow > *')].filter((e) => e.getBoundingClientRect().width > 0).map((e) => e.id || e.className),
+      stockRight: (() => { const l = document.querySelector('.toolrow label.chk'); return Math.round(innerWidth - l.getBoundingClientRect().right); })(),
       toolFit: (() => { const t = document.querySelector('.toolrow'); return t.scrollWidth - t.clientWidth; })(),
       weights: [...document.querySelectorAll('.toolrow .tool-chip:not(.on), .toolrow select')].map((e) => cs(e).fontWeight).concat(cs(document.querySelector('#meta .meta-n')).fontWeight),
       toolLine: cs(document.querySelector('.toolrow')).borderTopWidth,
@@ -251,7 +252,8 @@ await p.evaluate(() => hideAiView());
   note('도구 줄: 누르는 칸 36px 이상, 필터 버튼도 검은 상자 없음', m.toolMinH >= 36 && m.filterBg === 'rgba(0, 0, 0, 0)', JSON.stringify([m.toolMinH, m.filterBg]));
   note('대분류(OUTER)는 탭에 보이므로 조건 표에 겹쳐 나오지 않는다', m.tags.length === 0, JSON.stringify(m.tags));
   note('브랜드 네모에 기호 대신 글자가 들어간다', m.initials.length > 1 && m.initials.every((t) => /^[0-9A-Z가-힣ぁ-んァ-ン一-龥]{1,2}$|^전체$/.test(t)), JSON.stringify(m.initials));
-  note('정렬 옆·색상 옆에 같은 세로 구분선', m.seps.every((h) => h === 16), JSON.stringify(m.seps));
+  note('도구 줄엔 필터·정렬·품절 제외만(색상·사이즈는 필터 안)', JSON.stringify(m.toolsShown) === JSON.stringify(['filterBtn', 'sortSlot', 'stockSlot']), JSON.stringify(m.toolsShown));
+  note('품절 제외는 오른쪽 끝(오른쪽 여백 16px)', m.stockRight === 16, String(m.stockRight));
   note('도구 줄이 옆으로 밀리지 않고 화면 안에 다 들어온다', m.toolFit <= 0, String(m.toolFit));
   note('도구 줄·개수 글자가 너무 굵지 않다(600 이하)', m.weights.every((w) => +w <= 600), JSON.stringify(m.weights));
   note('카테고리 글자 14px(조금 작게)', m.tabFont === 14, String(m.tabFont));
@@ -259,10 +261,15 @@ await p.evaluate(() => hideAiView());
   note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));
   note('폴더 카드와 카테고리 탭 사이 여백이 작다(8px 이하)', m.gapAbove <= 8, String(m.gapAbove));
   note('도구 줄 글자 위·아래 여백이 같고(차이 2px 이하) 크지 않다(14px 이하)', Math.abs(m.toolGap[0] - m.toolGap[1]) <= 2 && m.toolGap.every((g) => g <= 14), JSON.stringify(m.toolGap));
-  note('고른 카테고리·폴더 탭·브랜드 글자가 너무 굵지 않다(700 이하, 브랜드 네모 600 이하)', +m.tabW[0] <= 700 && +m.fcTabW <= 600 && +m.fbW <= 600, JSON.stringify([m.tabW, m.fcTabW, m.fbW]));
+  note('고른 카테고리·폴더 탭·브랜드 글자가 너무 굵지 않다(600 이하)', +m.tabW[0] <= 600 && +m.fcTabW <= 600 && +m.fbW <= 600, JSON.stringify([m.tabW, m.fcTabW, m.fbW]));
   const bar = await vp.evaluate(() => [...new Set([...document.querySelectorAll('.tabbar button')].map((b) => getComputedStyle(b).color))]);
   note('하단바: 홈·브랜드 등록도 옆 글자와 같은 색', bar.length === 1, JSON.stringify(bar));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'filterbar.png') });
+  await vp.evaluate(() => document.getElementById('filterBtn').click()); await vp.waitForTimeout(700);
+  const fs1 = await vp.evaluate(() => ['.filter-box .msel', '#sizeChips', '.filter-box .brand-combo'].map((q) => getComputedStyle(document.querySelector(q)).display !== 'none'));
+  note('필터 시트 안에 색상·사이즈·브랜드 칸이 다 있다', fs1.every(Boolean), JSON.stringify(fs1));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'filter-sheet.png') });
+  await vp.evaluate(() => document.querySelector('.sheet-x').click()); await vp.waitForTimeout(500);
   await vp.evaluate(() => document.getElementById('sizeChip').click()); await vp.waitForTimeout(700);
   const sz = await vp.evaluate(() => [...document.querySelectorAll('#sizeChips > *')].map((e) => (e.tagName === 'P' ? '#' : '') + e.textContent));
   note('사이즈 시트: 옷·신발·그 밖으로 나뉘고 신발은 US9 → US10 순', JSON.stringify(sz) === JSON.stringify(['#옷 사이즈', 'S', 'M', 'L', 'OS', '#신발 사이즈', '250', '260', 'EU42', 'US9', 'US10', '#그 밖의 사이즈 (바지 허리·모자 등)', '28', '30']), JSON.stringify(sz));

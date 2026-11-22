@@ -188,6 +188,11 @@
     $('filterBtn').classList.toggle('on', n > 0);
     let cn = 0;
     try { cn = colorSel.length; } catch {}
+    const sz0 = $('size').value || (typeof pendingSize !== 'undefined' ? pendingSize : '');
+    n += (cn > 0) + !!sz0; // 색상·사이즈도 필터 안에서 고르므로 필터 개수에 센다
+    c.textContent = n || '';
+    c.hidden = !n;
+    $('filterBtn').classList.toggle('on', n > 0);
     $('colorChip').textContent = cn ? '색상 ' + cn : '색상';
     $('colorChip').classList.toggle('on', cn > 0);
     const sz = $('size').value || (typeof pendingSize !== 'undefined' ? pendingSize : '');
