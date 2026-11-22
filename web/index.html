@@ -182,12 +182,33 @@
   .news-item b { display: block; margin: 4px 0 6px; font-size: 15px; font-weight: 600; }
   .news-item p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
   .news-item.new b::after { content: 'NEW'; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--accent); color: var(--paper); font-size: 10.5px; font-weight: 600; vertical-align: 2px; }
-  /* #15 마이 안 위시리스트 칸 */
-  .my-wish { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; color: var(--ink); font-size: 15px; font-weight: 600; letter-spacing: 0; text-align: left; cursor: pointer; }
-  .my-wish svg { flex: none; width: 22px; height: 22px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; }
-  .my-wish > span:first-of-type { flex: 1; }
-  .my-wish .cart-cnt { margin: 0; }
-  .my-wish i { font-style: normal; font-size: 20px; color: var(--sub); }
+  /* #17 마이: 프로필 → 숫자 세 칸 → 묶음 메뉴 → 로그아웃 */
+  .my-top { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 4px; }
+  .my-top h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .my-ic { position: relative; width: 44px; height: 44px; margin-right: -10px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); display: grid; place-items: center; letter-spacing: 0; }
+  .my-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .my-ic .news-dot { top: 9px; right: 10px; }
+  .my-prof { display: flex; align-items: center; gap: 14px; padding: 12px 4px 18px; }
+  .my-av { flex: none; width: 56px; height: 56px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 22px; font-weight: 600; }
+  .my-prof-t { min-width: 0; }
+  .my-prof-t b { display: block; font-size: 17px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .my-prof-t small { display: block; font-size: 12.5px; color: var(--sub); overflow-wrap: anywhere; }
+  .my-stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 6px 0; border-radius: 18px; background: var(--paper); }
+  .my-stats button { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; justify-content: center; padding: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: none; color: var(--ink); letter-spacing: 0; }
+  .my-stats button:first-child { border-left: 0; }
+  .my-stats em { font-style: normal; font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .my-stats span { font-size: 12.5px; color: var(--sub); }
+  .my-grp { margin-top: 14px; overflow: hidden; border-radius: 18px; background: var(--paper); }
+  .my-grp h2 { margin: 0; padding: 14px 18px 4px; font-size: 12px; font-weight: 600; letter-spacing: 0; color: var(--sub); text-transform: none; }
+  .my-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0 18px; border: 0; border-top: 1px solid var(--faint); border-radius: 0; background: none; color: var(--ink); font-size: 15px; font-weight: 400; letter-spacing: 0; text-align: left; }
+  .my-grp h2 + .my-row { border-top: 0; }
+  .my-row svg { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .my-row > span:first-of-type { flex: 1; }
+  .my-row i { font-style: normal; font-size: 13px; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .my-row .news-dot { position: static; }
+  .my-row .chev { flex: none; width: 7px; height: 7px; margin-right: 3px; border-right: 1.6px solid var(--sub); border-bottom: 1.6px solid var(--sub); transform: rotate(-45deg); }
+  .my-row:focus-visible, .my-stats button:focus-visible, .my-ic:focus-visible, .my-out:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .my-out { display: block; min-height: 44px; margin: 14px auto 0; padding: 0 12px; border: 0; background: none; color: var(--sub); font-size: 13px; font-weight: 400; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; }
   .cart-head { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 4px; }
   .cart-head h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
   .cart-head span { flex: 1; margin-left: 10px; font-size: 13px; color: var(--sub); }
@@ -277,9 +298,9 @@
   .sd-title { font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
   .sd-body { overflow-y: auto; padding: 4px 16px 18px; display: flex; flex-direction: column; gap: 12px; }
   /* #16 새 소식·랭킹 창: 제목 위아래 여백을 같게, 맨 아래 칸 밑 여백 넉넉히 */
-  #newsDialog .sd-top, #rankDialog .sd-top { height: 70px; align-items: center; padding: 0 24px; }
-  #newsDialog .qa-close, #rankDialog .qa-close { top: 16px; }
-  #newsDialog .sd-body, #rankDialog .sd-body { padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
+  #newsDialog .sd-top, #rankDialog .sd-top, #pwDialog .sd-top { height: 70px; align-items: center; padding: 0 24px; }
+  #newsDialog .qa-close, #rankDialog .qa-close, #pwDialog .qa-close { top: 16px; }
+  #newsDialog .sd-body, #rankDialog .sd-body, #pwDialog .sd-body { padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
   .my-id { display: flex; align-items: center; gap: 14px; }
   .my-id .qa-avatar svg { width: 24px; height: 24px; fill: none; stroke: #6f6c66; stroke-width: 1.6; stroke-linecap: round; }
   .my-id-text { min-width: 0; }
@@ -1067,26 +1088,19 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
 </dialog>
 
-<dialog id="myDialog" class="soft-dlg">
+<dialog id="pwDialog" class="soft-dlg" aria-label="비밀번호 변경">
   <div class="sd-top">
-    <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="myDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <span class="sd-title">Mypage</span>
+    <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="pwDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="sd-title">비밀번호 변경</span>
   </div>
   <div class="sd-body">
-    <div class="qa-card my-id">
-      <span class="qa-avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.7 3.6-5.6 7.2-5.6s6.3 1.9 7.2 5.6"/></svg></span>
-      <div class="my-id-text"><small>내 계정</small><b id="myEmail"></b></div>
-    </div>
-    <button type="button" class="qa-card my-wish" id="myWish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg><span>위시리스트</span><span class="cart-cnt" hidden></span><i aria-hidden="true">›</i></button>
     <div class="qa-card my-pw">
-      <h3>비밀번호 변경</h3>
       <input type="password" id="myNewPw" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password">
       <input type="password" id="myNewPw2" placeholder="새 비밀번호 확인" autocomplete="new-password">
       <div id="myMsg"></div>
       <button type="button" class="qa-cta" onclick="changePassword()">변경하기</button>
       <button type="button" class="sd-link" onclick="sendResetMail()">비밀번호를 잊으셨나요? 재설정 메일 받기</button>
     </div>
-    <button type="button" class="qa-cta light" onclick="signOutFromMy()">로그아웃</button>
   </div>
 </dialog>
 
@@ -1171,6 +1185,29 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 
 
 <div class="sheet-dim" id="sheetDim" hidden></div>
+<section class="aiview myview" id="myView" hidden aria-label="마이"><div class="ai-in">
+  <div class="my-top"><h1>마이</h1><button type="button" class="my-ic" data-my="news" aria-label="새 소식"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="news-dot" hidden></span></button></div>
+  <div class="my-prof"><span class="my-av" id="myAv" aria-hidden="true"></span><div class="my-prof-t"><b id="myName"></b><small id="myEmail"></small></div></div>
+  <div class="my-stats">
+    <button type="button" data-my="wish"><em class="cart-num">0</em><span>위시리스트</span></button>
+    <button type="button" data-my="folder"><em id="myBrandN">0</em><span>담은 브랜드</span></button>
+    <button type="button" data-my="folder"><em id="myFolderN">0</em><span>내 폴더</span></button>
+  </div>
+  <div class="my-grp"><h2>쇼핑</h2>
+    <button type="button" class="my-row" id="myWish"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></svg><span>위시리스트</span><i class="cart-num">0</i><b class="chev" aria-hidden="true"></b></button>
+    <button type="button" class="my-row" data-my="folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5C3 6.7 3.7 6 4.5 6H9l2 2.5h8.5c.8 0 1.5.7 1.5 1.5v7.5c0 .8-.7 1.5-1.5 1.5h-15C3.7 19 3 18.3 3 17.5z"/></svg><span>내 폴더 관리</span><b class="chev" aria-hidden="true"></b></button>
+    <button type="button" class="my-row" data-my="add"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8.5v7M8.5 12h7"/></svg><span>브랜드 등록</span><b class="chev" aria-hidden="true"></b></button>
+  </div>
+  <div class="my-grp"><h2>소식·도움</h2>
+    <button type="button" class="my-row" data-my="news"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span>새 소식</span><span class="news-dot" hidden></span><b class="chev" aria-hidden="true"></b></button>
+    <button type="button" class="my-row" data-my="about"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17h.01"/></svg><span>이용 안내</span><b class="chev" aria-hidden="true"></b></button>
+    <button type="button" class="my-row" data-my="qa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5C4 5.7 4.7 5 5.5 5h13c.8 0 1.5.7 1.5 1.5v9c0 .8-.7 1.5-1.5 1.5H10l-4 3v-3h-.5C4.7 17 4 16.3 4 15.5z"/></svg><span>문의하기</span><b class="chev" aria-hidden="true"></b></button>
+  </div>
+  <div class="my-grp"><h2>계정</h2>
+    <button type="button" class="my-row" data-my="pw"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg><span>비밀번호 변경</span><b class="chev" aria-hidden="true"></b></button>
+  </div>
+  <button type="button" class="my-out" onclick="signOutFromMy()">로그아웃</button>
+</div></section>
 <section class="aiview cartview" id="cartView" hidden aria-label="위시리스트"><div class="ai-in">
   <div class="cart-grab" aria-hidden="true"></div>
   <div class="cart-head"><h1>위시리스트</h1><span id="cartN">0개</span><button type="button" class="cart-x" id="cartClose" aria-label="위시리스트 닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>

@@ -103,7 +103,7 @@ const CASES = [
   ['이용 안내', '#aboutDialog', () => p.evaluate(() => aboutDialog.showModal())],
   ['브랜드 등록', '#addDialog', () => p.evaluate(() => openAddDialog())],
   ['내 폴더', '#folderDialog', () => p.evaluate(() => { folderDialog.showModal(); renderFolderList(); })],
-  ['마이', '#myDialog', () => p.evaluate(() => openMyPage())],
+  ['비밀번호 변경', '#pwDialog', () => p.evaluate(() => openPwSheet())], // #17 마이는 전체 화면이 됐고, 끌어서 닫는 창은 비밀번호 변경
 ];
 for (const [label, sel, open2] of CASES) {
   await p.evaluate(() => window.scrollTo(0, 500)); await p.waitForTimeout(300);
@@ -304,7 +304,7 @@ await p.evaluate(() => hideAiView());
     const tab = document.getElementById('myWish');
     return { n: b.length, inA: !!document.querySelector('a.card .cart-btn'), onIds: [...b].filter((x) => x.classList.contains('on')).map((x) => x.dataset.gid),
       inImg: r.right <= img.right && r.bottom <= img.bottom && r.top >= img.top && img.right - r.right <= 12 && img.bottom - r.bottom <= 12,
-      size: [r.width, r.height], tab: tab && tab.textContent.trim(), cnt: tab && tab.querySelector('.cart-cnt').textContent, folderTab: !!document.querySelector('.tabbar [data-tab=folder]'), cartTab: !!document.querySelector('.tabbar [data-tab=cart]') };
+      size: [r.width, r.height], tab: tab && tab.textContent.trim(), cnt: tab && tab.querySelector('.cart-num').textContent, folderTab: !!document.querySelector('.tabbar [data-tab=folder]'), cartTab: !!document.querySelector('.tabbar [data-tab=cart]') };
   });
   note('장바구니: 카드마다 버튼이 있고 링크 안에 겹치지 않는다', c0.n >= 12 && !c0.inA, JSON.stringify([c0.n, c0.inA]));
   note('장바구니: 버튼이 사진 오른쪽 아래 안쪽에 있다(36px)', c0.inImg && c0.size[0] === 36, JSON.stringify([c0.inImg, c0.size]));
@@ -318,7 +318,7 @@ await p.evaluate(() => hideAiView());
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'cart-home.png') });
   await vp.evaluate(() => document.querySelector('.tabbar [data-tab=my]').click()); await vp.waitForTimeout(500);
   await vp.evaluate(() => document.getElementById('myWish').click()); await vp.waitForTimeout(800);
-  const cv = await vp.evaluate(() => ({ shown: !document.getElementById('cartView').hidden, items: [...document.querySelectorAll('#cartList .ci')].map((e) => e.querySelector('.ci-t').textContent + (e.classList.contains('gone') ? '(끝남)' : '')), links: [...document.querySelectorAll('#cartList a.ci-link')].map((a) => a.getAttribute('href')), on: !document.getElementById('myDialog').open }));
+  const cv = await vp.evaluate(() => ({ shown: !document.getElementById('cartView').hidden, items: [...document.querySelectorAll('#cartList .ci')].map((e) => e.querySelector('.ci-t').textContent + (e.classList.contains('gone') ? '(끝남)' : '')), links: [...document.querySelectorAll('#cartList a.ci-link')].map((a) => a.getAttribute('href')), on: document.getElementById('myView').hidden }));
   note('위시리스트 화면(마이 → 위시리스트): 담은 상품이 보이고 사라진 상품은 "판매 끝남"(링크 없음)', cv.shown && cv.on && cv.items.includes('린넨 셔츠 자켓(끝남)') && cv.items.includes('코튼 와이드 데님 팬츠') && !cv.links.includes('https://shop.test/old'), JSON.stringify(cv));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'cart-view.png') });
   n = v.calls.length;
@@ -393,6 +393,41 @@ await p.evaluate(() => hideAiView());
   const w2 = await w();
   note('하단바: 고른 칸만 글자가 굵다(홈 → 내 폴더 → 닫으면 다시 홈)', /home:700/.test(w0) && (w0.match(/:700/g) || []).length === 1 && /folder:700/.test(w1) && (w1.match(/:700/g) || []).length === 1 && w2 === w0, [w0, w1, w2].join(' / '));
   note('새 홈 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// #17 마이: 전체 화면 — 프로필, 숫자 세 칸, 묶음 메뉴, 비밀번호는 따로 띄움
+{
+  const v = await open(browser, { login: true });
+  const vp = v.page;
+  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=my]').click()); await vp.waitForTimeout(700);
+  const my = await vp.evaluate(() => ({
+    shown: !document.getElementById('myView').hidden, tabOn: document.querySelector('.tabbar [data-tab=my]').classList.contains('on'),
+    av: document.getElementById('myAv').textContent, name: document.getElementById('myName').textContent,
+    stats: [...document.querySelectorAll('.my-stats em')].map((e) => e.textContent),
+    rows: [...document.querySelectorAll('#myView .my-row > span:first-of-type')].map((e) => e.textContent),
+    pwInline: !!document.querySelector('#myView input[type=password]'),
+    rowH: Math.min(...[...document.querySelectorAll('#myView .my-row')].map((e) => e.getBoundingClientRect().height)),
+  }));
+  note('마이: 전체 화면으로 열리고 하단바 마이가 굵다', my.shown && my.tabOn, JSON.stringify([my.shown, my.tabOn]));
+  note('마이: 프로필 앞글자·이름', my.av === 'T' && my.name === 'tester', JSON.stringify([my.av, my.name]));
+  note('마이: 숫자 세 칸(위시리스트 2·담은 브랜드 5·내 폴더 1)', JSON.stringify(my.stats) === '["2","5","1"]', JSON.stringify(my.stats));
+  note('마이: 메뉴 7줄(쇼핑·소식·계정), 한 줄 44px 이상, 비밀번호 칸은 화면에 없음', my.rows.length === 7 && my.rowH >= 44 && !my.pwInline, JSON.stringify([my.rows, my.rowH, my.pwInline]));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'my.png'), fullPage: false });
+  await vp.locator('#myView .my-row[data-my=pw]').tap(); await vp.waitForTimeout(500);
+  note('마이: 비밀번호 변경을 누르면 아래에서 창이 올라온다', await vp.evaluate(() => pwDialog.open && !!document.querySelector('#pwDialog #myNewPw')));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'my-pw.png') });
+  await vp.evaluate(() => pwDialog.close()); await vp.waitForTimeout(300);
+  note('마이: 창을 닫으면 하단바는 그대로 마이', await vp.evaluate(() => document.querySelector('.tabbar [data-tab=my]').classList.contains('on') && !document.getElementById('myView').hidden));
+  await vp.locator('#myWish').tap(); await vp.waitForTimeout(600);
+  note('마이 → 위시리스트가 열린다', await vp.evaluate(() => !document.getElementById('cartView').hidden && document.getElementById('myView').hidden));
+  await vp.locator('#cartClose').tap(); await vp.waitForTimeout(400);
+  note('위시리스트를 닫으면 마이로 돌아간다', await vp.evaluate(() => document.getElementById('cartView').hidden && !document.getElementById('myView').hidden));
+  await vp.locator('#myView .my-row[data-my=folder]').tap(); await vp.waitForTimeout(500);
+  note('마이 → 내 폴더 관리 창이 열린다', await vp.evaluate(() => folderDialog.open));
+  await vp.evaluate(() => folderDialog.close()); await vp.waitForTimeout(300);
+  await vp.evaluate(() => document.querySelector('.tabbar [data-tab=home]').click()); await vp.waitForTimeout(400);
+  note('홈 칸을 누르면 마이가 닫힌다', await vp.evaluate(() => document.getElementById('myView').hidden));
+  note('마이 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴

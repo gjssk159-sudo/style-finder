@@ -237,16 +237,24 @@ function renderBrandStats() {
 function openAddDialog() {
   addDialog.showModal();
 }
-function openMyPage() {
+function openMyPage() { // #17 마이: 전체 화면
   if (!currentUser) { openAuthDialog(); return; }
-  document.getElementById('myEmail').textContent = currentUser.email || '';
+  const em = currentUser.email || '';
+  document.getElementById('myEmail').textContent = em;
+  document.getElementById('myName').textContent = em.split('@')[0];
+  document.getElementById('myAv').textContent = (em.match(/[0-9A-Za-z가-힣]/) || ['?'])[0].toUpperCase();
+  document.getElementById('myBrandN').textContent = myFolderIds.length;
+  document.getElementById('myFolderN').textContent = myFolders.length;
+  if (window.showMyView) window.showMyView();
+}
+function openPwSheet() {
   document.getElementById('myNewPw').value = '';
   document.getElementById('myNewPw2').value = '';
   showMsg('myMsg', '', '');
-  if (!myDialog.open) myDialog.showModal();
+  if (!pwDialog.open) pwDialog.showModal();
 }
 async function signOutFromMy() {
-  myDialog.close();
+  if (window.hideAiView) window.hideAiView();
   await signOut();
 }
 // 오른쪽 아래 Q&A 버튼 → 패널 열기/닫기

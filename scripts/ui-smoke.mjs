@@ -121,8 +121,9 @@ const browser = await chromium.launch();
   await closeAll(p);
   await check('AI: AI 서비스 화면이 열린다', async () => { await tab(p, 'ai'); await p.waitForTimeout(600); await shot(p, '5-ai'); return isOpen(p, '#aiView'); });
   try { await tab(p, 'home'); await p.waitForTimeout(500); } catch {}
-  await check('마이: 마이 창이 열린다', async () => { await tab(p, 'my'); await p.waitForTimeout(600); await shot(p, '6-my'); return isOpen(p, '#myDialog'); });
+  await check('마이: 마이 창이 열린다', async () => { await tab(p, 'my'); await p.waitForTimeout(600); await shot(p, '6-my'); return isOpen(p, '#myView'); });
   await closeAll(p);
+  try { await tab(p, 'home'); await p.waitForTimeout(400); } catch {} // 마이는 전체 화면이라(#17) 홈으로 돌아와서 문의 버튼을 누른다
   await check('질문하기: 질문 창이 열린다', async () => { await p.locator('#qaFab').click(); await p.waitForTimeout(600); await shot(p, '7-qa'); return isOpen(p, '#qaPanel'); });
   await check('로그인 후: 화면 오류 없음', async () => s.errors.length === 0 || (console.log(s.errors), false));
   await s.ctx.close();

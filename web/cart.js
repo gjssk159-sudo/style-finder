@@ -21,6 +21,7 @@
       b.setAttribute('aria-pressed', on);
       b.setAttribute('aria-label', on ? '위시리스트에서 빼기' : '위시리스트에 담기');
     });
+    document.querySelectorAll('.cart-num').forEach((c) => { c.textContent = items.length; });
     document.querySelectorAll('.cart-cnt').forEach((c) => { c.textContent = items.length > 99 ? '99+' : items.length; c.hidden = !items.length; });
     if (!$('cartView').hidden) render();
   }
