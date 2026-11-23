@@ -159,12 +159,14 @@
   .hero-slide:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* #16 브랜드 랭킹: 한 줄씩 위로 넘어가며 1~10위 */
   .rank { display: none; }
-  .rank-badge { flex: none; height: 22px; padding: 0 9px; border-radius: 11px; background: var(--ink); color: var(--paper); font-size: 11.5px; font-weight: 600; line-height: 22px; }
+  /* 랭킹 표시: 우리 민트색 네모 꼬리표 + 올라가는 막대 아이콘(#16) */
+  .rank-badge { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 6px; border-radius: 6px; background: var(--accent-bg, var(--faint)); color: var(--accent-ink, var(--ink)); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+  .rank-badge svg { width: 12px; height: 12px; fill: currentColor; }
   .rank-win { flex: 1; min-width: 0; height: 20px; overflow: hidden; }
   .rank-line { display: block; transition: transform .26s ease, opacity .26s ease; }
   .rank-line.out { transform: translateY(-100%); opacity: 0; }
   .rank-line.in { transform: translateY(100%); opacity: 0; transition: none; }
-  .rank-i { display: flex; align-items: center; gap: 10px; height: 20px; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-i { display: flex; align-items: center; gap: 6px; height: 20px; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rank-i em, .rank-list em { flex: none; min-width: 16px; font-style: normal; font-weight: 600; color: var(--sub); text-align: center; font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) { .rank-line, .rank-line.out, .rank-line.in { transition: none; transform: none; opacity: 1; } }
   .rank-list { list-style: none; margin: 0; padding: 4px 18px; background: var(--paper); border-radius: 18px; }
@@ -602,7 +604,7 @@
     /* 내 폴더 카드 */
     .fcard, .fcard[hidden] { display: none; } /* #16 홈 폴더 카드 없앰 — 하단바 "내 폴더"로 */
     .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 20px -16px 16px; } /* 위아래 여백 같게(아래는 탭 줄 4px 포함 20px) */
-    .rank { display: flex; flex: 1 1 100%; min-width: 0; align-items: center; gap: 10px; height: 32px; margin: -6px 0 8px; padding: 0 2px; border: 0; background: none; color: var(--ink); text-align: left; letter-spacing: 0; cursor: pointer; }
+    .rank { display: flex; flex: 1 1 100%; min-width: 0; align-items: center; gap: 8px; height: 32px; margin: -6px 0 8px; padding: 0 2px; border: 0; background: none; color: var(--ink); text-align: left; letter-spacing: 0; cursor: pointer; }
     .rank[hidden] { display: none; }
     .fcard-old { display: block; flex: 1 1 100%; min-width: 0; max-width: 100%; background: #fff; border-radius: 20px; padding: 11px 16px 9px; margin-top: 10px; }
     .fcard[hidden] { display: none; }
@@ -902,7 +904,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <span id="authArea"></span>
     </div>
     <div class="row">
-      <button type="button" class="rank" id="rank" hidden aria-label="랭킹 1~30위 보기"><span class="rank-badge">랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
+      <button type="button" class="rank" id="rank" hidden aria-label="랭킹 1~30위 보기"><span class="rank-badge"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="7" width="2.6" height="4" rx=".6"/><rect x="4.7" y="4.5" width="2.6" height="6.5" rx=".6"/><rect x="8.4" y="1.5" width="2.6" height="9.5" rx=".6"/></svg>랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
       <div class="search-wrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
