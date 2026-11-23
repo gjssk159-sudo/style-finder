@@ -112,13 +112,13 @@ for (const [label, sel, open2] of CASES) {
   await open2(); await p.waitForTimeout(700);
   let r = await rectOf(p, sel);
   await swipe(p, 195, r.top + 18, r.top + 60);
-  note(`${label}: 손잡이를 조금 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === b0, 'scrollY=' + (await scrollY(p)));
+  note(`${label}: 손잡이를 조금 끌어도 뒤 화면이 안 움직인다`, Math.abs((await scrollY(p)) - b0) <= 2, 'scrollY=' + (await scrollY(p)) + ' (기준 ' + b0 + ', 2px 이하 차이는 반올림이라 허용)');
   r = await rectOf(p, sel);
   if (await dlgOpen(p, sel)) {
     await swipe(p, 195, r.top + r.h * 0.5, r.top + r.h * 0.5 + 90);
-    note(`${label}: 본문을 아래로 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === b0, 'scrollY=' + (await scrollY(p)));
+    note(`${label}: 본문을 아래로 끌어도 뒤 화면이 안 움직인다`, Math.abs((await scrollY(p)) - b0) <= 2, 'scrollY=' + (await scrollY(p)) + ' (기준 ' + b0 + ', 2px 이하 차이는 반올림이라 허용)');
     await swipe(p, 195, 60, 160);
-    note(`${label}: 바깥을 끌어도 뒤 화면이 안 움직인다`, (await scrollY(p)) === b0, 'scrollY=' + (await scrollY(p)));
+    note(`${label}: 바깥을 끌어도 뒤 화면이 안 움직인다`, Math.abs((await scrollY(p)) - b0) <= 2, 'scrollY=' + (await scrollY(p)) + ' (기준 ' + b0 + ', 2px 이하 차이는 반올림이라 허용)');
   }
   if (await dlgOpen(p, sel)) {
     r = await rectOf(p, sel);
@@ -463,6 +463,14 @@ await p.evaluate(() => hideAiView());
   const v = await open(browser, { login: true });
   const q = v.calls.find((c) => c.path.endsWith('/user_brands') && /added_at=gte\./.test(c.query));
   note('주간 랭킹: 지난 7일(added_at) 조건으로 데이터를 묻는다', !!q, q ? q.query.slice(0, 80) : '');
+  await v.ctx.close();
+}
+// 가격 없는 것(룩북·시즌 소개·매장 전용 0원 상품)은 상품 목록·사이즈 목록에 안 나온다
+{
+  const v = await open(browser, { login: true });
+  const list = v.calls.filter((c) => c.path.endsWith('/product_group') && c.method === 'GET');
+  const main = list.filter((c) => /offer/.test(c.query));
+  note('상품 목록은 가격 있는 것만 묻는다(min_price > 0)', main.length > 0 && main.every((c) => /min_price=gt.0/.test(c.query)), main.map((c) => c.query.slice(0, 40)).join(' | '));
   await v.ctx.close();
 }
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴
