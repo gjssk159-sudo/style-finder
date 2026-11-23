@@ -43,7 +43,7 @@ const tables = {
 const user = { id: UID, email: 'tester@example.com', aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-11-01T00:00:00Z' };
 const session = { access_token: 'x.' + Buffer.from(JSON.stringify({ sub: UID, exp: 4102444800 })).toString('base64url') + '.y', refresh_token: 'r', token_type: 'bearer', expires_in: 3600, expires_at: 4102444800, user };
 
-async function open(browser, { login, width = 390, height = 844 }) {
+async function open(browser, { login, width = 390, height = 844, demoRank = false }) {
   const ctx = await browser.newContext({ viewport: { width, height }, serviceWorkers: 'block', locale: 'ko-KR', hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
   const calls = [];
   await ctx.route(/supabase\.co/, (route) => {
@@ -60,6 +60,7 @@ async function open(browser, { login, width = 390, height = 844 }) {
   });
   await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="3" height="4"><rect width="3" height="4" fill="#bbb"/></svg>' }));
   if (login) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-' + REF + '-auth-token', JSON.stringify(session)]);
+  if (!demoRank) await ctx.addInitScript(() => localStorage.setItem('sf_rank_real', '1')); // 랭킹은 실제 주간 계산으로(임시 순서 모드는 따로 시험)
   const page = await ctx.newPage();
   page.setDefaultTimeout(5000); // 못 찾으면 오래 기다리지 않고 실패로 센다
   const errors = [];
@@ -261,6 +262,7 @@ await p.evaluate(() => hideAiView());
   note('품절 제외는 오른쪽 끝(오른쪽 여백 16px)', m.stockRight === 16, String(m.stockRight));
   note('도구 줄이 옆으로 밀리지 않고 화면 안에 다 들어온다', m.toolFit <= 0, String(m.toolFit));
   note('도구 줄·개수 글자가 너무 굵지 않다(600 이하)', m.weights.every((w) => +w <= 600), JSON.stringify(m.weights));
+  note('카테고리 줄 위·아래에 같은 실선', await vp.evaluate(() => { const b = getComputedStyle(document.getElementById('chips')).backgroundImage; const p = getComputedStyle(document.getElementById('chips')).backgroundPosition; return (b.match(/linear-gradient/g) || []).length === 2 && /0%/.test(p.split(',')[0]) && /100%/.test(p.split(',')[1]); }));
   note('카테고리 글자 14px(조금 작게)', m.tabFont === 14, String(m.tabFont));
   note('회색 선은 탭 줄 아래 하나만(도구 줄 위 선 없음)', m.toolLine === '0px', m.toolLine);
   note('옆으로 미는 줄들이 위아래로 흔들리지 않는다(세로 넘침 0)', m.wobble.every((d) => d <= 0), JSON.stringify(m.wobble));
@@ -377,7 +379,7 @@ await p.evaluate(() => hideAiView());
   const rl = await vp.evaluate(() => ({ open: rankDialog.open, list: [...document.querySelectorAll('#rankList li')].map((l) => l.textContent) }));
   note('랭킹을 누르면 1~10위 목록이 열린다', rl.open && rl.list[0] === '1무드랩' && rl.list[1] === '2소요' && rl.list.length === 5, JSON.stringify(rl));
   const rt = await vp.evaluate(() => { const t = document.querySelector('#rankDialog .sd-title'); const rg = document.createRange(); rg.selectNodeContents(t); const n = document.createRange(); n.selectNodeContents(document.querySelector('.rank-note')); const cs = getComputedStyle(t); return [Math.round(rg.getBoundingClientRect().left), Math.round(n.getBoundingClientRect().left), cs.fontSize, cs.fontWeight, t.textContent, document.querySelector('.rank-badge').textContent, document.querySelector('.rank-note').textContent]; });
-  note('랭킹 창: 제목 20px·덜 굵게, 설명 글자와 왼쪽 줄 맞춤, 설명은 질문으로', Math.abs(rt[0] - rt[1]) <= 1 && rt[2] === '20px' && +rt[3] <= 600 && rt[4] === '랭킹 TOP 10' && rt[5] === '랭킹' && rt[6] === '사람들이 내 폴더에 가장 많이 추가한 브랜드는?', JSON.stringify(rt));
+  note('랭킹 창: 제목 20px·덜 굵게, 설명 글자와 왼쪽 줄 맞춤, 설명은 질문으로', Math.abs(rt[0] - rt[1]) <= 1 && rt[2] === '20px' && +rt[3] <= 600 && rt[4] === '주간 랭킹 TOP 30' && rt[5] === '주간 랭킹' && rt[6] === '이번 주 사람들이 내 폴더에 가장 많이 추가한 브랜드는?', JSON.stringify(rt));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'rank.png') });
   await vp.evaluate(() => rankDialog.close());
   await vp.evaluate(() => document.getElementById('newsBtn').click()); await vp.waitForTimeout(500);
@@ -434,6 +436,25 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => document.querySelector('.tabbar [data-tab=home]').click()); await vp.waitForTimeout(400);
   note('홈 칸을 누르면 마이가 닫힌다', await vp.evaluate(() => document.getElementById('myView').hidden));
   note('마이 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// 주간 랭킹 임시 순서 모드(RANK_DEMO): 실제 데이터 대신 브랜드를 섞은 순서, 새로 열어도 같은 주에는 같은 순서
+{
+  const ord = [];
+  for (let k = 0; k < 2; k++) {
+    const v = await open(browser, { login: true, demoRank: true });
+    ord.push({ demoQ: v.calls.some((c) => c.path.endsWith('/brands') && /status=eq.ready/.test(c.query)) });
+    Object.assign(ord[ord.length - 1], await v.page.evaluate(() => ({ list: [...document.querySelectorAll('#rankList li span')].map((e) => e.textContent), line: document.getElementById('rankLine').textContent, shown: !document.getElementById('rank').hidden })));
+    await v.ctx.close();
+  }
+  const names = ['온결', '무드랩', '소요', '헤이든', '파인스튜디오'];
+  note('주간 랭킹(임시 순서): 실제 순위 대신 브랜드 목록을 섞어 5개가 다 나오고, 다시 열어도 같은 순서', ord[0].demoQ && ord[0].shown && ord[0].list.length === 5 && names.every((n) => ord[0].list.includes(n)) && JSON.stringify(ord[0].list) === JSON.stringify(ord[1].list) && ord[0].line === '1' + ord[0].list[0], JSON.stringify(ord));
+}
+// 주간 랭킹: 지난 7일 조건으로 묻는다
+{
+  const v = await open(browser, { login: true });
+  const q = v.calls.find((c) => c.path.endsWith('/user_brands') && /added_at=gte\./.test(c.query));
+  note('주간 랭킹: 지난 7일(added_at) 조건으로 데이터를 묻는다', !!q, q ? q.query.slice(0, 80) : '');
   await v.ctx.close();
 }
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴
