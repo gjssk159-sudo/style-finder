@@ -167,7 +167,6 @@
   .rank-i { display: flex; align-items: center; gap: 10px; height: 20px; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rank-i em, .rank-list em { flex: none; min-width: 16px; font-style: normal; font-weight: 600; color: var(--sub); text-align: center; font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) { .rank-line, .rank-line.out, .rank-line.in { transition: none; transform: none; opacity: 1; } }
-  .rank-note { margin: 0 4px; font-size: 13px; color: var(--sub); }
   .rank-list { list-style: none; margin: 0; padding: 4px 18px; background: var(--paper); border-radius: 18px; }
   .rank-list li { display: flex; align-items: center; gap: 14px; min-height: 48px; border-bottom: 1px solid var(--line); font-size: 15px; word-break: keep-all; overflow-wrap: anywhere; }
   .rank-list li:last-child { border-bottom: 0; }
@@ -300,6 +299,7 @@
   /* #16 새 소식·랭킹 창: 제목 위아래 여백을 같게, 맨 아래 칸 밑 여백 넉넉히 */
   #newsDialog .sd-top, #rankDialog .sd-top, #pwDialog .sd-top { height: 70px; align-items: center; padding: 0 20px; } /* 제목을 아래 글자·칸과 같은 왼쪽 줄에 */
   #newsDialog .qa-close, #rankDialog .qa-close, #pwDialog .qa-close { top: 16px; }
+  #rankDialog .sd-title { padding-right: 52px; font-size: 17px; line-height: 1.35; } /* 질문형 제목은 조금 작게(닫기 버튼과 안 겹치게) */
   #newsDialog .sd-body, #rankDialog .sd-body, #pwDialog .sd-body { padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
   .my-id { display: flex; align-items: center; gap: 14px; }
   .my-id .qa-avatar svg { width: 24px; height: 24px; fill: none; stroke: #6f6c66; stroke-width: 1.6; stroke-linecap: round; }
@@ -902,7 +902,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <span id="authArea"></span>
     </div>
     <div class="row">
-      <button type="button" class="rank" id="rank" hidden aria-label="주간 랭킹 1~30위 보기"><span class="rank-badge">주간 랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
+      <button type="button" class="rank" id="rank" hidden aria-label="랭킹 1~30위 보기"><span class="rank-badge">랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
       <div class="search-wrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
@@ -1111,12 +1111,12 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   </div>
   <div class="sd-body" id="newsList"></div>
 </dialog>
-<dialog id="rankDialog" class="soft-dlg" aria-label="주간 랭킹">
+<dialog id="rankDialog" class="soft-dlg" aria-label="랭킹">
   <div class="sd-top">
     <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="rankDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <span class="sd-title">주간 랭킹 TOP 30</span>
+    <span class="sd-title">이번 주 사람들이 가장 많이 추가한 브랜드는?</span>
   </div>
-  <div class="sd-body"><p class="rank-note">이번 주 사람들이 내 폴더에 가장 많이 추가한 브랜드는?</p><ol class="rank-list" id="rankList"></ol></div>
+  <div class="sd-body"><ol class="rank-list" id="rankList"></ol></div>
 </dialog>
 <dialog id="aboutDialog">
   <div class="dlg-body">
