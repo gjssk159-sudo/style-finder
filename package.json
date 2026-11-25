@@ -13,7 +13,9 @@
     "test:search": "node scripts/test-search.mjs",
     "test:first-seen": "node scripts/test-first-seen.mjs",
     "test:listed-at": "node scripts/test-listed-at.mjs",
-    "test:ecbeing": "node scripts/test-ecbeing.mjs"
+    "test:ecbeing": "node scripts/test-ecbeing.mjs",
+    "test:cafe24-alias": "node scripts/test-cafe24-alias.mjs",
+    "test:brand-sound": "node scripts/test-brand-sound.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

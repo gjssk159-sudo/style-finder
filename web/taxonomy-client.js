@@ -359,4 +359,43 @@ function parseQuery(raw) {
   return { categories, colors, keywords, terms };
 }
 
-window.StyleFinderTaxonomy = { loadTaxonomy, parseQuery, expandSelection, labelOf, stripCategoryTokens, get CATEGORIES() { return CATEGORIES; }, get GROUPS() { return GROUPS; }, COLOR_LABELS };
+// 한글로 친 브랜드 이름을 영어 브랜드 이름과 잇기(#19): 소리의 자음 뼈대만 남겨 비교한다.
+// 예) 사파리스팟 → ㅅㅍㄹㅅㅍㅌ → SPLSPT, safarispot → s f r s p t → SPLSPT. 모음·받침 ㅇ 차이는 무시.
+const KO_INI = ['K', 'K', 'N', 'T', 'T', 'L', 'M', 'P', 'P', 'S', 'S', '', 'J', 'J', 'J', 'K', 'T', 'P', 'H'];
+const KO_FIN = ['', 'K', 'K', 'K', 'N', 'N', 'N', 'T', 'L', 'K', 'M', 'L', 'L', 'L', 'P', 'L', 'M', 'P', 'P', 'T', 'T', 'NK', 'T', 'T', 'K', 'T', 'P', 'T'];
+function soundKey(str) {
+  let out = '';
+  const s = String(str || '').toLowerCase();
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c >= 0xac00 && c <= 0xd7a3) { const n = c - 0xac00; out += KO_INI[Math.floor(n / 588)] + KO_FIN[n % 28]; continue; }
+    const two = s.slice(i, i + 2);
+    const di = { ph: 'P', th: 'T', sh: 'S', ch: 'J', ck: 'K', qu: 'K', ng: 'NK', gh: 'K' }[two];
+    if (di) { out += di; i++; continue; }
+    const ch = s[i];
+    if ('bpfv'.includes(ch)) out += 'P';
+    else if ('dt'.includes(ch)) out += 'T';
+    else if ('gkq'.includes(ch)) out += 'K';
+    else if (ch === 'c') out += 'eiy'.includes(s[i + 1] || '') ? 'S' : 'K';
+    else if ('sz'.includes(ch)) out += 'S';
+    else if (ch === 'x') out += 'KS';
+    else if (ch === 'j') out += 'J';
+    else if ('lr'.includes(ch)) out += 'L';
+    else if (ch === 'm') out += 'M';
+    else if (ch === 'n') out += 'N';
+    else if (ch === 'h') out += 'H';
+  }
+  return out.replace(/(.)\1+/g, '$1');
+}
+// 한글 검색어와 소리가 같은 브랜드 이름들(뼈대 3글자 이상, 완전히 같을 때만 — 엉뚱한 브랜드가 섞이지 않게)
+function brandsBySound(term, names) {
+  if (!/[가-힣]/.test(term)) return [];
+  const k = soundKey(term);
+  if (k.length < 3) return [];
+  // 마디 수도 비슷해야 한다(한글은 'ㅡ' 마디가 겹자음 때문에 붙는 경우가 많아 빼고 센다). 예) 폴리테루(4) ↔ POLYTERU(4)는 맞고 BORDR(1)은 아님
+  const koBeats = [...term].filter((ch) => { const c = ch.charCodeAt(0); return c >= 0xac00 && c <= 0xd7a3 && Math.floor(((c - 0xac00) % 588) / 28) !== 18; }).length;
+  const enBeats = (n) => (String(n).toLowerCase().match(/[aeiouy]+/g) || []).length;
+  return names.filter((n) => (soundKey(n) === k || soundKey(n).replace(/H/g, '') === k.replace(/H/g, '')) && Math.abs(enBeats(n) - koBeats) <= 1);
+}
+
+window.StyleFinderTaxonomy = { soundKey, brandsBySound, loadTaxonomy, parseQuery, expandSelection, labelOf, stripCategoryTokens, get CATEGORIES() { return CATEGORIES; }, get GROUPS() { return GROUPS; }, COLOR_LABELS };

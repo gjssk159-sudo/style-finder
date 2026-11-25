@@ -29,6 +29,24 @@ const absUrl = (base, href) => {
   }
 };
 
+// 다른 주소의 상품 페이지와, 같은 경로를 우리 주소로 연 페이지가 같은 상품인지(og:title 일치) 확인. 표본 3개 중 2개 이상 같아야 인정.
+export async function isSameMall(base, otherUrls) {
+  const sample = otherUrls.filter(isProductUrl).slice(0, 3);
+  if (!sample.length) return false;
+  const titleOf = (r) => (r && r.status === 200 && r.text && (r.text.match(/<meta[^>]+property=["']og:title["'][^>]*content=["']([^"']+)/i) || [])[1]) || null;
+  let same = 0;
+  for (const u of sample) {
+    const x = new URL(u);
+    const [a, b] = await Promise.all([
+      fetchText(u, { retries: 1 }).catch(() => null),
+      fetchText(base + x.pathname + x.search, { retries: 1 }).catch(() => null),
+    ]);
+    const ta = titleOf(a), tb = titleOf(b);
+    if (ta && tb && ta.trim() === tb.trim()) same++;
+  }
+  return same >= Math.min(2, sample.length);
+}
+
 export async function collectCafe24(source, { limit = Infinity } = {}) {
   const catsOut = new Map(); // 상품번호 -> 쇼핑몰 카테고리 이름들
   const base = source.shopUrl.replace(/\/$/, '');
@@ -48,7 +66,20 @@ export async function collectCafe24(source, { limit = Infinity } = {}) {
     try { return new URL(u).hostname === baseHost; } catch { return false; }
   });
   if (sameHost.length < allUrls.length) {
-    console.log(`  sitemap에 다른 도메인 URL ${allUrls.length - sameHost.length}개 발견 → 제외`);
+    // 단, 같은 쇼핑몰이 주소를 두 개 쓰는 경우도 있다(실측: safarispot — 등록 주소 sssafariii.kr, sitemap은 safarispot.kr).
+    // 다른 주소의 상품 몇 개를 우리 주소로 바꿔 열어 보고 같은 상품(og:title)이 나오면 같은 쇼핑몰로 보고 주소만 바꿔 쓴다.
+    const others = new Map();
+    for (const u of allUrls) {
+      try { const h = new URL(u).hostname; if (h !== baseHost) (others.get(h) || others.set(h, []).get(h)).push(u); } catch {}
+    }
+    for (const [host, urls] of others) {
+      if (await isSameMall(base, urls)) {
+        console.log(`  sitemap의 ${host} 는 같은 쇼핑몰의 다른 주소 → ${urls.length}개를 ${baseHost} 주소로 바꿔 사용`);
+        for (const u of urls) { const x = new URL(u); sameHost.push(base + x.pathname + x.search); }
+      } else {
+        console.log(`  sitemap에 다른 도메인(${host}) URL ${urls.length}개 발견 → 제외`);
+      }
+    }
   }
   productUrls = [...new Set(sameHost.filter(isProductUrl))];
   // sitemap이 있어도 상품이 너무 적으면(예: 61개 URL 중 상품 1개) 실제로는 오래됐거나

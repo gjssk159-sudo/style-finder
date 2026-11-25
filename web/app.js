@@ -754,7 +754,7 @@ async function loadSizeOptionsUncached(key) {
   await Promise.race([homeReady, new Promise((r) => setTimeout(r, 4000))]);
   // select는 기본 1000행 제한이 있어서, 폴더 상품이 그보다 많으면 뒤쪽 사이즈를 놓치므로 끝까지 페이지네이션.
   // 첫 페이지에서 총 개수를 알아내고, 나머지 페이지는 동시에 받는다(예전엔 7~13번을 줄줄이 기다렸음).
-  const fetchPage = (from) => sb.from('product_group').select('sizes', { count: from === 0 ? 'exact' : undefined }).in('brand_id', myFolderIds).gt('min_price', 0).range(from, from + 999);
+  const fetchPage = (from) => sb.from('product_group').select('sizes', { count: from === 0 ? 'exact' : undefined }).in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '').range(from, from + 999);
   const first = await fetchPage(0);
   if (first.error) { console.error(first.error); sizeLoadKey = ''; return; } // 실패하면 다음에 다시 시도
   const rows = [...first.data];
@@ -1052,8 +1052,10 @@ function buildQuery(offset, count = PAGE_SIZE) {
     // offer!inner: 판매 링크(offer)가 하나도 없는 유령 상품은 아예 결과에서 제외 (클릭해도 갈 곳 없는 카드 방지)
     .select('id,brand,title,title_norm,categories,colors,sizes,min_price,max_price,image,in_stock,offer_count,offer!inner(source_id,url,price,in_stock)', { count: 'exact' })
     .in('brand_id', myFolderIds)
-    // 가격이 없거나 0원인 것은 상품이 아니다(룩북·시즌 소개 글, 매장 전용 '@' 상품 등) — 화면에 내지 않는다
-    .gt('min_price', 0);
+    // 가격이 없거나 0원인 것, 사진이 없는 것은 제대로 된 상품이 아니다(룩북·시즌 소개 글, 매장 전용 '@' 상품, 빈 회색 칸) — 화면에 내지 않는다
+    .gt('min_price', 0)
+    .not('image', 'is', null)
+    .neq('image', '');
 
   // 가격 없는 상품이 낮은순/높은순에서 맨 위로 튀지 않게 null은 항상 뒤로.
   if (sort === 'recent') query = query.order(RECENT_COL, { ascending: false });
@@ -1085,6 +1087,9 @@ function buildQuery(offset, count = PAGE_SIZE) {
       const foldedKw = foldAccents(t.text);
       const accentMatches = allBrands.filter((b) => foldAccents(b.name).includes(foldedKw)).map((b) => b.name);
       if (accentMatches.length) parts.push('brand.in.(' + accentMatches.map((n) => '"' + n.replace(/"/g, '\\"') + '"').join(',') + ')');
+      // 한글로 친 브랜드 이름(예: 사파리스팟)을 영어 이름(SAFARISPOT)과 소리로 잇는다(#19)
+      const soundMatches = window.StyleFinderTaxonomy.brandsBySound(t.text, allBrands.map((x) => x.name)).filter((n) => !accentMatches.includes(n));
+      if (soundMatches.length) parts.push('brand.in.(' + soundMatches.map((n) => '"' + n.replace(/"/g, '\\"') + '"').join(',') + ')');
     }
     query = query.or(parts.join(','));
   }

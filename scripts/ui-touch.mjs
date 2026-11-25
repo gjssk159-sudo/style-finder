@@ -470,7 +470,7 @@ await p.evaluate(() => hideAiView());
   const v = await open(browser, { login: true });
   const list = v.calls.filter((c) => c.path.endsWith('/product_group') && c.method === 'GET');
   const main = list.filter((c) => /offer/.test(c.query));
-  note('상품 목록은 가격 있는 것만 묻는다(min_price > 0)', main.length > 0 && main.every((c) => /min_price=gt.0/.test(c.query)), main.map((c) => c.query.slice(0, 40)).join(' | '));
+  note('상품 목록은 가격·사진 있는 것만 묻는다(min_price > 0, image 있음)', main.length > 0 && main.every((c) => /min_price=gt.0/.test(c.query) && /image=not.is.null/.test(c.query) && /image=neq./.test(c.query)), main.map((c) => c.query.slice(0, 40)).join(' | '));
   await v.ctx.close();
 }
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴
