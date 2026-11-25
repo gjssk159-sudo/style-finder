@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>#20 홈 대시보드 카드 시안</title>
+<style>
+  :root { --ink:#111; --sub:#75716a; --bg:#f3f4f3; --line:#e4e2dc; --paper:#fff; --accent:#2fbf8f; --accent-ink:#177656; --accent-bg:#e6f7f0; --faint:#eeece6; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif; background:#d9d9d6; color:var(--ink); word-break:keep-all; overflow-wrap:anywhere; }
+  .boards { display:flex; gap:24px; padding:24px; align-items:flex-start; }
+  .cap { font-size:13px; font-weight:700; margin:0 0 10px; color:#333; }
+  .note { font-size:12px; color:#444; margin:10px 0 0; line-height:1.55; width:346px; }
+  .slide { position:relative; width:346px; aspect-ratio:5/4; border-radius:22px; padding:20px 20px 18px; overflow:hidden; display:flex; flex-direction:column; }
+  .n { position:absolute; top:16px; right:16px; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+  small { font-size:12.5px; font-weight:600; opacity:.8; letter-spacing:.02em; }
+  h3 { margin:4px 0 0; font-size:21px; font-weight:700; line-height:1.25; letter-spacing:-.02em; }
+  .ink { background: radial-gradient(circle at 82% 18%, #1d6e55 0%, #111 62%); color:#fff; }
+  .ink .n { background: rgba(255,255,255,.2); }
+  .why { margin-top:6px; font-size:12.5px; opacity:.75; }
+  .brands { margin-top:auto; display:flex; flex-direction:column; gap:6px; }
+  .br { display:flex; align-items:center; gap:10px; height:36px; padding:0 8px 0 6px; border-radius:12px; background:rgba(255,255,255,.1); }
+  .br i { width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.9); color:#111; display:grid; place-items:center; font-style:normal; font-size:11px; font-weight:700; }
+  .br span { flex:1; font-size:14px; }
+  .br b { font-size:12px; font-weight:600; color:#8ee7c3; }
+  .acc { background: linear-gradient(150deg, #2fbf8f 0%, #1f7d5f 100%); color:#fff; }
+  .acc .n { background: rgba(255,255,255,.22); }
+  .cnt { margin-top:auto; font-size:13.5px; opacity:.9; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chips span { height:28px; padding:0 11px; border-radius:8px; background:rgba(255,255,255,.18); display:flex; align-items:center; font-size:12.5px; font-weight:500; }
+  .paper { background:#fff; color:var(--ink); }
+  .paper .n { background: var(--faint); }
+  .big { margin-top:auto; display:flex; align-items:baseline; gap:6px; }
+  .big b { font-size:40px; font-weight:700; letter-spacing:-.03em; line-height:1; }
+  .big span { font-size:14px; color:var(--sub); }
+  .thumbs { display:flex; gap:6px; margin-top:12px; }
+  .thumbs i { flex:1; aspect-ratio:1/1; border-radius:10px; background:var(--faint); }
+  .thumbs i:last-child { display:grid; place-items:center; font-style:normal; font-size:12px; color:var(--sub); background:var(--bg); }
+</style></head><body>
+<div class="boards">
+  <div>
+    <p class="cap">① 나에게 어울리는 브랜드</p>
+    <div class="slide ink"><span class="n">1/3</span>
+      <small>FOR YOU</small><h3>myname님에게<br>어울리는 브랜드</h3>
+      <p class="why">아우터·니트 위주 · 10~20만 원대 브랜드를 담으셨어요</p>
+      <div class="brands">
+        <div class="br"><i>SA</i><span>SAFARISPOT</span><b>+ 담기</b></div>
+        <div class="br"><i>PO</i><span>POLYTERU</span><b>+ 담기</b></div>
+        <div class="br"><i>XL</i><span>XLIM</span><b>+ 담기</b></div>
+      </div>
+    </div>
+    <p class="note">내 폴더·위시리스트와 상품 종류·가격대가 비슷한데 아직 안 담은 브랜드 3개. "+ 담기"로 바로 폴더에 넣고, 이름을 누르면 그 브랜드 상품을 봐요. 매일 한 번 새로 계산.</p>
+  </div>
+  <div>
+    <p class="cap">② 지금 계절 추천 (11월 → 방한템)</p>
+    <div class="slide acc"><span class="n">2/3</span>
+      <small>SEASON · 11월</small><h3>지금 필요한<br>방한템</h3>
+      <div class="chips"><span>패딩</span><span>플리스</span><span>니트</span><span>머플러</span><span>비니</span><span>장갑</span></div>
+      <p class="cnt">내 폴더에서 312개 찾았어요 →</p>
+    </div>
+    <p class="note">날짜로 자동으로 바뀜: 11~2월 방한템 / 3~4월 봄 아우터 / 5~8월 여름 필수템 / 9~10월 가을 레이어드. 누르면 내 폴더에서 그 종류만 걸러 보여 줘요.</p>
+  </div>
+  <div>
+    <p class="cap">③ 이번 주 새로 들어온 상품</p>
+    <div class="slide paper"><span class="n">3/3</span>
+      <small>NEW</small><h3>이번 주 내 폴더 신상</h3>
+      <div class="big"><b>128</b><span>개 새로 들어왔어요</span></div>
+      <div class="thumbs"><i></i><i></i><i></i><i>더 보기</i></div>
+    </div>
+    <p class="note">지난 7일 동안 처음 들어온 상품 수와 사진 3장. 누르면 최신순으로 봐요.</p>
+  </div>
+</div>
+</body></html>
