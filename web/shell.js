@@ -279,12 +279,10 @@
     cv.addEventListener('touchmove', (e) => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) { cv.style.transition = 'none'; cv.style.transform = 'translateY(' + dy + 'px)'; } }, { passive: true });
     cv.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; cv.style.transition = ''; cv.style.transform = ''; if (dy > 90) closeCart(); });
   }
-  // #16 홈 위 넘겨 보는 큰 카드: 누르면 해당 기능으로(내용은 임시, 나중에 바꿈)
+  // #16·#20 홈 위 넘겨 보는 카드: 신상 카드는 최신순으로(계절 카드는 dash.js에서 처리)
   $('heroTrack').addEventListener('click', (e) => {
     const k = e.target.closest('[data-hero]')?.dataset.hero;
-    if (k === 'ai') showAi();
-    else if (k === 'add') openAddDialog();
-    else if (k === 'recent') { const s = $('sort'); s.value = 'recent'; s.dispatchEvent(new Event('change')); $('chips').scrollIntoView({ block: 'start' }); }
+    if (k === 'recent') { const s = $('sort'); s.value = 'recent'; s.dispatchEvent(new Event('change')); $('chips').scrollIntoView({ block: 'start' }); }
   });
   // 로고를 누르면 검색·필터·카테고리를 모두 처음 상태로(앱 쪽 초기화 + 새 화면 요소들도 같이 맞춘다)
   const baseReset = window.resetAll;

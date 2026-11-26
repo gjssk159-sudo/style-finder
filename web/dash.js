@@ -38,7 +38,7 @@
         .gte('first_seen_at', since).order('first_seen_at', { ascending: false }).limit(3),
     ]);
     $('dnCount').textContent = (count || 0).toLocaleString('ko-KR');
-    const imgs = (data || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || ''));
+    const imgs = (data || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || '')).slice(0, 3);
     $('dnThumbs').innerHTML = imgs.map((u) => `<i><img src="${esc(typeof thumbUrl === 'function' ? thumbUrl(u) : u)}" alt="" loading="lazy" decoding="async"></i>`).join('') + '<i class="more">더 보기</i>';
   }
 
@@ -97,7 +97,7 @@
       scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty) });
     }
     scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
-    const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => (T().labelOf(k) || k).split('/')[0]);
+    const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => (T().labelOf(k) || k).split('/')[0].replace(/^기타\s*/, ''));
     return { picks: scored.slice(0, 3), why: `${topCats.join('·')} 위주 · ${band(me.price)} 브랜드를 담으셨어요` };
   }
   const initials = (n) => (String(n).match(/[0-9A-Za-z가-힣ぁ-んァ-ン一-龥]/g) || ['?']).slice(0, 2).join('').toUpperCase();

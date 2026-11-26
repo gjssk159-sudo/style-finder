@@ -1617,6 +1617,7 @@ function afterCategoryChange() {
 }
 
 function clearCategories() { catSel = []; afterCategoryChange(); }
+window.applyCategoryList = (ids) => { catSel = ids.slice(); afterCategoryChange(); }; // #20 계절 카드
 
 // 로고(마이셀렉트샵)를 누르면 검색어·색상·카테고리·브랜드·사이즈·가격·정렬·페이지·스크롤을 전부 처음 상태로 되돌린다.
 function resetAll() {

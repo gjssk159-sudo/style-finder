@@ -107,6 +107,7 @@
     if (uid) load();
   }
   window.showCartView = show;
+  window.cartBrandNames = () => [...new Set(items.map((x) => x.brand).filter(Boolean))]; // #20 추천에 반영
   window.renderCart = render;
 
   document.addEventListener('click', (e) => {
