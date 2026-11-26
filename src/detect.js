@@ -111,7 +111,7 @@ async function tryEcbeing(shopUrl) {
 
 function sniffUnknownPlatform(html) {
   if (/imweb\.me|_imwebApp|imweb_editor/i.test(html)) return 'imweb';
-  if (/sixshop\.com|__sixshop/i.test(html)) return 'sixshop';
+  if (/sixshop\.(com|io)|__sixshop|sixshop-pro/i.test(html)) return 'sixshop'; // 새 식스샵(sixshop-pro, cdn.sixshop.io)도
   if (/smartstore\.naver\.com/i.test(html)) return 'naver_smartstore';
   if (/godo\.co\.kr|godomall/i.test(html)) return 'godomall';
   return null;

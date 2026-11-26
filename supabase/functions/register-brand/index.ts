@@ -10,6 +10,7 @@
 // (다른 도메인이라 브라우저가 막음), 서버 쪽인 여기서 대신 판별한다.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { shopSignals } from './signals.ts';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -132,7 +133,7 @@ function slugify(hostname: string) {
 
 function sniffUnknownPlatform(html: string): string | null {
   if (/imweb\.me|_imwebApp|imweb_editor/i.test(html)) return 'imweb';
-  if (/sixshop\.com|__sixshop/i.test(html)) return 'sixshop';
+  if (/sixshop\.(com|io)|__sixshop|sixshop-pro/i.test(html)) return 'sixshop'; // 새 식스샵(sixshop-pro, cdn.sixshop.io)도
   if (/smartstore\.naver\.com/i.test(html)) return 'naver_smartstore';
   if (/godo\.co\.kr|godomall/i.test(html)) return 'godomall';
   return null;
@@ -198,8 +199,24 @@ async function detectPlatform(rawUrl: string): Promise<DetectResult> {
   const cafe24 = await tryCafe24(shopUrl);
   if (cafe24) return cafe24;
 
-  const home = await fetchText(shopUrl, { retries: 1 }).catch(() => null);
+  // #21 장난 주소 막기: 아예 열리지 않는 주소(없는 도메인·연결 안 됨)는 거절한다.
+  // 서버가 "접근 거부(4xx/5xx)"로 답한 경우는 우리 서버만 막은 진짜 쇼핑몰일 수 있어 거절하지 않고 수집 서버에서 다시 본다.
+  let home: { status: number; text: string | null } | null = null;
+  let answered = false;
+  try {
+    home = await fetchText(shopUrl, { retries: 1 });
+    answered = true;
+  } catch (err) {
+    answered = /^HTTP \d{3}/.test(String((err as Error)?.message || ''));
+  }
+  if (!answered || (home && (home.status === 404 || home.status === 410))) {
+    return { status: 'error', shopUrl, reason: 'unreachable' };
+  }
   const hint = home?.text ? sniffUnknownPlatform(home.text) : null;
+  // 처음 보는 쇼핑몰 프로그램이면 첫 화면에 쇼핑몰 흔적이 2가지 이상 있어야 한다(상품 링크·가격·장바구니/구매·상품 정보)
+  if (home?.text && !hint && shopSignals(home.text) < 2) {
+    return { status: 'error', shopUrl, reason: 'not_shop' };
+  }
 
   return {
     status: 'needs_review',
@@ -299,7 +316,12 @@ Deno.serve(async (req: Request) => {
 
   const result = await detectPlatform(normalized);
   if (result.status === 'error' || !result.shopUrl) {
-    return Response.json({ ok: false, reason: 'invalid_url', message: 'URL 형식이 올바르지 않아요.' }, { headers: cors });
+    const message = result.reason === 'unreachable'
+      ? '이 주소의 사이트가 열리지 않아요. 쇼핑몰 주소를 다시 확인해 주세요.'
+      : result.reason === 'not_shop'
+        ? '쇼핑몰로 보이지 않아요(상품·가격·장바구니를 찾지 못했어요). 브랜드 쇼핑몰 주소를 넣어 주세요.'
+        : 'URL 형식이 올바르지 않아요.';
+    return Response.json({ ok: false, reason: result.reason || 'invalid_url', message }, { headers: cors });
   }
 
   // 브랜드 표시 이름은 클라이언트 입력을 받지 않고 URL에서 자동으로 뽑는다 — 자유 입력을
