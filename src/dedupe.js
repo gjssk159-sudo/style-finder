@@ -102,7 +102,8 @@ export function groupItems(items) {
     const { key: brandKey, display: brand, id: resolvedId } = resolveBrand(rawBrand);
     // 편집샵에서만 파는, 자체 등록 안 된 브랜드는 resolveBrand가 id를 못 찾음 ->
     // 그대로 버리면 검색에서 사라지므로 수집한 소스(편집샵) id로 대신 걸어서 그 폴더에서라도 보이게 함.
-    const brandId = resolvedId || it.source_id || null;
+    // 브랜드 자사몰(source_type 'brand')의 상품은 이름이 비슷한 다른 브랜드가 있어도 항상 그 몰 자신의 브랜드로 건다(#21).
+    const brandId = it.source_type === 'brand' && it.source_id ? it.source_id : resolvedId || it.source_id || null;
     let norm = normalizeTitle(it.title) || normalizeTitle(it.external_id);
     let key = brandKey + ' || ' + norm;
     // 이미 같은 소스의 상품이 이 그룹에 있으면 별도 카드로 (title_norm 뒤에 외부id를 붙여 유일하게).

@@ -33,6 +33,9 @@ function load() {
   }
   for (const s of registry.sources) {
     if (s.type !== 'brand') continue; // 편집샵 자신의 이름은 상품 브랜드가 아니므로 제외
+    // 판별이 안 된 브랜드(이상한 주소 등록 등)는 별칭으로 쓰지 않는다 — 실측: "fab.eur"를 등록하자 이름이 같은 진짜 fabeur 상품 145개가
+    // 그 가짜 브랜드 밑으로 붙어 화면에서 사라졌다(#21). 수집되는(ready) 브랜드만 다른 상품을 자기 이름으로 묶을 수 있다.
+    if (s.status && s.status !== 'ready') continue;
     const canon = normKey(s.name);
     if (!canon) continue;
     for (const alias of [s.name, s.nameEn, s.id, ...(s.aliases || [])]) {
