@@ -479,6 +479,15 @@
   .more-wrap { max-width: 1400px; margin: 48px auto 0; text-align: center; }
   .more-wrap button.secondary { background: none; color: var(--ink); padding: 4px 0; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; font-size: 12px; letter-spacing: .1em; }
   .more-wrap button.secondary:disabled { color: #b9b5ab; border-bottom-color: #d8d4cb; cursor: default; }
+  /* #22 페이지 번호: 1~5처럼 번호를 눌러 바로 이동 */
+  .more-wrap { flex-direction: column; align-items: center; gap: 10px; }
+  .pg-row { display: flex; align-items: center; gap: 4px; }
+  .pg-nums { display: flex; gap: 4px; }
+  .pg-row button { min-width: 40px; height: 40px; padding: 0 6px; border: 0; border-radius: 12px; background: none; color: var(--ink); font-size: 15px; font-weight: 500; letter-spacing: 0; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .pg-row button.on { background: var(--ink); color: var(--paper); font-weight: 600; }
+  .pg-row .pg-arrow { font-size: 22px; line-height: 1; color: var(--sub); }
+  .pg-row button:disabled { opacity: .3; cursor: default; }
+  .pg-row button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   #addResult, #folderMsg, #authMsg { font-size: 12.5px; padding: 8px 0 8px 12px; display: none; border-left: 2px solid var(--ink); }
   #addResult.ok, #folderMsg.ok, #authMsg.ok { display: block; color: var(--ink); }
   #addResult.warn, #folderMsg.warn, #authMsg.warn { display: block; color: #8a3b12; border-left-color: #8a3b12; }
@@ -983,9 +992,8 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <script>document.querySelectorAll("header input, header select").forEach(function (e) { e.setAttribute("autocomplete", "off"); });</script>
 <main><div class="shared-banner-bar" id="sharedBanner" style="display:none"></div><div class="meta-row"><div class="meta" id="meta"></div></div><div class="grid" id="grid"></div>
 <div class="more-wrap" id="moreWrap" style="display:none">
-  <button class="secondary" id="prevPageBtn" onclick="goToPage(currentPage - 1)">← 이전</button>
+  <nav class="pg-row" aria-label="페이지"><button type="button" class="pg-arrow" id="prevPageBtn" onclick="goToPage(currentPage - 1)" aria-label="이전 페이지">‹</button><span class="pg-nums" id="pageNums"></span><button type="button" class="pg-arrow" id="nextPageBtn" onclick="goToPage(currentPage + 1)" aria-label="다음 페이지">›</button></nav>
   <span id="pageLabel"></span>
-  <button class="secondary" id="nextPageBtn" onclick="goToPage(currentPage + 1)">다음 →</button>
 </div>
 </main>
 <footer class="foot">

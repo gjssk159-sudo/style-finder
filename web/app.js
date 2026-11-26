@@ -997,7 +997,8 @@ async function submitAdd() {
   } else if (data.status === 'ready' && data.dispatched) {
     out.textContent = `${viaNote}등록 완료! 지금 수집 중이에요, 1~2분 후 검색에 나와요.${folderNote}`;
   } else if (data.status === 'pending' && data.dispatched) {
-    out.textContent = `${viaNote}등록 완료! 쇼핑몰 종류를 확인하면서 상품을 수집 중이에요, 2~3분 후 검색에 나와요.${folderNote}`;
+    out.className = ''; // 아직 쇼핑몰인지 모름 — "완료"라고 하지 않는다(#21, 이상한 주소도 이 메시지가 나왔음)
+    out.textContent = `${viaNote}쇼핑몰인지 확인하고 있어요. 상품을 찾으면 2~3분 뒤 검색에 나오고, 못 찾으면 나오지 않아요.${folderNote}`;
   } else if (data.status === 'ready') {
     out.textContent = `${viaNote}등록 완료! 판별은 됐는데 자동 수집 트리거는 실패해서, 다음 정기 수집(매일 새벽) 때 반영돼요.${folderNote}`;
   } else {
@@ -1257,10 +1258,15 @@ function updatePager() {
   wrap.style.justifyContent = 'center';
   document.getElementById('prevPageBtn').disabled = currentPage <= 1;
   document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+  // 번호 5개를 보여 주고 지금 페이지가 가운데 오게(앞뒤 끝에서는 1~5, 마지막 5개)
+  const from = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+  const nums = [];
+  for (let n = from; n <= Math.min(totalPages, from + 4); n++) nums.push(n);
+  document.getElementById('pageNums').innerHTML = nums.map((n) => '<button type="button"' + (n === currentPage ? ' class="on" aria-current="page"' : '') + ' onclick="goToPage(' + n + ')" aria-label="' + n + '페이지">' + n + '</button>').join('');
   // 페이지 수(1/6페이지)와 상품 범위(61-120/319개) 둘 다 단위를 붙여서 명확하게 표시.
   const start = (currentPage - 1) * PAGE_SIZE + 1;
   const end = Math.min(currentPage * PAGE_SIZE, lastTotal);
-  document.getElementById('pageLabel').innerHTML = `<b>${currentPage}</b> / ${totalPages.toLocaleString('ko-KR')} &nbsp;·&nbsp; ${start.toLocaleString('ko-KR')}–${end.toLocaleString('ko-KR')} / ${lastTotal.toLocaleString('ko-KR')}`;
+  document.getElementById('pageLabel').innerHTML = `${totalPages.toLocaleString('ko-KR')}페이지 중 <b>${currentPage}</b> &nbsp;·&nbsp; ${start.toLocaleString('ko-KR')}–${end.toLocaleString('ko-KR')} / ${lastTotal.toLocaleString('ko-KR')}개`;
 }
 
 // ---------------- 홈 화면 즉시 표시 ----------------

@@ -532,6 +532,24 @@ await p.evaluate(() => hideAiView());
   note('로그인 전에는 대시보드 카드를 숨긴다', await v.page.evaluate(() => document.getElementById('hero').hidden));
   await v.ctx.close();
 }
+// #22 페이지 번호: 1~5 번호를 눌러 바로 이동, 지금 페이지가 가운데
+{
+  const v = await open(browser, { login: true });
+  const vp = v.page;
+  const pg = await vp.evaluate(() => {
+    const nums = () => [...document.querySelectorAll('#pageNums button')].map((b) => b.textContent + (b.classList.contains('on') ? '*' : '')).join(' ');
+    lastTotal = 600; currentPage = 1; updatePager(); const a = nums();
+    currentPage = 7; updatePager(); const b = nums();
+    currentPage = 10; updatePager(); const c = nums();
+    const sz = Math.min(...[...document.querySelectorAll('.pg-row button')].map((x) => x.getBoundingClientRect().height));
+    return { a, b, c, sz, shown: getComputedStyle(document.getElementById('moreWrap')).display !== 'none' };
+  });
+  note('페이지 번호: 처음엔 1~5, 가운데 정렬(5~9), 끝에선 6~10', pg.shown && pg.a === '1* 2 3 4 5' && pg.b === '5 6 7* 8 9' && pg.c === '6 7 8 9 10*' && pg.sz >= 40, JSON.stringify(pg));
+  await vp.evaluate(() => { currentPage = 1; updatePager(); });
+  await vp.evaluate(() => [...document.querySelectorAll('#pageNums button')].find((b) => b.textContent === '5').click()); await vp.waitForTimeout(800);
+  note('페이지 번호 5를 누르면 바로 5페이지로', await vp.evaluate(() => currentPage === 5 && new URLSearchParams(location.search).get('p') === '5'));
+  await v.ctx.close();
+}
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴
 {
   const v = await open(browser, { login: true, width: 1280, height: 900 });
