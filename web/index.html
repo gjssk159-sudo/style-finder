@@ -21,6 +21,7 @@
 <style>
   * { box-sizing: border-box; }
   :root {
+    --accent-bg: #e6f7f0; --accent-ink: #177656; /* 모바일에만 있던 것을 PC에서도 쓰게 같은 값으로 */
     --ink: #111111; --sub: #75716a; --line: #dedbd4; --bg: #f9f8f5; --faint: #eeece6; --paper: #ffffff;
     --accent: #2fbf8f;
   }
@@ -36,7 +37,8 @@
   .logo { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 800; letter-spacing: -.03em; word-spacing: 0; text-transform: uppercase; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .logo-mark { width: 9px; height: 9px; min-width: 9px; border-radius: 3px; background: var(--accent); }
   .spacer { flex: 1; }
-  .nav-links { display: flex; gap: 16px; align-items: center; }
+  .nav-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 16px; align-items: center; }
+  .nav-links button { white-space: nowrap; } /* 메뉴가 늘어 중간 폭 PC에서 "이용/안내"처럼 한 글자씩 꺾이던 것 막기 */
   .nav-links button { display: inline-block; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 2px 0; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; }
   #authArea { display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--sub); }
   #authArea .who { color: var(--ink); font-size: 12px; letter-spacing: .02em; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -158,9 +160,10 @@
   .hs-paper .hero-n { background: var(--faint); }
   /* #20 대시보드 카드: 연한 바탕색 위에 상품 사진을 꽉 채우고(흰 배경은 바탕색에 녹게) 아래쪽에 머리말·큰 제목·한 줄 설명. 모바일 2장·PC 4장 */
   .hero-slide { --tint: var(--faint); background: var(--tint); }
-  .hero-slide:nth-child(2) { --tint: color-mix(in srgb, var(--accent) 12%, var(--paper)); }
-  .hero-slide:nth-child(3) { --tint: color-mix(in srgb, var(--ink) 6%, var(--paper)); }
-  .hero-slide:nth-child(4) { --tint: color-mix(in srgb, var(--accent) 10%, var(--faint)); }
+  /* 카드 바탕색은 섞지 않은 토큰 그대로(오래된 사파리는 color-mix를 몰라 바탕색이 통째로 빠짐) */
+  .hero-slide:nth-child(2) { --tint: var(--accent-bg); }
+  .hero-slide:nth-child(3) { --tint: var(--paper); }
+  .hero-slide:nth-child(4) { --tint: var(--bg); }
   .hero[hidden] { display: none !important; }
   .hero-slide { color: var(--ink); justify-content: flex-end; }
   /* 사진 자리: 모바일은 위쪽(글자는 아래), PC는 오른쪽(글자는 왼쪽). 옷이 잘리지 않게 통째로 맞춰 넣고 칸 크기는 고정 */
@@ -173,11 +176,6 @@
   .hero-txt small { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--sub); }
   .hero-txt b { margin-top: 4px; font-size: 34px; font-weight: 700; line-height: 1.05; letter-spacing: -.03em; }
   .hero-txt .hero-sub { margin-top: 8px; max-width: 100%; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: color-mix(in srgb, var(--ink) 78%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hero-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
-  .hero-dots button { width: 6px; height: 6px; min-height: 0; padding: 0; border: 0; border-radius: 3px; background: color-mix(in srgb, var(--ink) 22%, transparent); transition: width .25s ease, background-color .25s ease; }
-  .hero-dots button.on { width: 18px; background: var(--ink); }
-  .hero-dots button::after { content: ''; display: block; margin: -10px; height: 26px; } /* 누르는 칸은 넉넉히 */
-  @media (prefers-reduced-motion: reduce) { .hero-dots button { transition: none; } }
   /* 어울리는 브랜드 자세히(아래에서 올라오는 창) */
   .fy-why { margin: 0 4px 4px; font-size: 13px; color: var(--sub); }
   .fy .df-list { display: flex; flex-direction: column; gap: 6px; }
@@ -969,7 +967,6 @@ html.intro-on, html.intro-on body { overflow: hidden; }
           <button type="button" class="hero-slide hs-ink" data-hero="recent"><span class="hero-pics" id="dnPics" aria-hidden="true"></span><span class="hero-n">3/4</span><span class="hero-txt"><small>이번 주 신상</small><b>New In</b><span class="hero-sub" id="dnSub">내 폴더에 새로 들어온 상품</span></span></button>
           <button type="button" class="hero-slide hs-ink" data-hero="ai"><span class="hero-pics" id="daPics" aria-hidden="true"></span><span class="hero-n">4/4</span><span class="hero-txt"><small>AI 서비스</small><b>AI Finder</b><span class="hero-sub">사진 한 장으로 내 폴더에서 비슷한 옷 찾기</span></span></button>
         </div>
-        <div class="hero-dots" id="heroDots" role="tablist" aria-label="추천 카드 고르기"></div>
       </section>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>

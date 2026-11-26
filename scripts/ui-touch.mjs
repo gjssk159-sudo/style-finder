@@ -494,7 +494,8 @@ await p.evaluate(() => hideAiView());
       titleColor: getComputedStyle(slides[2].querySelector('.hero-txt b')).color,
       titleSize: parseFloat(getComputedStyle(slides[0].querySelector('.hero-txt b')).fontSize),
       cluttered: !!document.querySelector('#heroTrack .df-row, #heroTrack .ds-chips, #heroTrack .dn-thumbs'),
-      dots: document.querySelectorAll('#heroDots button').length, dotOn: [...document.querySelectorAll('#heroDots button')].findIndex((b) => b.classList.contains('on')),
+      dots: document.querySelectorAll('#heroDots, .hero-dots').length,
+      tints: slides.map((s) => getComputedStyle(s).backgroundColor),
       expect: window.dashSeason().en,
       fit: slides.map((s) => { const r = s.getBoundingClientRect(); return Math.max(0, ...[...s.querySelectorAll('.hero-txt *')].map((e) => Math.round(e.getBoundingClientRect().bottom - r.bottom))); }),
     };
@@ -505,14 +506,14 @@ await p.evaluate(() => hideAiView());
   note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]) && /tester님 취향 분석/.test(d.eyebrows[0]), d.subs[0] + ' / ' + d.eyebrows[0]);
   note('계절 카드: 이번 달·계절 이름과 내 폴더 개수', /^\d+월 · /.test(d.eyebrows[1]) && /12개$/.test(d.subs[1]), d.eyebrows[1] + ' / ' + d.subs[1]);
   note('신상 카드: 이번 주 개수', /12개 새로 들어왔어요/.test(d.subs[2]), d.subs[2]);
-  note('넘김 점 4개, 지금 카드에 표시', d.dots === 4 && d.dotOn === 0, JSON.stringify([d.dots, d.dotOn]));
+  note('넘김 점은 없다(사용자 요청), 카드 바탕색은 4장 모두 색이 있다(투명 아님)', d.dots === 0 && d.tints.every((c) => c !== 'rgba(0, 0, 0, 0)'), JSON.stringify([d.dots, d.tints]));
   const q = v.calls.filter((c) => c.path.endsWith('/product_group') && /first_seen_at=gte/.test(c.query));
   note('신상 카드: 지난 7일(first_seen_at) 조건으로 묻는다', q.length >= 1, String(q.length));
   if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m1.png') });
   // 5초마다 자동으로 다음 카드
   await vp.waitForTimeout(5600);
-  const auto = await vp.evaluate(() => [Math.round(document.getElementById('heroTrack').scrollLeft), [...document.querySelectorAll('#heroDots button')].findIndex((b) => b.classList.contains('on'))]);
-  note('5초 뒤 저절로 다음 카드로 넘어간다', auto[0] > 100 && auto[1] === 1, JSON.stringify(auto));
+  const auto = await vp.evaluate(() => Math.round(document.getElementById('heroTrack').scrollLeft));
+  note('5초 뒤 저절로 다음 카드로 넘어간다', auto > 100, String(auto));
   if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m2.png') });
   // 어울리는 브랜드: 누르면 자세히 창 → + 담기
   await vp.evaluate(() => document.querySelector('[data-hero=foryou]').click()); await vp.waitForTimeout(500);
@@ -566,6 +567,13 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => { currentPage = 1; updatePager(); });
   await vp.evaluate(() => [...document.querySelectorAll('#pageNums button')].find((b) => b.textContent === '5').click()); await vp.waitForTimeout(800);
   note('페이지 번호 5를 누르면 바로 5페이지로', await vp.evaluate(() => currentPage === 5 && new URLSearchParams(location.search).get('p') === '5'));
+  await v.ctx.close();
+}
+// 중간 폭 PC(약 770px): 맨 위 메뉴 글자가 한 글자씩 꺾이지 않는다
+{
+  const v = await open(browser, { login: true, width: 770, height: 800 });
+  const nav = await v.page.evaluate(() => [...document.querySelectorAll('.nav-links button')].filter((b) => b.getBoundingClientRect().width > 0).map((b) => Math.round(b.getBoundingClientRect().height)));
+  note('중간 폭 PC: 메뉴 버튼이 모두 한 줄(높이 30px 이하)', nav.length >= 5 && nav.every((h) => h <= 30), JSON.stringify(nav));
   await v.ctx.close();
 }
 // PC 폭: 장바구니 버튼이 사진 안 오른쪽 아래, 머리글에 장바구니 메뉴

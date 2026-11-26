@@ -185,7 +185,6 @@
     const ok = typeof currentUser !== 'undefined' && currentUser && typeof myFolderIds !== 'undefined' && myFolderIds.length && !sharedView;
     hero.hidden = !ok;
     if (!ok) return;
-    if (window.markHeroDots) requestAnimationFrame(window.markHeroDots);
     const sig = myFolderIds.slice().sort().join(',');
     if (sig === lastSig && !force) return;
     lastSig = sig;
@@ -215,17 +214,12 @@
     if (e.target.closest('[data-hero="season"]')) { if (window.applyCategoryList) window.applyCategoryList(seasonNow().cats); $('chips').scrollIntoView({ block: 'start' }); }
   });
 
-  // ── 넘김 점 + 5초마다 자동으로 다음 카드(손대거나 마우스를 올리면 멈춤, 움직임 줄이기 설정이면 안 넘김) ──
+  // ── 5초마다 자동으로 다음 카드(손대거나 마우스를 올리면 멈춤, 움직임 줄이기 설정이면 안 넘김) ──
   const track = $('heroTrack');
-  const dots = $('heroDots');
-  if (track && dots) {
+  if (track) {
     const slides = () => [...track.querySelectorAll('.hero-slide')];
-    dots.innerHTML = slides().map((_, i) => `<button type="button" role="tab" aria-label="${i + 1}번째 카드"></button>`).join('');
     const current = () => { const a = slides()[0], b = slides()[1]; const step = a && b ? b.offsetLeft - a.offsetLeft : 0; return step > 0 ? Math.round(track.scrollLeft / step) : 0; }; // 카드 사이 간격(한 칸 이동 거리)으로 몇 번째인지
     const go2 = (i) => { const s = slides()[i]; if (s) track.scrollTo({ left: s.offsetLeft - slides()[0].offsetLeft, behavior: reduceMotion.matches ? 'auto' : 'smooth' }); };
-    const mark = () => { const c = current(); [...dots.children].forEach((d, i) => { d.classList.toggle('on', i === c); d.setAttribute('aria-selected', i === c); }); };
-    track.addEventListener('scroll', () => requestAnimationFrame(mark), { passive: true });
-    dots.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) go2([...dots.children].indexOf(b)); });
     let paused = false, resumeAt = 0;
     const pause = () => { paused = true; resumeAt = Date.now() + 8000; };
     track.addEventListener('touchstart', pause, { passive: true });
@@ -240,8 +234,6 @@
       const n = slides().length;
       go2((current() + 1) % n);
     }, 5000);
-    mark();
-    window.markHeroDots = mark; // 카드가 처음 보일 때(숨겨져 있다가) 다시 표시
   }
 
   const grid = $('grid');
