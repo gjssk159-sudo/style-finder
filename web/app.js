@@ -1056,7 +1056,8 @@ function buildQuery(offset, count = PAGE_SIZE) {
     // 가격이 없거나 0원인 것, 사진이 없는 것은 제대로 된 상품이 아니다(룩북·시즌 소개 글, 매장 전용 '@' 상품, 빈 회색 칸) — 화면에 내지 않는다
     .gt('min_price', 0)
     .not('image', 'is', null)
-    .neq('image', '');
+    .neq('image', '')
+    .not('image', 'like', '%echosting.cafe24.com/thumb/%'); // 카페24 기본 "사진 없음" 그림
 
   // 가격 없는 상품이 낮은순/높은순에서 맨 위로 튀지 않게 null은 항상 뒤로.
   if (sort === 'recent') query = query.order(RECENT_COL, { ascending: false });

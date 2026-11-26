@@ -158,24 +158,36 @@
   .hs-accent { background: linear-gradient(150deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, var(--ink)) 100%); color: var(--paper); }
   .hs-paper { background: var(--paper); color: var(--ink); }
   .hs-paper .hero-n { background: var(--faint); }
-  /* #20 대시보드 카드: 연한 바탕색 위에 상품 사진을 꽉 채우고(흰 배경은 바탕색에 녹게) 아래쪽에 머리말·큰 제목·한 줄 설명. 모바일 2장·PC 4장 */
-  .hero-slide { --tint: var(--faint); background: var(--tint); }
-  /* 카드 바탕색은 섞지 않은 토큰 그대로(오래된 사파리는 color-mix를 몰라 바탕색이 통째로 빠짐) */
-  .hero-slide:nth-child(2) { --tint: var(--accent-bg); }
-  .hero-slide:nth-child(3) { --tint: var(--paper); }
-  .hero-slide:nth-child(4) { --tint: var(--bg); }
-  .hero[hidden] { display: none !important; }
-  .hero-slide { color: var(--ink); justify-content: flex-end; }
-  /* 사진 자리: 모바일은 위쪽(글자는 아래), PC는 오른쪽(글자는 왼쪽). 옷이 잘리지 않게 통째로 맞춰 넣고 칸 크기는 고정 */
-  .hero-pics { position: absolute; inset: 14px 14px 38% 14px; z-index: 0; display: flex; justify-content: center; gap: 8px; background: var(--tint); } /* 사진 칸에도 카드 색을 깔아야 흰 배경이 그 색에 녹는다(multiply) */
+  /* #20 대시보드 카드(화보형): 모델·연출 사진 여러 장을 꽉 채우고(모바일 2장·PC 4장) 천천히 확대,
+     글자는 사진 위에 크게 얹지 않고 왼쪽 아래 흰 이름표 카드에 담는다(참고 앱과 다른 우리 모양). */
+  .hero-slide { background: var(--ink); color: var(--ink); justify-content: flex-end; padding: 14px; }
+  .hero-pics { position: absolute; inset: 0; z-index: 0; display: flex; gap: 2px; background: var(--ink); overflow: hidden; }
+  .hero-pics img { flex: 1 1 0; min-width: 0; height: 100%; object-fit: cover; object-position: center 22%; display: block; animation: heroKb 9s ease-in-out infinite alternate; }
+  .hero-pics img:nth-child(2) { animation-delay: -4.5s; }
   .hero-pics img:nth-child(n+3) { display: none; } /* 모바일은 2장 */
-  .hero-pics:empty { display: none; }
-  .hero-pics img { flex: 0 0 calc(50% - 4px); min-width: 0; height: 100%; object-fit: contain; display: block; mix-blend-mode: multiply; border-radius: 12px; }
-  .hero-n { z-index: 2; background: color-mix(in srgb, var(--paper) 75%, transparent); color: var(--ink); backdrop-filter: blur(6px); }
-  .hero-txt { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left; }
-  .hero-txt small { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--sub); }
-  .hero-txt b { margin-top: 4px; font-size: 34px; font-weight: 700; line-height: 1.05; letter-spacing: -.03em; }
-  .hero-txt .hero-sub { margin-top: 8px; max-width: 100%; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: color-mix(in srgb, var(--ink) 78%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @keyframes heroKb { from { transform: scale(1.02); } to { transform: scale(1.1); } }
+  .hero-slide.has-bg::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, color-mix(in srgb, var(--ink) 45%, transparent), transparent 45%); pointer-events: none; }
+  .hero-n { z-index: 3; top: 14px; right: 14px; background: color-mix(in srgb, var(--ink) 45%, transparent); color: var(--paper); backdrop-filter: blur(8px); }
+  /* 흰 이름표: 머리말(민트)·제목·한 줄 설명 */
+  .hero-txt { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; max-width: 86%; padding: 12px 14px 12px; border-radius: 16px; background: var(--paper); color: var(--ink); text-align: left; box-shadow: 0 6px 20px color-mix(in srgb, var(--ink) 18%, transparent); }
+  .hero-txt small { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; color: var(--accent-ink); }
+  .hero-txt small::before { content: ''; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+  .hero-txt b { margin-top: 4px; font-size: 22px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; }
+  .hero-txt .hero-sub { margin-top: 4px; max-width: 100%; font-size: 12.5px; font-weight: 500; line-height: 1.4; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hero-slide.is-on .hero-txt { animation: heroTag .6s cubic-bezier(.2, .8, .2, 1) both; }
+  @keyframes heroTag { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  /* 카드별 작은 표시와 움직임 */
+  .hero-chip { position: absolute; z-index: 3; top: 14px; left: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 50%, transparent); backdrop-filter: blur(8px); color: var(--paper); font-size: 11.5px; font-weight: 700; }
+  .hero-chip[hidden] { display: none; }
+  .hero-chip em { font-style: normal; color: var(--accent); }
+  .hero-chip.live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: heroPulse 1.4s ease-in-out infinite; }
+  @keyframes heroPulse { 50% { opacity: .25; } }
+  .hero-snow { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .hero-snow i { position: absolute; top: -8px; border-radius: 50%; background: var(--paper); opacity: .85; animation: heroFall linear infinite; }
+  @keyframes heroFall { to { transform: translate(var(--dx, 0), 440px); } }
+  .hero-scan { position: absolute; z-index: 2; left: 0; right: 0; top: -70px; height: 60px; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 30%, transparent)); border-bottom: 2px solid var(--accent); pointer-events: none; animation: heroScan 3.2s cubic-bezier(.4, 0, .2, 1) infinite; }
+  @keyframes heroScan { 0% { top: -70px; } 80%, 100% { top: 105%; } }
+  @media (prefers-reduced-motion: reduce) { .hero-pics img, .hero-snow i, .hero-scan, .hero-chip.live::before, .hero-slide.is-on .hero-txt { animation: none; } .hero-snow, .hero-scan { display: none; } }
   /* 어울리는 브랜드 자세히(아래에서 올라오는 창) */
   .fy-why { margin: 0 4px 4px; font-size: 13px; color: var(--sub); }
   .fy .df-list { display: flex; flex-direction: column; gap: 6px; }
@@ -188,15 +200,16 @@
   @media (min-width: 701px) {
     .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 20px 0 8px; }
     .hero-track { padding: 0; scroll-padding: 0; gap: 0; border-radius: 20px; }
-    .hero-slide { width: 100%; aspect-ratio: auto; height: 380px; padding: 36px 44px; border-radius: 20px; }
-    .hero-pics { inset: 28px 40px 28px 40%; justify-content: flex-end; gap: 12px; } /* PC: 왼쪽은 글자, 오른쪽에 사진 4장 */
-    .hero-pics img { flex: 0 0 calc(25% - 9px); }
+    .hero-slide { width: 100%; aspect-ratio: auto; height: 400px; padding: 28px; border-radius: 20px; }
     .hero-pics img:nth-child(n+3) { display: block; }
-    .hero-txt { max-width: 34%; } /* 글자는 사진(40%부터)과 겹치지 않게 */
-    .hero-txt b { font-size: 52px; }
-    .hero-txt .hero-sub { font-size: 15px; }
+    .hero-txt { max-width: 440px; padding: 18px 22px; border-radius: 20px; }
+    .hero-txt small { font-size: 13px; }
+    .hero-txt b { font-size: 34px; }
+    .hero-txt .hero-sub { font-size: 14.5px; }
+    .hero-chip { top: 24px; left: 28px; font-size: 13px; }
     .hero-n { top: 22px; right: 24px; }
   }
+
   .hero-slide:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* #16 브랜드 랭킹: 한 줄씩 위로 넘어가며 1~10위 */
   .rank { display: none; }
@@ -962,10 +975,10 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
       <section class="hero" id="hero" aria-label="추천" aria-roledescription="carousel" hidden>
         <div class="hero-track" id="heroTrack">
-          <button type="button" class="hero-slide hs-ink" data-hero="foryou"><span class="hero-pics" id="dfPics" aria-hidden="true"></span><span class="hero-n">1/4</span><span class="hero-txt"><small id="dfEyebrow">취향 분석</small><b>For You</b><span class="hero-sub" id="dfSub">브랜드를 더 담으면 취향을 분석해 추천해 드려요</span></span></button>
-          <button type="button" class="hero-slide hs-accent" data-hero="season"><span class="hero-pics" id="dsPics" aria-hidden="true"></span><span class="hero-n">2/4</span><span class="hero-txt"><small id="dsEyebrow">이번 계절</small><b id="dsTitle">Season Pick</b><span class="hero-sub" id="dsSub"></span></span></button>
-          <button type="button" class="hero-slide hs-ink" data-hero="recent"><span class="hero-pics" id="dnPics" aria-hidden="true"></span><span class="hero-n">3/4</span><span class="hero-txt"><small>이번 주 신상</small><b>New In</b><span class="hero-sub" id="dnSub">내 폴더에 새로 들어온 상품</span></span></button>
-          <button type="button" class="hero-slide hs-ink" data-hero="ai"><span class="hero-pics" id="daPics" aria-hidden="true"></span><span class="hero-n">4/4</span><span class="hero-txt"><small>AI 서비스</small><b>AI Finder</b><span class="hero-sub">사진 한 장으로 내 폴더에서 비슷한 옷 찾기</span></span></button>
+          <button type="button" class="hero-slide hs-ink" data-hero="foryou"><span class="hero-pics" id="dfPics" aria-hidden="true"></span><span class="hero-chip" id="dfChip" hidden>취향 일치 <em id="dfMatch"></em></span><span class="hero-n">1/4</span><span class="hero-txt"><small id="dfEyebrow">취향 분석</small><b>내 취향 저격 브랜드</b><span class="hero-sub" id="dfSub">브랜드를 더 담으면 취향을 분석해 추천해 드려요</span></span></button>
+          <button type="button" class="hero-slide hs-accent" data-hero="season"><span class="hero-pics" id="dsPics" aria-hidden="true"></span><span class="hero-snow" id="dsFx" aria-hidden="true"></span><span class="hero-n">2/4</span><span class="hero-txt"><small id="dsEyebrow">이번 계절</small><b id="dsTitle">Season Pick</b><span class="hero-sub" id="dsSub"></span></span></button>
+          <button type="button" class="hero-slide hs-ink" data-hero="recent"><span class="hero-pics" id="dnPics" aria-hidden="true"></span><span class="hero-chip live">LIVE · 방금 들어온 상품</span><span class="hero-n">3/4</span><span class="hero-txt"><small>새로 들어왔어요</small><b>이번 주 신상</b><span class="hero-sub" id="dnSub">내 폴더에 새로 들어온 상품</span></span></button>
+          <button type="button" class="hero-slide hs-ink" data-hero="ai"><span class="hero-pics" id="daPics" aria-hidden="true"></span><span class="hero-scan" aria-hidden="true"></span><span class="hero-n">4/4</span><span class="hero-txt"><small>AI 서비스</small><b>사진으로 옷 찾기</b><span class="hero-sub">사진 한 장으로 내 폴더에서 비슷한 옷 찾기</span></span></button>
         </div>
       </section>
       <div class="filter-box">

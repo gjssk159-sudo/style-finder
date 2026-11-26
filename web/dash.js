@@ -27,12 +27,28 @@
   const heroUrl = (u) => {
     try { const x = new URL(u); return `https://i${u.length % 3}.wp.com/${x.host}${x.pathname}${x.search}${x.search ? '&' : '?'}w=720&quality=82&strip=all`; } catch { return u; }
   };
-  // 사진을 먼저 불러 보고 열리는 것만 쓴다(일부 쇼핑몰은 밖에서 사진을 못 불러오게 막아 빈 칸이 생겼음). 칸 수는 열린 장수에 맞춤.
+  // 사진을 먼저 불러 보고 열리는 것만 쓴다(일부 쇼핑몰은 밖에서 사진을 못 불러오게 막아 빈 칸이 생겼음).
+  // 모델·연출 사진(배경이 흰색이 아닌 사진)을 먼저 쓰고, 모자라면 흰 배경 제품 사진으로 채운다.
+  // 사진 중계(wp.com)는 브라우저가 사진 색을 읽게 허락해서, 테두리 색으로 흰 배경 여부를 본다.
+  function isPackshot(img) {
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 24;
+      const g = c.getContext('2d'); g.drawImage(img, 0, 0, 24, 24);
+      const d = g.getImageData(0, 0, 24, 24).data; let white = 0, all = 0;
+      for (let y = 0; y < 24; y++) for (let x = 0; x < 24; x++) {
+        if (x > 3 && x < 20 && y > 3 && y < 20) continue;
+        const i = (y * 24 + x) * 4, r = d[i], gg = d[i + 1], b = d[i + 2];
+        all++; if (Math.min(r, gg, b) > 232 && Math.max(r, gg, b) - Math.min(r, gg, b) < 12) white++;
+      }
+      return white / all >= 0.6;
+    } catch { return true; } // 색을 못 읽으면 제품 사진으로 보고 뒤로
+  }
   const loadOk = (u) => new Promise((ok) => {
     const im = new Image(); let done = false;
-    const end = (src) => { if (!done) { done = true; ok(src); } };
-    im.onload = () => end(im.naturalWidth >= 200 ? im.src : null);
-    im.onerror = () => { if (im.src !== u && !im.dataset.tried) { im.dataset.tried = '1'; im.src = u; } else end(null); };
+    const end = (v) => { if (!done) { done = true; ok(v); } };
+    im.crossOrigin = 'anonymous';
+    im.onload = () => end(im.naturalWidth >= 200 ? { src: im.src, pack: isPackshot(im), tall: im.naturalHeight >= im.naturalWidth } : null);
+    im.onerror = () => end(null);
     im.src = heroUrl(u);
     setTimeout(() => end(null), 8000);
   });
@@ -40,14 +56,15 @@
   async function setPics(id, urls) {
     const box = $(id); if (!box) return;
     const my = ++picSeq;
-    const ok = (await Promise.all((urls || []).slice(0, 6).map(loadOk))).filter(Boolean).slice(0, 4);
+    const got = (await Promise.all((urls || []).slice(0, 10).map(loadOk))).filter(Boolean);
+    const ok = [...got.filter((p) => !p.pack && p.tall), ...got.filter((p) => !p.pack && !p.tall), ...got.filter((p) => p.pack)].slice(0, 4).map((p) => p.src);
     if (box.dataset.seq && +box.dataset.seq > my) return; // 더 늦게 시작한 채우기가 이미 끝났으면 덮어쓰지 않음
     box.dataset.seq = my;
     box.dataset.n = ok.length;
-    box.innerHTML = ok.map((src) => `<img src="${esc(src)}" alt="" decoding="async">`).join('');
+    box.innerHTML = ok.map((src) => `<img src="${esc(src)}" alt="" decoding="async" crossorigin="anonymous">`).join('');
     box.closest('.hero-slide').classList.toggle('has-bg', ok.length > 0);
   }
-  const pick = (q) => q.not('image', 'is', null).neq('image', '').gt('min_price', 0).eq('in_stock', true).order('first_seen_at', { ascending: false });
+  const pick = (q) => q.not('image', 'is', null).neq('image', '').not('image', 'like', '%echosting.cafe24.com/thumb/%').gt('min_price', 0).eq('in_stock', true).order('first_seen_at', { ascending: false }); // 카페24 기본 "사진 없음" 그림 제외
   const dayNo = () => Math.floor(Date.now() / 864e5);
   // 같은 옷의 색만 다른 사진이 나란히 오지 않게 이름 앞부분이 다른 것만, 날마다 시작점을 바꿔 n장
   function choose(rows, n, shift = 0) {
@@ -63,13 +80,15 @@
 
   async function fillSeason() {
     const s = seasonNow();
-    $('dsEyebrow').textContent = `${new Date().getMonth() + 1}월 · ${s.ko}`;
-    $('dsTitle').textContent = s.en;
+    $('dsEyebrow').textContent = `${new Date().getMonth() + 1}월 계절 추천`;
+    $('dsTitle').textContent = s.title.replace('<br>', ' '); // 직관적인 한글 제목(예: 지금 필요한 방한템)
     const [{ count }, { data }] = await Promise.all([
       base().overlaps('categories', s.cats),
       pick(sb.from('product_group').select('brand,title,image').in('brand_id', myFolderIds).overlaps('categories', s.cats)).limit(40),
     ]);
-    setPics('dsPics', choose(data, 6)); // 계절이 바뀌면 종류가 바뀌어 사진도 바뀌고, 같은 계절 안에서도 날마다 바뀜
+    setPics('dsPics', choose(data, 10));
+    // 계절 움직임: 겨울엔 눈(다른 계절은 사진만)
+    $('dsFx').innerHTML = s.ko === '방한템' ? Array.from({ length: 26 }, (_, i) => { const z = (2 + (i % 3) * 1.6).toFixed(1); return `<i style="left:${(i * 37) % 100}%;width:${z}px;height:${z}px;--dx:${((i % 5) - 2) * 12}px;animation-duration:${6 + (i % 5)}s;animation-delay:-${(i * 0.41).toFixed(2)}s"></i>`; }).join('') : ''; // 계절이 바뀌면 종류가 바뀌어 사진도 바뀌고, 같은 계절 안에서도 날마다 바뀜
     $('dsSub').textContent = `${s.chips.slice(0, 3).join('·')} 등 내 폴더에서 ${(count || 0).toLocaleString('ko-KR')}개`;
   }
 
@@ -77,11 +96,11 @@
     const since = new Date(Date.now() - 7 * 864e5).toISOString();
     const [{ count }, { data }] = await Promise.all([
       base().gte('first_seen_at', since),
-      sb.from('product_group').select('brand,title,image').in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '')
+      sb.from('product_group').select('brand,title,image').in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '').not('image', 'like', '%echosting.cafe24.com/thumb/%')
         .gte('first_seen_at', since).order('first_seen_at', { ascending: false }).limit(12),
     ]);
     const seen = new Set();
-    const newest = (data || []).filter((g) => /^https?:/i.test(g.image || '') && !seen.has(g.title) && seen.add(g.title)).slice(0, 6).map((g) => g.image);
+    const newest = (data || []).filter((g) => /^https?:/i.test(g.image || '') && !seen.has(g.title) && seen.add(g.title)).slice(0, 10).map((g) => g.image);
     setPics('dnPics', newest); // 가장 최근에 들어온 순서 그대로(수집이 새로 되면 바로 바뀜)
     $('dnSub').textContent = count ? `이번 주 내 폴더에 ${count.toLocaleString('ko-KR')}개 새로 들어왔어요` : '이번 주 새로 들어온 상품을 모아 봐요';
   }
@@ -150,19 +169,23 @@
     const em = (currentUser && currentUser.email) || '';
     const who = em.split('@')[0] || '나';
     $('dfName').textContent = who;
-    $('dfEyebrow').textContent = `${who}님 취향 분석`;
+    $('dfEyebrow').textContent = `${who}님 맞춤 추천`;
     const rows = await profiles();
     const wishBrands = (window.cartBrandNames ? window.cartBrandNames() : [])
       .map((n) => (allBrands.find((b) => b.name === n) || {}).id).filter(Boolean);
     const r = rows && recommend(rows, myFolderIds, wishBrands);
     if (!r || !r.picks.length) {
       $('dfSub').textContent = '브랜드를 더 담으면 취향을 분석해 추천해 드려요';
+      $('dfChip').hidden = true;
       $('dfWhy').textContent = '';
       $('dfList').innerHTML = '';
       setPics('dfPics', []);
       return;
     }
     $('dfSub').textContent = r.picks.map((p) => p.name).join(' · ') + ' 추천';
+    const pct = Math.round((r.picks[0].score || 0) * 100);
+    $('dfMatch').textContent = pct + '%';
+    $('dfChip').hidden = pct < 50; // 점수가 낮으면 표시하지 않음
     $('dfWhy').textContent = r.why;
     // 추천 브랜드마다 최근 사진 한 장씩(4칸이면 1순위 브랜드 한 장 더)
     const [{ data: info }, ...shots] = await Promise.all([
@@ -194,7 +217,7 @@
   // AI 카드: 내 폴더의 아우터·상의 사진(날마다 바뀜)
   async function fillAi() {
     const { data } = await pick(sb.from('product_group').select('brand,title,image').in('brand_id', myFolderIds).overlaps('categories', ['coat', 'jacket', 'blouson', 'knit', 'hoodie', 'cardigan', 'padding'])).limit(40);
-    setPics('daPics', choose(data, 6, 3));
+    setPics('daPics', choose(data, 10, 3));
   }
   // 수집이 새로 되면 바뀌게: 화면을 켜 둔 동안 10분마다 다시 채운다
   setInterval(() => { if (!document.hidden) refresh(true); }, 10 * 60e3);
@@ -222,6 +245,9 @@
     const go2 = (i) => { const s = slides()[i]; if (s) track.scrollTo({ left: s.offsetLeft - slides()[0].offsetLeft, behavior: reduceMotion.matches ? 'auto' : 'smooth' }); };
     let paused = false, resumeAt = 0;
     const pause = () => { paused = true; resumeAt = Date.now() + 8000; };
+    const markOn = () => { const c = current(); slides().forEach((s, i) => s.classList.toggle('is-on', i === c)); };
+    track.addEventListener('scroll', () => requestAnimationFrame(markOn), { passive: true });
+    markOn();
     track.addEventListener('touchstart', pause, { passive: true });
     track.addEventListener('mouseenter', () => { paused = true; resumeAt = Infinity; });
     track.addEventListener('mouseleave', () => { resumeAt = Date.now() + 2000; });

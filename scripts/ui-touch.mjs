@@ -62,6 +62,8 @@ async function open(browser, { login, width = 390, height = 844, demoRank = fals
     const body = r.method() === 'GET' ? (single ? rows[0] || null : rows) : (single ? { id: 999 } : [{ id: 999 }]);
     return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'content-range': `0-${Math.max(0, rows.length - 1)}/${rows.length}`, 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range' }, body: JSON.stringify(body) });
   });
+  // 대시보드는 사진 중계(wp.com)로 받아 색을 읽으므로, 가짜 사진을 같은 모양(CORS 허용)으로 돌려준다
+  await ctx.route(/wp\.com/, (route) => route.fulfill({ contentType: 'image/svg+xml', headers: { 'access-control-allow-origin': '*' }, body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#bbb"/></svg>' }));
   await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#bbb"/></svg>' }));
   if (login) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-' + REF + '-auth-token', JSON.stringify(session)]);
   if (!demoRank) await ctx.addInitScript(() => localStorage.setItem('sf_rank_real', '1')); // 랭킹은 실제 주간 계산으로(임시 순서 모드는 따로 시험)
@@ -496,14 +498,16 @@ await p.evaluate(() => hideAiView());
       cluttered: !!document.querySelector('#heroTrack .df-row, #heroTrack .ds-chips, #heroTrack .dn-thumbs'),
       dots: document.querySelectorAll('#heroDots, .hero-dots').length,
       tints: slides.map((s) => getComputedStyle(s).backgroundColor),
-      expect: window.dashSeason().en,
+      expect: window.dashSeason().title.replace('<br>', ' '),
       fit: slides.map((s) => { const r = s.getBoundingClientRect(); return Math.max(0, ...[...s.querySelectorAll('.hero-txt *')].map((e) => Math.round(e.getBoundingClientRect().bottom - r.bottom))); }),
     };
   });
+  const tag = await vp.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); return [getComputedStyle(s.querySelector('.hero-txt')).backgroundColor, document.querySelectorAll('#dsFx i').length, !!document.querySelector('[data-hero=ai] .hero-scan'), !!document.querySelector('[data-hero=recent] .hero-chip.live'), s.classList.contains('is-on')]; });
+  note('대시보드: 글자는 흰 이름표에, AI 스캔·LIVE 표시, 지금 카드 표시(이름표 올라옴)', tag[0] === 'rgb(255, 255, 255)' && tag[2] && tag[3] && tag[4], JSON.stringify(tag));
   note('대시보드: 로그인하면 카드 4장, 모바일은 카드마다 내 폴더 상품 사진 2장', d.shown && d.pics.every((n) => n === 2) && d.bg.every(Boolean), JSON.stringify([d.pics, d.bg]));
-  note('대시보드: 카드마다 큰 영어 제목 + 머리말 + 한 줄 설명만(꼬리표·목록·작은 사진 없음)', JSON.stringify(d.titles) === JSON.stringify(['For You', d.expect, 'New In', 'AI Finder']) && d.subs.every((x) => x.length > 0) && !d.cluttered && d.titleSize >= 30, JSON.stringify([d.titles, d.titleSize, d.cluttered]));
+  note('대시보드: 카드마다 영어 제목(이름표 안 22px 안팎) + 머리말 + 한 줄 설명만(꼬리표·목록·작은 사진 없음)', JSON.stringify(d.titles) === JSON.stringify(['내 취향 저격 브랜드', d.expect, '이번 주 신상', '사진으로 옷 찾기']) && d.subs.every((x) => x.length > 0) && !d.cluttered && d.titleSize >= 20 && d.titleSize <= 26, JSON.stringify([d.titles, d.titleSize, d.cluttered]));
   note('대시보드: 연한 바탕에 진한 글자, 내용이 카드 밖으로 안 넘친다', d.titleColor === 'rgb(17, 17, 17)' && d.fit.every((x) => x <= 0), JSON.stringify([d.titleColor, d.fit]));
-  note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]) && /tester님 취향 분석/.test(d.eyebrows[0]), d.subs[0] + ' / ' + d.eyebrows[0]);
+  note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]) && /tester님 맞춤 추천/.test(d.eyebrows[0]), d.subs[0] + ' / ' + d.eyebrows[0]);
   note('계절 카드: 이번 달·계절 이름과 내 폴더 개수', /^\d+월 · /.test(d.eyebrows[1]) && /12개$/.test(d.subs[1]), d.eyebrows[1] + ' / ' + d.subs[1]);
   note('신상 카드: 이번 주 개수', /12개 새로 들어왔어요/.test(d.subs[2]), d.subs[2]);
   note('넘김 점은 없다(사용자 요청), 카드 바탕색은 4장 모두 색이 있다(투명 아님)', d.dots === 0 && d.tints.every((c) => c !== 'rgba(0, 0, 0, 0)'), JSON.stringify([d.dots, d.tints]));
@@ -541,8 +545,8 @@ await p.evaluate(() => hideAiView());
 {
   const v = await open(browser, { login: true, width: 1280, height: 900 });
   await v.page.waitForTimeout(800);
-  const pc = await v.page.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); const r = s.getBoundingClientRect(); const imgs = [...s.querySelectorAll('.hero-pics img')].filter((i) => getComputedStyle(i).display !== 'none'); const txt = s.querySelector('.hero-txt').getBoundingClientRect(); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', w: Math.round(r.width), h: Math.round(r.height), pics: imgs.length, apart: imgs.every((i) => i.getBoundingClientRect().left >= txt.right - 4) }; });
-  note('PC: 가로로 꽉 찬 배너(높이 380px), 왼쪽 글자·오른쪽 사진 4장(겹치지 않음)', pc.shown && pc.w > 900 && pc.h === 380 && pc.pics === 4 && pc.apart, JSON.stringify(pc));
+  const pc = await v.page.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); const r = s.getBoundingClientRect(); const imgs = [...s.querySelectorAll('.hero-pics img')].filter((i) => getComputedStyle(i).display !== 'none'); const txt = s.querySelector('.hero-txt').getBoundingClientRect(); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', w: Math.round(r.width), h: Math.round(r.height), pics: imgs.length, label: txt.left >= r.left && txt.bottom <= r.bottom && txt.width < r.width / 2 && getComputedStyle(s.querySelector('.hero-txt')).backgroundColor === 'rgb(255, 255, 255)' }; });
+  note('PC: 가로로 꽉 찬 배너(높이 400px), 사진 4장 위 왼쪽 아래 흰 이름표', pc.shown && pc.w > 900 && pc.h === 400 && pc.pics === 4 && pc.label, JSON.stringify(pc));
   if (shotDir) await v.page.locator('#hero').screenshot({ path: join(shotDir, 'dash-pc.png') });
   await v.ctx.close();
 }
