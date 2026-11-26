@@ -307,6 +307,10 @@ Deno.serve(async (req: Request) => {
   // 누가 같은 URL로 다시 "등록"하는 순간 그 수동 설정이 자동판별 결과로 덮어써지는 사고를
   // 막기 위함. 이미 있으면 그냥 그 정보 그대로 알려주고 내 폴더 추가만 프론트에서 진행.
   const { data: existing } = await sb.from('brands').select('id, name, status, platform').eq('id', id).maybeSingle();
+  if (existing && existing.status === 'excluded') {
+    // 숨김 처리한 브랜드(장난 주소 등)는 다시 등록·폴더 추가가 되지 않게(#21)
+    return Response.json({ ok: false, reason: 'excluded', message: '등록할 수 없는 주소예요. 브랜드 쇼핑몰 주소를 넣어 주세요.' }, { headers: cors });
+  }
   if (existing) {
     return Response.json(
       { ok: true, id: existing.id, name: existing.name, status: existing.status, platform: existing.platform, dispatched: false, alreadyExisted: true, via },
