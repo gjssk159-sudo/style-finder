@@ -158,14 +158,25 @@
   .hs-paper .hero-n { background: var(--faint); }
   /* #20 대시보드 카드 내용 */
   .hero[hidden] { display: none !important; }
+  /* #20 카드 배경 사진(내 폴더 상품에서 그때그때 골라 씀) + 아래쪽을 어둡게 덮어 글자가 잘 보이게 */
+  .hero-bg { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-bg[hidden] { display: none; }
+  .hero-slide.has-bg { color: var(--paper); }
+  .hero-slide.has-bg::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, color-mix(in srgb, var(--ink) 82%, transparent) 0%, color-mix(in srgb, var(--ink) 35%, transparent) 55%, color-mix(in srgb, var(--ink) 45%, transparent) 100%); }
+  .hero-slide > :not(.hero-bg):not(.hero-n) { position: relative; z-index: 2; }
+  .hero-n { z-index: 2; }
+  .hero-slide.has-bg .hero-n { background: color-mix(in srgb, var(--paper) 22%, transparent); }
+  .dn.has-bg .dn-big, .dn.has-bg .dn-big em { color: var(--paper); }
+  .da { justify-content: flex-end; }
   .hero-slide.df { justify-content: flex-start; cursor: default; }
   .hero-slide.df b, .hero-slide.ds b, .hero-slide.dn b { margin-top: 4px; font-size: 21px; }
   .df .hero-sub { margin-top: 6px; width: 100%; font-size: 12.5px; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .df-list { margin-top: auto; display: flex; flex-direction: column; gap: 5px; width: 100%; }
-  .df-row { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 4px 0 6px; border-radius: 12px; background: color-mix(in srgb, var(--paper) 10%, transparent); }
-  .df-row i { flex: none; width: 26px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--paper) 90%, transparent); color: var(--ink); display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 700; }
+  .df-list { margin-top: auto; display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .df > * { flex-shrink: 0; } /* 내용이 많아도 서로 눌려 겹치지 않게 */
+  .df-row { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 0 4px 0 6px; border-radius: 12px; background: color-mix(in srgb, var(--paper) 10%, transparent); }
+  .df-row i { flex: none; width: 24px; height: 24px; border-radius: 8px; background: color-mix(in srgb, var(--paper) 90%, transparent); color: var(--ink); display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 700; }
   .df-row a, .df-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; text-decoration: none; font-size: 14px; }
-  .df-row button { flex: none; min-height: 34px; padding: 0 10px; border: 0; border-radius: 10px; background: none; color: var(--accent); font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
+  .df-row button { flex: none; min-height: 32px; padding: 0 10px; border: 0; border-radius: 10px; background: none; color: var(--accent); font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
   .df-row button:disabled { opacity: .7; }
   .ds { justify-content: flex-start; }
   .ds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -934,9 +945,10 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
       <section class="hero" id="hero" aria-label="추천" hidden>
         <div class="hero-track" id="heroTrack">
-          <div class="hero-slide hs-ink df" role="group" aria-label="나에게 어울리는 브랜드"><span class="hero-n">1/3</span><small>FOR YOU</small><b><span id="dfName"></span>님에게<br>어울리는 브랜드</b><span class="hero-sub" id="dfWhy"></span><div class="df-list" id="dfList"></div></div>
-          <button type="button" class="hero-slide hs-accent ds" data-hero="season"><span class="hero-n">2/3</span><small>SEASON · <span id="dsMonth"></span></small><b id="dsTitle"></b><span class="ds-chips" id="dsChips"></span><span class="hero-sub ds-count" id="dsCount"></span></button>
-          <button type="button" class="hero-slide hs-paper dn" data-hero="recent"><span class="hero-n">3/3</span><small>NEW</small><b>이번 주 내 폴더 신상</b><span class="dn-big"><em id="dnCount">0</em> 개 새로 들어왔어요</span><span class="dn-thumbs" id="dnThumbs"></span></button>
+          <div class="hero-slide hs-ink df" role="group" aria-label="나에게 어울리는 브랜드"><img class="hero-bg" id="dfBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">1/4</span><small>FOR YOU</small><b><span id="dfName"></span>님에게<br>어울리는 브랜드</b><span class="hero-sub" id="dfWhy"></span><div class="df-list" id="dfList"></div></div>
+          <button type="button" class="hero-slide hs-accent ds" data-hero="season"><img class="hero-bg" id="dsBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">2/4</span><small>SEASON · <span id="dsMonth"></span></small><b id="dsTitle"></b><span class="ds-chips" id="dsChips"></span><span class="hero-sub ds-count" id="dsCount"></span></button>
+          <button type="button" class="hero-slide hs-paper dn" data-hero="recent"><img class="hero-bg" id="dnBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">3/4</span><small>NEW</small><b>이번 주 내 폴더 신상</b><span class="dn-big"><em id="dnCount">0</em> 개 새로 들어왔어요</span><span class="dn-thumbs" id="dnThumbs"></span></button>
+          <button type="button" class="hero-slide hs-ink da" data-hero="ai"><img class="hero-bg" id="daBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">4/4</span><small>AI 서비스</small><b>사진 한 장으로<br>비슷한 옷 찾기</b><span class="hero-sub">마음에 든 옷 사진으로 내 폴더에서 골라 드려요</span></button>
         </div>
       </section>
       <div class="filter-box">

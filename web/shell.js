@@ -282,7 +282,8 @@
   // #16·#20 홈 위 넘겨 보는 카드: 신상 카드는 최신순으로(계절 카드는 dash.js에서 처리)
   $('heroTrack').addEventListener('click', (e) => {
     const k = e.target.closest('[data-hero]')?.dataset.hero;
-    if (k === 'recent') { const s = $('sort'); s.value = 'recent'; s.dispatchEvent(new Event('change')); $('chips').scrollIntoView({ block: 'start' }); }
+    if (k === 'ai') showAi();
+    else if (k === 'recent') { const s = $('sort'); s.value = 'recent'; s.dispatchEvent(new Event('change')); $('chips').scrollIntoView({ block: 'start' }); }
   });
   // 로고를 누르면 검색·필터·카테고리를 모두 처음 상태로(앱 쪽 초기화 + 새 화면 요소들도 같이 맞춘다)
   const baseReset = window.resetAll;

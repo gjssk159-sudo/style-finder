@@ -21,12 +21,31 @@
 
   const base = () => sb.from('product_group').select('id', { count: 'exact', head: true }).in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '');
 
+  // 카드 배경 사진: 내 폴더 상품에서 주제에 맞는 것을 골라 쓴다(수집이 새로 되면 바뀜). 없으면 원래 색 카드로.
+  function setBg(imgId, url) {
+    const img = $(imgId); if (!img) return;
+    const slide = img.closest('.hero-slide');
+    if (!url) { img.hidden = true; img.removeAttribute('src'); slide.classList.remove('has-bg'); return; }
+    img.dataset.orig = url;
+    delete img.dataset.fb;
+    img.src = typeof thumbUrl === 'function' ? thumbUrl(url) : url;
+    img.hidden = false;
+    slide.classList.add('has-bg');
+  }
+  const pick = (q) => q.not('image', 'is', null).neq('image', '').gt('min_price', 0).eq('in_stock', true).order('first_seen_at', { ascending: false });
+  const dayNo = () => Math.floor(Date.now() / 864e5);
+
   async function fillSeason() {
     const s = seasonNow();
     $('dsMonth').textContent = (new Date().getMonth() + 1) + '월';
     $('dsTitle').innerHTML = s.title;
     $('dsChips').innerHTML = s.chips.map((c) => `<span>${esc(c)}</span>`).join('');
-    const { count } = await base().overlaps('categories', s.cats);
+    const [{ count }, { data: bg }] = await Promise.all([
+      base().overlaps('categories', s.cats),
+      pick(sb.from('product_group').select('image').in('brand_id', myFolderIds).overlaps('categories', s.cats)).limit(12),
+    ]);
+    const list = (bg || []).filter((g) => /^https?:/i.test(g.image || ''));
+    setBg('dsBg', list.length ? list[dayNo() % list.length].image : null); // 계절이 바뀌면 종류가 바뀌어 사진도 바뀜
     $('dsCount').textContent = count ? `내 폴더에서 ${count.toLocaleString('ko-KR')}개 찾았어요 →` : '내 폴더에서 찾아보기 →';
   }
 
@@ -35,10 +54,12 @@
     const [{ count }, { data }] = await Promise.all([
       base().gte('first_seen_at', since),
       sb.from('product_group').select('image').in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '')
-        .gte('first_seen_at', since).order('first_seen_at', { ascending: false }).limit(3),
+        .gte('first_seen_at', since).order('first_seen_at', { ascending: false }).limit(4),
     ]);
     $('dnCount').textContent = (count || 0).toLocaleString('ko-KR');
-    const imgs = (data || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || '')).slice(0, 3);
+    const all = (data || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || ''));
+    setBg('dnBg', all[0] || null); // 가장 최근에 들어온 상품 사진
+    const imgs = all.slice(1, 4);
     $('dnThumbs').innerHTML = imgs.map((u) => `<i><img src="${esc(typeof thumbUrl === 'function' ? thumbUrl(u) : u)}" alt="" loading="lazy" decoding="async"></i>`).join('') + '<i class="more">더 보기</i>';
   }
 
@@ -112,10 +133,15 @@
     if (!r || !r.picks.length) {
       $('dfWhy').textContent = '브랜드를 더 담으면 취향을 분석해 추천해 드려요';
       $('dfList').innerHTML = '';
+      setBg('dfBg', null);
       return;
     }
     $('dfWhy').textContent = r.why;
-    const { data: info } = await sb.from('brands').select('id,shop_url').in('id', r.picks.map((p) => p.id));
+    const [{ data: info }, { data: bg }] = await Promise.all([
+      sb.from('brands').select('id,shop_url').in('id', r.picks.map((p) => p.id)),
+      pick(sb.from('product_group').select('image').eq('brand_id', r.picks[0].id)).limit(1),
+    ]);
+    setBg('dfBg', (bg && bg[0] && bg[0].image) || null); // 1순위 추천 브랜드의 최근 상품 사진
     const url = new Map((info || []).map((b) => [b.id, b.shop_url]));
     $('dfList').innerHTML = r.picks.map((p) => `<div class="df-row"><i aria-hidden="true">${esc(initials(p.name))}</i>` +
       (url.get(p.id) ? `<a href="${esc(url.get(p.id))}" target="_blank" rel="noopener">${esc(p.name)}</a>` : `<span>${esc(p.name)}</span>`) +
@@ -132,9 +158,17 @@
     const sig = myFolderIds.slice().sort().join(',');
     if (sig === lastSig && !force) return;
     lastSig = sig;
-    await Promise.all([fillSeason(), fillNew(), fillForYou()].map((p) => p.catch(() => {})));
+    await Promise.all([fillSeason(), fillNew(), fillForYou(), fillAi()].map((p) => p.catch(() => {})));
   }
   window.refreshDash = refresh;
+  // AI 카드: 내 폴더의 아우터·상의 사진 중 하루에 하나(날마다 바뀜)
+  async function fillAi() {
+    const { data } = await pick(sb.from('product_group').select('image').in('brand_id', myFolderIds).overlaps('categories', ['coat', 'jacket', 'blouson', 'knit', 'hoodie', 'cardigan', 'padding'])).limit(20);
+    const list = (data || []).filter((g) => /^https?:/i.test(g.image || ''));
+    setBg('daBg', list.length ? list[(dayNo() + 7) % list.length].image : null);
+  }
+  // 수집이 새로 되면 바뀌게: 화면을 켜 둔 동안 10분마다 다시 채운다
+  setInterval(() => { if (!document.hidden) refresh(true); }, 10 * 60e3);
 
   document.addEventListener('click', async (e) => {
     const add = e.target.closest('[data-add-brand]');
