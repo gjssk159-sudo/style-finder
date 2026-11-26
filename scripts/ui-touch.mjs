@@ -62,7 +62,7 @@ async function open(browser, { login, width = 390, height = 844, demoRank = fals
     const body = r.method() === 'GET' ? (single ? rows[0] || null : rows) : (single ? { id: 999 } : [{ id: 999 }]);
     return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'content-range': `0-${Math.max(0, rows.length - 1)}/${rows.length}`, 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range' }, body: JSON.stringify(body) });
   });
-  await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="3" height="4"><rect width="3" height="4" fill="#bbb"/></svg>' }));
+  await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#bbb"/></svg>' }));
   if (login) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-' + REF + '-auth-token', JSON.stringify(session)]);
   if (!demoRank) await ctx.addInitScript(() => localStorage.setItem('sf_rank_real', '1')); // 랭킹은 실제 주간 계산으로(임시 순서 모드는 따로 시험)
   const page = await ctx.newPage();
@@ -477,54 +477,72 @@ await p.evaluate(() => hideAiView());
   note('상품 목록은 가격·사진 있는 것만 묻는다(min_price > 0, image 있음)', main.length > 0 && main.every((c) => /min_price=gt.0/.test(c.query) && /image=not.is.null/.test(c.query) && /image=neq./.test(c.query)), main.map((c) => c.query.slice(0, 40)).join(' | '));
   await v.ctx.close();
 }
-// #20 대시보드 카드 3장: 어울리는 브랜드 / 계절 추천 / 이번 주 신상
+// #20 대시보드 카드 4장: 사진을 꽉 채우고(모바일 2장) 머리말·큰 제목·한 줄 설명, 5초마다 자동 넘김, 어울리는 브랜드는 누르면 자세히 창
 {
   const v = await open(browser, { login: true });
   const vp = v.page;
   await vp.waitForTimeout(800);
-  const d = await vp.evaluate(() => ({
-    shown: !document.getElementById('hero').hidden,
-    name: document.getElementById('dfName').textContent,
-    why: document.getElementById('dfWhy').textContent,
-    picks: [...document.querySelectorAll('#dfList .df-row')].map((r) => r.querySelector('a,span').textContent),
-    links: [...document.querySelectorAll('#dfList .df-row a')].map((a) => a.getAttribute('href')),
-    season: document.getElementById('dsTitle').textContent, month: document.getElementById('dsMonth').textContent, chips: document.querySelectorAll('#dsChips span').length,
-    sCount: document.getElementById('dsCount').textContent, nCount: document.getElementById('dnCount').textContent, thumbs: document.querySelectorAll('#dnThumbs img').length,
-    expect: window.dashSeason().title.replace('<br>', ''),
-  }));
-  const fit = await vp.evaluate(() => [...document.querySelectorAll('#heroTrack .hero-slide')].map((s) => { const r = s.getBoundingClientRect(); return Math.max(0, ...[...s.querySelectorAll('*')].map((e) => Math.round(e.getBoundingClientRect().bottom - r.bottom))); }));
-  const ov = await vp.evaluate(() => { const w = document.getElementById('dfWhy').getBoundingClientRect(); const l = document.getElementById('dfList').getBoundingClientRect(); return [Math.round(w.height), Math.round(l.top - w.bottom)]; });
-  note('어울리는 브랜드: 추천 이유 줄이 눌리지 않고 브랜드 목록과 겹치지 않는다', ov[0] >= 16 && ov[1] >= 0, JSON.stringify(ov));
-  note('대시보드: 카드 안 내용이 카드 밖으로 잘리지 않는다', fit.every((x) => x <= 0), JSON.stringify(fit));
-  const bgs = await vp.evaluate(() => [...document.querySelectorAll('#heroTrack .hero-slide')].map((s) => { const i = s.querySelector('.hero-bg'); return [s.classList.contains('has-bg'), !!(i && !i.hidden && /img.test|wp.com/.test(i.getAttribute('src') || ''))]; }));
-  note('대시보드: 카드 4장 모두 내 폴더 상품 사진이 배경으로 깔린다', bgs.length === 4 && bgs.every((x) => x[0] && x[1]), JSON.stringify(bgs));
-  note('대시보드: 글자는 사진 위에서 흰색', await vp.evaluate(() => getComputedStyle(document.querySelector('.dn b')).color) === 'rgb(255, 255, 255)');
-  note('대시보드: 로그인하면 카드가 보이고 이름이 들어간다', d.shown && d.name === 'tester', JSON.stringify([d.shown, d.name]));
-  note('어울리는 브랜드: 안 담은 브랜드 3개, 비슷한 것(SAFARISPOT·XLIM)이 먼저, 먼 것(BAGSHOP)은 마지막', d.picks.length === 3 && d.picks[2] === 'BAGSHOP' && d.picks.slice(0, 2).sort().join() === 'SAFARISPOT,XLIM' && d.links.every((h) => /shop\.test/.test(h)), JSON.stringify([d.picks, d.links]));
-  note('어울리는 브랜드: 추천 이유(종류·가격대)가 보인다', /코트·니트 위주/.test(d.why) && !/기타/.test(d.why) && /만 원/.test(d.why), d.why);
-  note('계절 카드: 이번 달 계절 제목·꼬리표·개수', d.season === d.expect && /월$/.test(d.month) && d.chips >= 4 && /12개/.test(d.sCount), JSON.stringify([d.season, d.month, d.chips, d.sCount]));
-  note('신상 카드: 이번 주 개수와 사진 3장', d.nCount === '12' && d.thumbs === 3, JSON.stringify([d.nCount, d.thumbs]));
+  const d = await vp.evaluate(() => {
+    const slides = [...document.querySelectorAll('#heroTrack .hero-slide')];
+    return {
+      shown: !document.getElementById('hero').hidden,
+      pics: slides.map((s) => [...s.querySelectorAll('.hero-pics img')].filter((i) => getComputedStyle(i).display !== 'none').length),
+      bg: slides.map((s) => s.classList.contains('has-bg')),
+      titles: slides.map((s) => s.querySelector('.hero-txt b').textContent),
+      subs: slides.map((s) => s.querySelector('.hero-sub').textContent),
+      eyebrows: slides.map((s) => s.querySelector('small').textContent),
+      titleColor: getComputedStyle(slides[2].querySelector('.hero-txt b')).color,
+      titleSize: parseFloat(getComputedStyle(slides[0].querySelector('.hero-txt b')).fontSize),
+      cluttered: !!document.querySelector('#heroTrack .df-row, #heroTrack .ds-chips, #heroTrack .dn-thumbs'),
+      dots: document.querySelectorAll('#heroDots button').length, dotOn: [...document.querySelectorAll('#heroDots button')].findIndex((b) => b.classList.contains('on')),
+      expect: window.dashSeason().en,
+      fit: slides.map((s) => { const r = s.getBoundingClientRect(); return Math.max(0, ...[...s.querySelectorAll('.hero-txt *')].map((e) => Math.round(e.getBoundingClientRect().bottom - r.bottom))); }),
+    };
+  });
+  note('대시보드: 로그인하면 카드 4장, 모바일은 카드마다 내 폴더 상품 사진 2장', d.shown && d.pics.every((n) => n === 2) && d.bg.every(Boolean), JSON.stringify([d.pics, d.bg]));
+  note('대시보드: 카드마다 큰 영어 제목 + 머리말 + 한 줄 설명만(꼬리표·목록·작은 사진 없음)', JSON.stringify(d.titles) === JSON.stringify(['For You', d.expect, 'New In', 'AI Finder']) && d.subs.every((x) => x.length > 0) && !d.cluttered && d.titleSize >= 30, JSON.stringify([d.titles, d.titleSize, d.cluttered]));
+  note('대시보드: 연한 바탕에 진한 글자, 내용이 카드 밖으로 안 넘친다', d.titleColor === 'rgb(17, 17, 17)' && d.fit.every((x) => x <= 0), JSON.stringify([d.titleColor, d.fit]));
+  note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]) && /tester님 취향 분석/.test(d.eyebrows[0]), d.subs[0] + ' / ' + d.eyebrows[0]);
+  note('계절 카드: 이번 달·계절 이름과 내 폴더 개수', /^\d+월 · /.test(d.eyebrows[1]) && /12개$/.test(d.subs[1]), d.eyebrows[1] + ' / ' + d.subs[1]);
+  note('신상 카드: 이번 주 개수', /12개 새로 들어왔어요/.test(d.subs[2]), d.subs[2]);
+  note('넘김 점 4개, 지금 카드에 표시', d.dots === 4 && d.dotOn === 0, JSON.stringify([d.dots, d.dotOn]));
   const q = v.calls.filter((c) => c.path.endsWith('/product_group') && /first_seen_at=gte/.test(c.query));
   note('신상 카드: 지난 7일(first_seen_at) 조건으로 묻는다', q.length >= 1, String(q.length));
-  if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-1.png') });
+  if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m1.png') });
+  // 5초마다 자동으로 다음 카드
+  await vp.waitForTimeout(5600);
+  const auto = await vp.evaluate(() => [Math.round(document.getElementById('heroTrack').scrollLeft), [...document.querySelectorAll('#heroDots button')].findIndex((b) => b.classList.contains('on'))]);
+  note('5초 뒤 저절로 다음 카드로 넘어간다', auto[0] > 100 && auto[1] === 1, JSON.stringify(auto));
+  if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m2.png') });
+  // 어울리는 브랜드: 누르면 자세히 창 → + 담기
+  await vp.evaluate(() => document.querySelector('[data-hero=foryou]').click()); await vp.waitForTimeout(500);
+  const fy = await vp.evaluate(() => ({ open: forYouDialog.open, rows: [...document.querySelectorAll('#dfList .df-row')].map((r) => r.querySelector('a,span').textContent), why: document.getElementById('dfWhy').textContent, links: [...document.querySelectorAll('#dfList .df-row a')].map((a) => a.getAttribute('href')) }));
+  note('어울리는 브랜드 카드를 누르면 자세히 창: 브랜드 3개·이유·쇼핑몰 링크', fy.open && fy.rows.length === 3 && fy.rows[2] === 'BAGSHOP' && /코트·니트 위주/.test(fy.why) && fy.links.every((h) => /shop\.test/.test(h)), JSON.stringify(fy));
+  if (shotDir) await vp.screenshot({ path: join(shotDir, 'dash-foryou.png') });
   let n = v.calls.length;
   await vp.evaluate(() => document.querySelector('#dfList [data-add-brand]').click()); await vp.waitForTimeout(700);
   const ins = v.calls.slice(n).find((c) => c.path.endsWith('/user_brands') && c.method === 'POST');
-  note('어울리는 브랜드: + 담기를 누르면 내 폴더에 담는 요청을 보낸다', !!ins && await vp.evaluate(() => /담았어요/.test(document.querySelector('#dfList [data-add-brand]').textContent) || myFolderIds.length === 6), ins ? 'POST user_brands' : '없음');
-  await vp.locator('#heroTrack').evaluate((e) => e.scrollTo({ left: e.querySelector('.ds').offsetLeft - 16 })); await vp.waitForTimeout(400);
-  if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-2.png') });
+  note('어울리는 브랜드: + 담기를 누르면 내 폴더에 담는 요청을 보낸다', !!ins, ins ? 'POST user_brands' : '없음');
+  await vp.evaluate(() => forYouDialog.close()); await vp.waitForTimeout(300);
   n = v.calls.length;
   await vp.evaluate(() => document.querySelector('[data-hero=season]').click()); await vp.waitForTimeout(1200);
   const sq = v.calls.slice(n).find((c) => c.path.endsWith('/product_group') && /offer/.test(c.query) && /categories=ov/.test(c.query));
   note('계절 카드를 누르면 그 종류들로 거른다', !!sq && /padding|tshirt|jacket|shirt/.test(sq.query), sq ? sq.query.match(/categories=ov\.[^&]*/)[0].slice(0, 80) : '없음');
-  await vp.locator('#heroTrack').evaluate((e) => e.scrollTo({ left: e.scrollWidth })); await vp.waitForTimeout(400);
-  if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-3.png') });
   await vp.evaluate(() => document.querySelector('[data-hero=recent]').click()); await vp.waitForTimeout(600);
   await vp.evaluate(() => document.querySelector('[data-hero=ai]').click()); await vp.waitForTimeout(500);
   note('AI 카드를 누르면 AI 서비스 화면', await vp.evaluate(() => !document.getElementById('aiView').hidden));
   await vp.evaluate(() => window.hideAiView());
   note('신상 카드를 누르면 최신순', await vp.evaluate(() => document.getElementById('sort').value === 'recent'));
   note('대시보드 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
+  await v.ctx.close();
+}
+// PC: 가로로 꽉 찬 배너, 사진 4장
+{
+  const v = await open(browser, { login: true, width: 1280, height: 900 });
+  await v.page.waitForTimeout(800);
+  const pc = await v.page.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); const r = s.getBoundingClientRect(); const imgs = [...s.querySelectorAll('.hero-pics img')].filter((i) => getComputedStyle(i).display !== 'none'); const txt = s.querySelector('.hero-txt').getBoundingClientRect(); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', w: Math.round(r.width), h: Math.round(r.height), pics: imgs.length, apart: imgs.every((i) => i.getBoundingClientRect().left >= txt.right - 4) }; });
+  note('PC: 가로로 꽉 찬 배너(높이 380px), 왼쪽 글자·오른쪽 사진 4장(겹치지 않음)', pc.shown && pc.w > 900 && pc.h === 380 && pc.pics === 4 && pc.apart, JSON.stringify(pc));
+  if (shotDir) await v.page.locator('#hero').screenshot({ path: join(shotDir, 'dash-pc.png') });
   await v.ctx.close();
 }
 {

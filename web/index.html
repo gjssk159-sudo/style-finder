@@ -156,39 +156,49 @@
   .hs-accent { background: linear-gradient(150deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, var(--ink)) 100%); color: var(--paper); }
   .hs-paper { background: var(--paper); color: var(--ink); }
   .hs-paper .hero-n { background: var(--faint); }
-  /* #20 대시보드 카드 내용 */
+  /* #20 대시보드 카드: 연한 바탕색 위에 상품 사진을 꽉 채우고(흰 배경은 바탕색에 녹게) 아래쪽에 머리말·큰 제목·한 줄 설명. 모바일 2장·PC 4장 */
+  .hero-slide { --tint: var(--faint); background: var(--tint); }
+  .hero-slide:nth-child(2) { --tint: color-mix(in srgb, var(--accent) 12%, var(--paper)); }
+  .hero-slide:nth-child(3) { --tint: color-mix(in srgb, var(--ink) 6%, var(--paper)); }
+  .hero-slide:nth-child(4) { --tint: color-mix(in srgb, var(--accent) 10%, var(--faint)); }
   .hero[hidden] { display: none !important; }
-  /* #20 카드 배경 사진(내 폴더 상품에서 그때그때 골라 씀) + 아래쪽을 어둡게 덮어 글자가 잘 보이게 */
-  .hero-bg { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; }
-  .hero-bg[hidden] { display: none; }
-  .hero-slide.has-bg { color: var(--paper); }
-  .hero-slide.has-bg::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, color-mix(in srgb, var(--ink) 82%, transparent) 0%, color-mix(in srgb, var(--ink) 35%, transparent) 55%, color-mix(in srgb, var(--ink) 45%, transparent) 100%); }
-  .hero-slide > :not(.hero-bg):not(.hero-n) { position: relative; z-index: 2; }
-  .hero-n { z-index: 2; }
-  .hero-slide.has-bg .hero-n { background: color-mix(in srgb, var(--paper) 22%, transparent); }
-  .dn.has-bg .dn-big, .dn.has-bg .dn-big em { color: var(--paper); }
-  .da { justify-content: flex-end; }
-  .hero-slide.df { justify-content: flex-start; cursor: default; }
-  .hero-slide.df b, .hero-slide.ds b, .hero-slide.dn b { margin-top: 4px; font-size: 21px; }
-  .df .hero-sub { margin-top: 6px; width: 100%; font-size: 12.5px; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .df-list { margin-top: auto; display: flex; flex-direction: column; gap: 4px; width: 100%; }
-  .df > * { flex-shrink: 0; } /* 내용이 많아도 서로 눌려 겹치지 않게 */
-  .df-row { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 0 4px 0 6px; border-radius: 12px; background: color-mix(in srgb, var(--paper) 10%, transparent); }
-  .df-row i { flex: none; width: 24px; height: 24px; border-radius: 8px; background: color-mix(in srgb, var(--paper) 90%, transparent); color: var(--ink); display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 700; }
-  .df-row a, .df-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; text-decoration: none; font-size: 14px; }
-  .df-row button { flex: none; min-height: 32px; padding: 0 10px; border: 0; border-radius: 10px; background: none; color: var(--accent); font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
+  .hero-slide { color: var(--ink); justify-content: flex-end; }
+  /* 사진 자리: 모바일은 위쪽(글자는 아래), PC는 오른쪽(글자는 왼쪽). 옷이 잘리지 않게 통째로 맞춰 넣고 칸 크기는 고정 */
+  .hero-pics { position: absolute; inset: 14px 14px 38% 14px; z-index: 0; display: flex; justify-content: center; gap: 8px; background: var(--tint); } /* 사진 칸에도 카드 색을 깔아야 흰 배경이 그 색에 녹는다(multiply) */
+  .hero-pics img:nth-child(n+3) { display: none; } /* 모바일은 2장 */
+  .hero-pics:empty { display: none; }
+  .hero-pics img { flex: 0 0 calc(50% - 4px); min-width: 0; height: 100%; object-fit: contain; display: block; mix-blend-mode: multiply; border-radius: 12px; }
+  .hero-n { z-index: 2; background: color-mix(in srgb, var(--paper) 75%, transparent); color: var(--ink); backdrop-filter: blur(6px); }
+  .hero-txt { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left; }
+  .hero-txt small { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--sub); }
+  .hero-txt b { margin-top: 4px; font-size: 34px; font-weight: 700; line-height: 1.05; letter-spacing: -.03em; }
+  .hero-txt .hero-sub { margin-top: 8px; max-width: 100%; font-size: 13.5px; font-weight: 500; line-height: 1.45; color: color-mix(in srgb, var(--ink) 78%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hero-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+  .hero-dots button { width: 6px; height: 6px; min-height: 0; padding: 0; border: 0; border-radius: 3px; background: color-mix(in srgb, var(--ink) 22%, transparent); transition: width .25s ease, background-color .25s ease; }
+  .hero-dots button.on { width: 18px; background: var(--ink); }
+  .hero-dots button::after { content: ''; display: block; margin: -10px; height: 26px; } /* 누르는 칸은 넉넉히 */
+  @media (prefers-reduced-motion: reduce) { .hero-dots button { transition: none; } }
+  /* 어울리는 브랜드 자세히(아래에서 올라오는 창) */
+  .fy-why { margin: 0 4px 4px; font-size: 13px; color: var(--sub); }
+  .fy .df-list { display: flex; flex-direction: column; gap: 6px; }
+  .df-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 6px 0 12px; border-radius: 16px; background: var(--paper); }
+  .df-row i { flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--faint); color: var(--ink); display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 700; }
+  .df-row a, .df-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); text-decoration: none; font-size: 15px; }
+  .df-row button { flex: none; min-height: 40px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--accent-bg, var(--faint)); color: var(--accent-ink, var(--ink)); font-size: 13px; font-weight: 600; letter-spacing: 0; }
   .df-row button:disabled { opacity: .7; }
-  .ds { justify-content: flex-start; }
-  .ds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .ds-chips span { height: 28px; padding: 0 11px; border-radius: 8px; background: color-mix(in srgb, var(--paper) 18%, transparent); display: flex; align-items: center; font-size: 12.5px; font-weight: 500; }
-  .ds-count { margin-top: auto; }
-  .dn { justify-content: flex-start; }
-  .dn-big { margin-top: auto; display: flex; align-items: baseline; gap: 6px; font-size: 14px; color: var(--sub); }
-  .dn-big em { font-style: normal; font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
-  .dn-thumbs { display: flex; gap: 6px; width: 100%; margin-top: 12px; }
-  .dn-thumbs i { flex: 1; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; background: var(--faint); font-style: normal; }
-  .dn-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .dn-thumbs .more { display: grid; place-items: center; font-size: 12px; color: var(--sub); }
+  /* PC: 가로로 꽉 찬 배너(사진 4장), 자동으로 넘어감 */
+  @media (min-width: 701px) {
+    .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 20px 0 8px; }
+    .hero-track { padding: 0; scroll-padding: 0; gap: 0; border-radius: 20px; }
+    .hero-slide { width: 100%; aspect-ratio: auto; height: 380px; padding: 36px 44px; border-radius: 20px; }
+    .hero-pics { inset: 28px 40px 28px 40%; justify-content: flex-end; gap: 12px; } /* PC: 왼쪽은 글자, 오른쪽에 사진 4장 */
+    .hero-pics img { flex: 0 0 calc(25% - 9px); }
+    .hero-pics img:nth-child(n+3) { display: block; }
+    .hero-txt { max-width: 34%; } /* 글자는 사진(40%부터)과 겹치지 않게 */
+    .hero-txt b { font-size: 52px; }
+    .hero-txt .hero-sub { font-size: 15px; }
+    .hero-n { top: 22px; right: 24px; }
+  }
   .hero-slide:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* #16 브랜드 랭킹: 한 줄씩 위로 넘어가며 1~10위 */
   .rank { display: none; }
@@ -952,13 +962,14 @@ html.intro-on, html.intro-on body { overflow: hidden; }
         <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보세요" autofocus>
       </div>
       <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
-      <section class="hero" id="hero" aria-label="추천" hidden>
+      <section class="hero" id="hero" aria-label="추천" aria-roledescription="carousel" hidden>
         <div class="hero-track" id="heroTrack">
-          <div class="hero-slide hs-ink df" role="group" aria-label="나에게 어울리는 브랜드"><img class="hero-bg" id="dfBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">1/4</span><small>FOR YOU</small><b><span id="dfName"></span>님에게<br>어울리는 브랜드</b><span class="hero-sub" id="dfWhy"></span><div class="df-list" id="dfList"></div></div>
-          <button type="button" class="hero-slide hs-accent ds" data-hero="season"><img class="hero-bg" id="dsBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">2/4</span><small>SEASON · <span id="dsMonth"></span></small><b id="dsTitle"></b><span class="ds-chips" id="dsChips"></span><span class="hero-sub ds-count" id="dsCount"></span></button>
-          <button type="button" class="hero-slide hs-paper dn" data-hero="recent"><img class="hero-bg" id="dnBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">3/4</span><small>NEW</small><b>이번 주 내 폴더 신상</b><span class="dn-big"><em id="dnCount">0</em> 개 새로 들어왔어요</span><span class="dn-thumbs" id="dnThumbs"></span></button>
-          <button type="button" class="hero-slide hs-ink da" data-hero="ai"><img class="hero-bg" id="daBg" alt="" hidden decoding="async" onerror="imgFallback(this)"><span class="hero-n">4/4</span><small>AI 서비스</small><b>사진 한 장으로<br>비슷한 옷 찾기</b><span class="hero-sub">마음에 든 옷 사진으로 내 폴더에서 골라 드려요</span></button>
+          <button type="button" class="hero-slide hs-ink" data-hero="foryou"><span class="hero-pics" id="dfPics" aria-hidden="true"></span><span class="hero-n">1/4</span><span class="hero-txt"><small id="dfEyebrow">취향 분석</small><b>For You</b><span class="hero-sub" id="dfSub">브랜드를 더 담으면 취향을 분석해 추천해 드려요</span></span></button>
+          <button type="button" class="hero-slide hs-accent" data-hero="season"><span class="hero-pics" id="dsPics" aria-hidden="true"></span><span class="hero-n">2/4</span><span class="hero-txt"><small id="dsEyebrow">이번 계절</small><b id="dsTitle">Season Pick</b><span class="hero-sub" id="dsSub"></span></span></button>
+          <button type="button" class="hero-slide hs-ink" data-hero="recent"><span class="hero-pics" id="dnPics" aria-hidden="true"></span><span class="hero-n">3/4</span><span class="hero-txt"><small>이번 주 신상</small><b>New In</b><span class="hero-sub" id="dnSub">내 폴더에 새로 들어온 상품</span></span></button>
+          <button type="button" class="hero-slide hs-ink" data-hero="ai"><span class="hero-pics" id="daPics" aria-hidden="true"></span><span class="hero-n">4/4</span><span class="hero-txt"><small>AI 서비스</small><b>AI Finder</b><span class="hero-sub">사진 한 장으로 내 폴더에서 비슷한 옷 찾기</span></span></button>
         </div>
+        <div class="hero-dots" id="heroDots" role="tablist" aria-label="추천 카드 고르기"></div>
       </section>
       <div class="filter-box">
       <div class="msel"><button type="button" class="msel-btn" id="colorBtn">색상 전체</button><div class="msel-panel" id="colorPanel"></div></div>
@@ -1154,6 +1165,13 @@ html.intro-on, html.intro-on body { overflow: hidden; }
     <span class="sd-title">새 소식</span>
   </div>
   <div class="sd-body" id="newsList"></div>
+</dialog>
+<dialog id="forYouDialog" class="soft-dlg fy" aria-label="나에게 어울리는 브랜드">
+  <div class="sd-top">
+    <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="forYouDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <span class="sd-title"><span id="dfName"></span>님에게 어울리는 브랜드</span>
+  </div>
+  <div class="sd-body"><p class="fy-why" id="dfWhy"></p><div class="df-list" id="dfList"></div></div>
 </dialog>
 <dialog id="rankDialog" class="soft-dlg" aria-label="랭킹">
   <div class="sd-top">

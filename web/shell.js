@@ -389,7 +389,7 @@
   document.addEventListener('touchcancel', endDrag, { passive: true });
 
   // 어두운 바깥을 누르면 닫힌다(안에서 누르고 바깥에서 뗀 경우는 제외)
-  ['addDialog', 'folderDialog', 'aboutDialog', 'authDialog', 'pwDialog', 'newsDialog', 'rankDialog'].forEach((id) => {
+  ['addDialog', 'folderDialog', 'aboutDialog', 'authDialog', 'pwDialog', 'newsDialog', 'rankDialog', 'forYouDialog'].forEach((id) => {
     const dlg = $(id); if (!dlg) return;
     let downOutside = false;
     const outsideOf = (e) => { const r = dlg.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
