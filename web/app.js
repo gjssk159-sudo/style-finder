@@ -40,6 +40,8 @@ let allBrands = [];   // "내 폴더" 다이얼로그용 전체 브랜드 목록
 // 여러 개를 동시에 고를 수 있다. 각 원소는 그룹 id(그 그룹 전체) 또는 카테고리 id(하나)
 try { history.scrollRestoration = 'manual'; } catch {} // 스크롤 복원은 아래 restoreScrollIfMatching이 직접 처리
 let catSel = [];
+let curated = null; // #20 대시보드에서 골라 준 상품만 보기 { label, ids } — 조건 표의 ×나 로고로 풀림
+window.showCurated = (label, ids) => { curated = ids && ids.length ? { label, ids: ids.slice(0, 60) } : null; currentPage = 1; go(); };
 let colorSel = []; // 선택한 색상 id들
 let pendingSize = ''; // URL에서 복원한 사이즈 — 사이즈 옵션이 아직 안 채워진 부팅 중에도 검색/주소에 유지하려고 따로 들고 있음
 const getSize = () => document.getElementById('size').value || pendingSize;
@@ -1074,6 +1076,7 @@ function buildQuery(offset, count = PAGE_SIZE) {
   if (priceMin) query = query.gte('max_price', Number(priceMin));
   if (priceMax) query = query.lte('min_price', Number(priceMax));
   if (inStock) query = query.eq('in_stock', true);
+  if (curated) query = query.in('id', curated.ids);
   // 검색어마다: 카테고리가 인식되면 그 카테고리이거나, 상품명에 한/영 표기 중 하나라도 들어있는 상품을 보여준다.
   // (분류가 틀리거나 비어 있어도 상품명에 있으면 나오고, 한국어/영어 어느 쪽으로 쳐도 둘 다 나온다)
   const q = (v) => '"%' + String(v).replace(/(["\\])/g, '\\$1') + '%"';
@@ -1376,6 +1379,7 @@ async function renderCurrentPage() {
     res = await buildQuery(offset, PAGE_SIZE).query;
   }
   const { data, error, count } = res;
+  if (!error && curated && data) data.sort((a, b) => curated.ids.indexOf(a.id) - curated.ids.indexOf(b.id)); // 골라 준 순서대로
   if (mySeq !== renderSeq) return; // 그 사이 더 새로운 검색이 시작됐으면 이 결과는 버림(loading 표시는 최신 요청이 끝낼 때 해제)
   if (!error && data.length && grid.querySelector('.card') && sigOf(data) !== renderedSig) {
     await preloadFirstImages(data);
@@ -1581,6 +1585,7 @@ function metaHtml(categories, colors, keywords) {
     ? `<button type="button" class="mtag" data-x="${escHtml(x)}" aria-label="${escHtml(label)} 조건 빼기">${escHtml(label)}<span aria-hidden="true">×</span></button>`
     : `<span class="mtag plain">${escHtml(label)}</span>`;
   const out = [`<b class="meta-n">${lastTotal.toLocaleString('ko-KR')}개</b>`];
+  if (curated) out.push(tag(curated.label, 'curated'));
   if (catSel.length) catSel.forEach((id) => { if (!T.GROUPS.some((x) => x.id === id)) out.push(tag(T.labelOf(id), 'cat:' + id)); }); // 대분류는 위 탭에 보이므로 세부 분류만
   else categories.forEach((c) => out.push(tag(T.labelOf(c)))); // 검색어로 정해진 분류는 검색창에서 지운다
   const brand = document.getElementById('brand').value;
@@ -1603,6 +1608,7 @@ document.getElementById('meta').addEventListener('click', (e) => {
   } else if (kind === 'brand') pickBrand('');
   else if (kind === 'color') { colorSel = colorSel.filter((c) => c !== val); renderColorPanel(); go(); }
   else if (kind === 'size') { pendingSize = ''; document.getElementById('size').value = ''; document.getElementById('size').dispatchEvent(new Event('change', { bubbles: true })); }
+  else if (kind === 'curated') { curated = null; go(); }
   else if (kind === 'price') { document.getElementById('priceMin').value = ''; document.getElementById('priceMax').value = ''; go(); }
 });
 
@@ -1628,6 +1634,7 @@ window.applyCategoryList = (ids) => { catSel = ids.slice(); afterCategoryChange(
 
 // 로고(마이셀렉트샵)를 누르면 검색어·색상·카테고리·브랜드·사이즈·가격·정렬·페이지·스크롤을 전부 처음 상태로 되돌린다.
 function resetAll() {
+  curated = null;
   if (sharedView) { location.href = location.pathname; return; }
   document.getElementById('q').value = '';
   colorSel = [];

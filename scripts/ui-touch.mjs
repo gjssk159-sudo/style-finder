@@ -479,74 +479,71 @@ await p.evaluate(() => hideAiView());
   note('상품 목록은 가격·사진 있는 것만 묻는다(min_price > 0, image 있음)', main.length > 0 && main.every((c) => /min_price=gt.0/.test(c.query) && /image=not.is.null/.test(c.query) && /image=neq./.test(c.query)), main.map((c) => c.query.slice(0, 40)).join(' | '));
   await v.ctx.close();
 }
-// #20 대시보드 카드 4장: 사진을 꽉 채우고(모바일 2장) 머리말·큰 제목·한 줄 설명, 5초마다 자동 넘김, 어울리는 브랜드는 누르면 자세히 창
+// #20 대시보드 카드 4장(표지형): 상품 사진 대신 주제 그래픽 + 큰 주제 글자, 작은 유리 이름표, 계절 카드는 "골라 준 N선"
 {
   const v = await open(browser, { login: true });
   const vp = v.page;
   await vp.waitForTimeout(800);
   const d = await vp.evaluate(() => {
     const slides = [...document.querySelectorAll('#heroTrack .hero-slide')];
+    const cs = (e) => getComputedStyle(e);
     return {
       shown: !document.getElementById('hero').hidden,
-      pics: slides.map((s) => [...s.querySelectorAll('.hero-pics img')].filter((i) => getComputedStyle(i).display !== 'none').length),
-      bg: slides.map((s) => s.classList.contains('has-bg')),
+      words: slides.map((s) => s.querySelector('.hero-word')?.textContent),
+      art: slides.map((s) => !!s.querySelector('.hero-art .b1')),
+      productImgs: document.querySelectorAll('#heroTrack img').length,
       titles: slides.map((s) => s.querySelector('.hero-txt b').textContent),
       subs: slides.map((s) => s.querySelector('.hero-sub').textContent),
       eyebrows: slides.map((s) => s.querySelector('small').textContent),
-      titleColor: getComputedStyle(slides[2].querySelector('.hero-txt b')).color,
-      titleSize: parseFloat(getComputedStyle(slides[0].querySelector('.hero-txt b')).fontSize),
-      cluttered: !!document.querySelector('#heroTrack .df-row, #heroTrack .ds-chips, #heroTrack .dn-thumbs'),
+      titleSize: parseFloat(cs(slides[0].querySelector('.hero-txt b')).fontSize),
+      subSize: parseFloat(cs(slides[0].querySelector('.hero-sub')).fontSize),
+      labelAnim: cs(slides[0].querySelector('.hero-txt')).animationName,
+      fit: slides.map((s) => { const r = s.getBoundingClientRect(); const t = s.querySelector('.hero-txt').getBoundingClientRect(); return Math.round(t.bottom - r.bottom); }),
       dots: document.querySelectorAll('#heroDots, .hero-dots').length,
-      tints: slides.map((s) => getComputedStyle(s).backgroundColor),
-      expect: window.dashSeason().title.replace('<br>', ' '),
-      fit: slides.map((s) => { const r = s.getBoundingClientRect(); return Math.max(0, ...[...s.querySelectorAll('.hero-txt *')].map((e) => Math.round(e.getBoundingClientRect().bottom - r.bottom))); }),
+      season: window.dashSeason(),
     };
   });
-  const tag = await vp.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); return [getComputedStyle(s.querySelector('.hero-txt')).backgroundColor, document.querySelectorAll('#dsFx i').length, !!document.querySelector('[data-hero=ai] .hero-scan'), !!document.querySelector('[data-hero=recent] .hero-chip.live'), s.classList.contains('is-on')]; });
-  note('대시보드: 글자는 흰 이름표에, AI 스캔·LIVE 표시, 지금 카드 표시(이름표 올라옴)', tag[0] === 'rgb(255, 255, 255)' && tag[2] && tag[3] && tag[4], JSON.stringify(tag));
-  note('대시보드: 로그인하면 카드 4장, 모바일은 카드마다 내 폴더 상품 사진 2장', d.shown && d.pics.every((n) => n === 2) && d.bg.every(Boolean), JSON.stringify([d.pics, d.bg]));
-  note('대시보드: 카드마다 영어 제목(이름표 안 22px 안팎) + 머리말 + 한 줄 설명만(꼬리표·목록·작은 사진 없음)', JSON.stringify(d.titles) === JSON.stringify(['내 취향 저격 브랜드', d.expect, '이번 주 신상', '사진으로 옷 찾기']) && d.subs.every((x) => x.length > 0) && !d.cluttered && d.titleSize >= 20 && d.titleSize <= 26, JSON.stringify([d.titles, d.titleSize, d.cluttered]));
-  note('대시보드: 연한 바탕에 진한 글자, 내용이 카드 밖으로 안 넘친다', d.titleColor === 'rgb(17, 17, 17)' && d.fit.every((x) => x <= 0), JSON.stringify([d.titleColor, d.fit]));
-  note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]) && /tester님 맞춤 추천/.test(d.eyebrows[0]), d.subs[0] + ' / ' + d.eyebrows[0]);
-  note('계절 카드: 이번 달·계절 이름과 내 폴더 개수', /^\d+월 · /.test(d.eyebrows[1]) && /12개$/.test(d.subs[1]), d.eyebrows[1] + ' / ' + d.subs[1]);
+  note('대시보드: 표지는 상품 사진이 아니라 그래픽 + 큰 주제 글자(취향·계절·NEW·AI)', d.shown && d.productImgs === 0 && d.art.every(Boolean) && JSON.stringify(d.words) === JSON.stringify(['취향', d.season.word, 'NEW', 'AI']), JSON.stringify([d.words, d.productImgs, d.art]));
+  note('대시보드: 이름표 글자는 작게(제목 20px 이하·설명 12px 안팎), 넘길 때 다시 튀어 오르지 않음, 카드 밖으로 안 넘침', d.titleSize <= 20 && d.subSize <= 13 && d.labelAnim === 'none' && d.fit.every((x) => x <= 0), JSON.stringify([d.titleSize, d.subSize, d.labelAnim, d.fit]));
+  note('대시보드: 제목은 직관적인 한글(내 취향 저격 브랜드 / 이번 주 신상 / 사진으로 옷 찾기)', d.titles[0] === '내 취향 저격 브랜드' && d.titles[2] === '이번 주 신상' && d.titles[3] === '사진으로 옷 찾기' && /tester님 맞춤 추천/.test(d.eyebrows[0]), JSON.stringify([d.titles, d.eyebrows[0]]));
+  note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]), d.subs[0]);
   note('신상 카드: 이번 주 개수', /12개 새로 들어왔어요/.test(d.subs[2]), d.subs[2]);
-  note('넘김 점은 없다(사용자 요청), 카드 바탕색은 4장 모두 색이 있다(투명 아님)', d.dots === 0 && d.tints.every((c) => c !== 'rgba(0, 0, 0, 0)'), JSON.stringify([d.dots, d.tints]));
+  note('넘김 점은 없다(사용자 요청)', d.dots === 0, String(d.dots));
   const q = v.calls.filter((c) => c.path.endsWith('/product_group') && /first_seen_at=gte/.test(c.query));
   note('신상 카드: 지난 7일(first_seen_at) 조건으로 묻는다', q.length >= 1, String(q.length));
   if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m1.png') });
-  // 5초마다 자동으로 다음 카드
   await vp.waitForTimeout(5600);
-  const auto = await vp.evaluate(() => Math.round(document.getElementById('heroTrack').scrollLeft));
-  note('5초 뒤 저절로 다음 카드로 넘어간다', auto > 100, String(auto));
-  if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m2.png') });
+  note('5초 뒤 저절로 다음 카드로 넘어간다', await vp.evaluate(() => document.getElementById('heroTrack').scrollLeft > 100));
+  // 골라 준 상품만 보기(계절 "N선"): 그 번호들만 묻고, 조건 표에 이름이 나오고 ×로 풀린다
+  let n = v.calls.length;
+  await vp.evaluate(() => window.showCurated('방한템 2선', [1000, 1001])); await vp.waitForTimeout(1200);
+  const cq = v.calls.slice(n).find((c) => c.path.endsWith('/product_group') && /offer/.test(c.query) && /id=in\.\(1000,1001\)/.test(c.query));
+  const ctag = await vp.evaluate(() => [...document.querySelectorAll('#meta .mtag')].map((t) => t.textContent));
+  note('골라 준 상품만 보기: 그 상품 번호만 묻고 조건 표에 "방한템 2선" 표시', !!cq && ctag.some((t) => /방한템 2선/.test(t)), JSON.stringify(ctag));
+  await vp.evaluate(() => document.querySelector('#meta .mtag[data-x=curated]').click()); await vp.waitForTimeout(1000);
+  note('골라 준 상품 보기는 ×로 풀린다', await vp.evaluate(() => !document.querySelector('#meta .mtag[data-x=curated]')));
   // 어울리는 브랜드: 누르면 자세히 창 → + 담기
   await vp.evaluate(() => document.querySelector('[data-hero=foryou]').click()); await vp.waitForTimeout(500);
-  const fy = await vp.evaluate(() => ({ open: forYouDialog.open, rows: [...document.querySelectorAll('#dfList .df-row')].map((r) => r.querySelector('a,span').textContent), why: document.getElementById('dfWhy').textContent, links: [...document.querySelectorAll('#dfList .df-row a')].map((a) => a.getAttribute('href')) }));
-  note('어울리는 브랜드 카드를 누르면 자세히 창: 브랜드 3개·이유·쇼핑몰 링크', fy.open && fy.rows.length === 3 && fy.rows[2] === 'BAGSHOP' && /코트·니트 위주/.test(fy.why) && fy.links.every((h) => /shop\.test/.test(h)), JSON.stringify(fy));
-  if (shotDir) await vp.screenshot({ path: join(shotDir, 'dash-foryou.png') });
-  let n = v.calls.length;
-  await vp.evaluate(() => document.querySelector('#dfList [data-add-brand]').click()); await vp.waitForTimeout(700);
-  const ins = v.calls.slice(n).find((c) => c.path.endsWith('/user_brands') && c.method === 'POST');
-  note('어울리는 브랜드: + 담기를 누르면 내 폴더에 담는 요청을 보낸다', !!ins, ins ? 'POST user_brands' : '없음');
-  await vp.evaluate(() => forYouDialog.close()); await vp.waitForTimeout(300);
+  const fy = await vp.evaluate(() => ({ open: forYouDialog.open, rows: [...document.querySelectorAll('#dfList .df-row')].map((r) => r.querySelector('a,span').textContent), why: document.getElementById('dfWhy').textContent }));
+  note('어울리는 브랜드 카드를 누르면 자세히 창: 브랜드 3개·이유', fy.open && fy.rows.length === 3 && fy.rows[2] === 'BAGSHOP' && /코트·니트 위주/.test(fy.why), JSON.stringify(fy));
   n = v.calls.length;
-  await vp.evaluate(() => document.querySelector('[data-hero=season]').click()); await vp.waitForTimeout(1200);
-  const sq = v.calls.slice(n).find((c) => c.path.endsWith('/product_group') && /offer/.test(c.query) && /categories=ov/.test(c.query));
-  note('계절 카드를 누르면 그 종류들로 거른다', !!sq && /padding|tshirt|jacket|shirt/.test(sq.query), sq ? sq.query.match(/categories=ov\.[^&]*/)[0].slice(0, 80) : '없음');
+  await vp.evaluate(() => document.querySelector('#dfList [data-add-brand]').click()); await vp.waitForTimeout(700);
+  note('어울리는 브랜드: + 담기를 누르면 내 폴더에 담는 요청을 보낸다', !!v.calls.slice(n).find((c) => c.path.endsWith('/user_brands') && c.method === 'POST'));
+  await vp.evaluate(() => forYouDialog.close()); await vp.waitForTimeout(300);
   await vp.evaluate(() => document.querySelector('[data-hero=recent]').click()); await vp.waitForTimeout(600);
+  note('신상 카드를 누르면 최신순', await vp.evaluate(() => document.getElementById('sort').value === 'recent'));
   await vp.evaluate(() => document.querySelector('[data-hero=ai]').click()); await vp.waitForTimeout(500);
   note('AI 카드를 누르면 AI 서비스 화면', await vp.evaluate(() => !document.getElementById('aiView').hidden));
   await vp.evaluate(() => window.hideAiView());
-  note('신상 카드를 누르면 최신순', await vp.evaluate(() => document.getElementById('sort').value === 'recent'));
   note('대시보드 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
-// PC: 가로로 꽉 찬 배너, 사진 4장
+// PC: 낮은 띠(200px)라 아래 상품이 바로 보인다
 {
   const v = await open(browser, { login: true, width: 1280, height: 900 });
   await v.page.waitForTimeout(800);
-  const pc = await v.page.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); const r = s.getBoundingClientRect(); const imgs = [...s.querySelectorAll('.hero-pics img')].filter((i) => getComputedStyle(i).display !== 'none'); const txt = s.querySelector('.hero-txt').getBoundingClientRect(); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', w: Math.round(r.width), h: Math.round(r.height), pics: imgs.length, label: txt.left >= r.left && txt.bottom <= r.bottom && txt.width < r.width / 2 && getComputedStyle(s.querySelector('.hero-txt')).backgroundColor === 'rgb(255, 255, 255)' }; });
-  note('PC: 가로로 꽉 찬 배너(높이 400px), 사진 4장 위 왼쪽 아래 흰 이름표', pc.shown && pc.w > 900 && pc.h === 400 && pc.pics === 4 && pc.label, JSON.stringify(pc));
+  const pc = await v.page.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); const r = s.getBoundingClientRect(); const firstCard = document.querySelector('#grid .card'); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', w: Math.round(r.width), h: Math.round(r.height), cardTop: firstCard ? Math.round(firstCard.getBoundingClientRect().top) : null }; });
+  note('PC: 대시보드는 높이 200px 띠, 첫 화면에 상품이 보인다', pc.shown && pc.w > 900 && pc.h === 200 && pc.cardTop !== null && pc.cardTop < 900, JSON.stringify(pc));
   if (shotDir) await v.page.locator('#hero').screenshot({ path: join(shotDir, 'dash-pc.png') });
   await v.ctx.close();
 }
