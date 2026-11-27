@@ -10,7 +10,7 @@
 // (다른 도메인이라 브라우저가 막음), 서버 쪽인 여기서 대신 판별한다.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { shopSignals } from './signals.ts';
+import { shopSignals, isAppShell } from './signals.ts';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -213,8 +213,9 @@ async function detectPlatform(rawUrl: string): Promise<DetectResult> {
     return { status: 'error', shopUrl, reason: 'unreachable' };
   }
   const hint = home?.text ? sniffUnknownPlatform(home.text) : null;
-  // 처음 보는 쇼핑몰 프로그램이면 첫 화면에 쇼핑몰 흔적이 2가지 이상 있어야 한다(상품 링크·가격·장바구니/구매·상품 정보)
-  if (home?.text && !hint && shopSignals(home.text) < 2) {
+  // 처음 보는 쇼핑몰 프로그램이면 첫 화면에 쇼핑몰 흔적이 2가지 이상 있어야 한다(상품 링크·가격·장바구니/구매·상품 정보).
+  // 단, 첫 화면이 빈 껍데기(나중에 화면을 그리는 앱)면 셀 수 없으니 거절하지 않고 확인 대기로 둔다.
+  if (home?.text && !hint && !isAppShell(home.text) && shopSignals(home.text) < 2) {
     return { status: 'error', shopUrl, reason: 'not_shop' };
   }
 
