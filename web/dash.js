@@ -115,7 +115,7 @@
       let dot = 0; for (const [k, x] of v.cats) dot += x * (me.cats.get(k) || 0);
       const cos = dot / (norm(v.cats) * nMe);
       const pricePenalty = Math.exp(-Math.abs(Math.log((v.price || 1) / (me.price || 1))));
-      // 이 브랜드만의 이유: 나와 겹치는 종류(둘 다 많이 가진 것) 2개 + 가격대 비교
+      // 나와 겹치는 종류(둘 다 많이 가진 것) 2개: 창의 상품 사진을 이 종류로 고른다
       const shared = [...v.cats].map(([k, x]) => [k, Math.min(x, me.cats.get(k) || 0)]).filter(([, x]) => x > 0).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => k);
       scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty), own: mine.includes(id), shared, price: v.price });
     }
@@ -124,15 +124,6 @@
     const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => label(k));
     // 아직 안 담은 브랜드 먼저. 거의 모든 브랜드를 담았으면 폴더 안에서 취향에 가장 가까운 브랜드로 채워 늘 3곳
     const picks = [...scored.filter((x) => !x.own), ...scored.filter((x) => x.own)].slice(0, 3);
-    for (const p of picks) {
-      const r = Math.log((p.price || 1) / (me.price || 1));
-      const won = `중간 ${Math.max(1, Math.round((p.price || 0) / 10000))}만 원`;
-      const priceTxt = Math.abs(r) < 0.25 ? `가격대가 비슷합니다(${won})` : r < 0 ? `조금 더 저렴합니다(${won})` : `조금 더 높은 가격대입니다(${won})`;
-      const names = p.shared.map(label).join('·');
-      const last = names.charCodeAt(names.length - 1);
-      const josa = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 ? '을' : '를'; // 받침 있으면 을
-      p.reason = p.shared.length ? `${names}${josa} 주로 팔고, ${priceTxt}` : priceTxt;
-    }
     return { picks, tags: [...topCats, band(me.price)] };
   }
 
@@ -163,7 +154,6 @@
       const imgs = ((shots[i] && shots[i].data) || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || ''));
       const src = (u) => (typeof thumbUrl === 'function' ? thumbUrl(u) : u);
       return `<div class="df-card"><div class="df-head"><b>${esc(p.name)}</b>${p.score >= 0.5 ? `<span class="df-pct">취향 일치 ${Math.round(p.score * 100)}%</span>` : ''}</div>` +
-        `<p class="df-reason">${esc(p.reason)}</p>` +
         (imgs.length ? `<button type="button" class="df-shots" data-see-brand="${esc(p.name)}" aria-label="${esc(p.name)} 상품 보기">${imgs.map((u) => `<img src="${esc(src(u))}" alt="" loading="lazy" decoding="async">`).join('')}</button>` : '') +
         `<div class="df-act"><button type="button" data-see-brand="${esc(p.name)}">상품 보기</button>` +
         (p.own ? '<button type="button" class="own" disabled>담겨 있음</button>' : `<button type="button" data-add-brand="${esc(p.id)}" aria-label="${esc(p.name)} 내 폴더에 담기">+ 담기</button>`) + '</div></div>';

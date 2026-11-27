@@ -53,8 +53,8 @@
       const before = items;
       items = items.filter((x) => x.group_id !== gid); sync();
       const { error } = await sb.from('cart_items').delete().eq('group_id', gid);
-      if (error) { items = before; sync(); toast('빼지 못했어요. 잠시 뒤 다시 해 주세요.'); return; }
-      toast('위시리스트에서 뺐어요');
+      if (error) { items = before; sync(); toast('빼지 못했습니다. 잠시 뒤 다시 해 주십시오.'); return; }
+      toast('위시리스트에서 뺐습니다');
       return;
     }
     const g = cards.get(gid) || {};
@@ -62,10 +62,10 @@
     const before = items;
     items = [{ ...row, id: -gid, added_at: new Date().toISOString(), product_group: { in_stock: g.in_stock, min_price: g.min_price, image: g.image, offer: g.offer || [] } }, ...items]; sync();
     const { data: saved, error } = await sb.from('cart_items').insert(row).select('id').single();
-    if (error) { items = before; sync(); toast(/row-level|policy/i.test(error.message) ? '위시리스트는 300개까지 담을 수 있어요' : '담지 못했어요. 잠시 뒤 다시 해 주세요.'); return; }
+    if (error) { items = before; sync(); toast(/row-level|policy/i.test(error.message) ? '위시리스트는 300개까지 담을 수 있습니다' : '담지 못했습니다. 잠시 뒤 다시 해 주십시오.'); return; }
     const it = items.find((x) => x.group_id === gid);
     if (it && saved) it.id = saved.id; // 임시 번호를 실제 번호로(빼기에 씀)
-    toast('위시리스트에 담았어요 <button type="button" data-cart-open>보러 가기</button>');
+    toast('위시리스트에 담았습니다 <button type="button" data-cart-open>보러 가기</button>');
   }
 
   async function removeItem(id, gid) {
@@ -73,7 +73,7 @@
     items = items.filter((x) => x.id !== id); sync();
     const q = sb.from('cart_items').delete();
     const { error } = await (id > 0 ? q.eq('id', id) : q.eq('group_id', gid));
-    if (error) { items = before; sync(); toast('빼지 못했어요. 잠시 뒤 다시 해 주세요.'); }
+    if (error) { items = before; sync(); toast('빼지 못했습니다. 잠시 뒤 다시 해 주십시오.'); }
   }
 
   function render() {
@@ -83,8 +83,8 @@
     $('cartSeg').hidden = brands.length < 2;
     $('cartSeg').innerHTML = ['', ...brands].map((b) => `<button type="button" class="${b === brandTab ? 'on' : ''}" data-b="${esc(b)}">${b ? esc(b) : '전체'}</button>`).join('');
     const list = items.filter((x) => !brandTab || x.brand === brandTab);
-    if (!uid) { $('cartList').innerHTML = '<div class="cart-empty"><b>로그인하면 위시리스트를 쓸 수 있어요</b><button type="button" class="cart-go" data-cart-login>로그인</button></div>'; return; }
-    if (!list.length) { $('cartList').innerHTML = '<div class="cart-empty"><b>위시리스트가 비어 있어요</b>상품 사진 오른쪽 아래<br>하트를 눌러 담아 보세요.<button type="button" class="cart-go" data-cart-home>상품 보러 가기</button></div>'; return; }
+    if (!uid) { $('cartList').innerHTML = '<div class="cart-empty"><b>로그인하면 위시리스트를 쓸 수 있습니다</b><button type="button" class="cart-go" data-cart-login>로그인</button></div>'; return; }
+    if (!list.length) { $('cartList').innerHTML = '<div class="cart-empty"><b>위시리스트가 비어 있습니다</b>상품 사진 오른쪽 아래<br>하트를 눌러 담아 보십시오.<button type="button" class="cart-go" data-cart-home>상품 보러 가기</button></div>'; return; }
     $('cartList').innerHTML = list.map((x) => {
       const pg = x.product_group;
       const gone = x.group_id == null || !pg;

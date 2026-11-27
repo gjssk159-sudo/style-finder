@@ -149,7 +149,7 @@
       ? folders.map((f) => '<button type="button" class="fc-tab' + (f.id === currentFolderId ? ' on' : '') + '" data-f="' + f.id + '">' + esc(f.name) + '</button>').join('')
       : '<button type="button" class="fc-tab on">' + esc((folders[0] && folders[0].name) || '내 폴더') + '</button>';
     if (brands.length === 0) {
-      fcRow.innerHTML = '<div class="fc-empty"><span>이 폴더는 비어 있어요.</span><button type="button" data-manage="1">브랜드 담기</button></div>';
+      fcRow.innerHTML = '<div class="fc-empty"><span>이 폴더는 비어 있습니다.</span><button type="button" data-manage="1">브랜드 담기</button></div>';
       return;
     }
     // 네모 안 글자: 기호를 빼고 앞 두 글자("(I)AMT" → IA, "AFTER PRAY" → AF, "소요" → 소요)
