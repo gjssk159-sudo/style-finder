@@ -161,7 +161,7 @@
   /* #20 대시보드(캠페인 사진형, 레퍼런스 구조): 무료 화보 사진(Unsplash)이 카드를 꽉 채우고 필름 질감,
      큰 영문 제목 + 작은 한글 머리말 + 한글 설명 한 줄, 오른쪽 위 번호. 사진 3장이 천천히 확대되며 교차. 모션은 transform·opacity만. */
   .hero-track { gap: 10px; }
-  .hero-slide { width: 86%; aspect-ratio: 5 / 4; background: var(--ink); color: var(--paper); padding: 20px; border: 0; border-radius: 22px; justify-content: flex-end; overflow: hidden; isolation: isolate; }
+  .hero-slide { width: 86%; aspect-ratio: 5 / 4; background: var(--ink); color: var(--paper); padding: 20px; border: 0; border-radius: 22px; justify-content: flex-end; overflow: hidden; isolation: isolate; clip-path: inset(0 round 22px); -webkit-mask-image: -webkit-radial-gradient(white, black); } /* 사진이 확대되는 동안에도 둥근 모서리 유지(사파리 등) */
   .hero-art, .hero-word, .hero-scan, .hero-grid, .hero-g, .hero-svg { display: none; }
   .hero-pics { position: absolute; inset: 0; z-index: 0; display: block; background: var(--ink); }
   .hero-pics img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 1.4s ease; }
