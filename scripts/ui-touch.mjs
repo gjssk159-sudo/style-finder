@@ -63,6 +63,8 @@ async function open(browser, { login, width = 390, height = 844, demoRank = fals
     return route.fulfill({ status: 200, headers: { 'content-type': 'application/json', 'content-range': `0-${Math.max(0, rows.length - 1)}/${rows.length}`, 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range' }, body: JSON.stringify(body) });
   });
   // 대시보드는 사진 중계(wp.com)로 받아 색을 읽으므로, 가짜 사진을 같은 모양(CORS 허용)으로 돌려준다
+  // #20 브랜드 스타일 태그(취향 분석): 내 폴더(100~104)·SAFARISPOT·XLIM은 미니멀·모던, BAGSHOP은 스트릿(거리가 멂)
+  await ctx.route(/brand-styles\.json/, (route) => route.fulfill({ json: { 100: ['미니멀', '모던'], 101: ['미니멀', '모던'], 102: ['모던', '미니멀'], 103: ['미니멀'], 104: ['모던'], 105: ['미니멀', '모던'], 106: ['스트릿'], 107: ['모던', '미니멀'] } }));
   await ctx.route(/wp\.com/, (route) => route.fulfill({ contentType: 'image/svg+xml', headers: { 'access-control-allow-origin': '*' }, body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#bbb"/></svg>' }));
   await ctx.route(/img\.test|shop\.test/, (route) => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="300" height="400" fill="#bbb"/></svg>' }));
   if (login) await ctx.addInitScript(([k, v]) => localStorage.setItem(k, v), ['sb-' + REF + '-auth-token', JSON.stringify(session)]);
@@ -384,7 +386,7 @@ await p.evaluate(() => hideAiView());
   const samples = await vp.evaluate(async () => { const out = []; for (let i = 0; i < 36; i++) { out.push(+getComputedStyle(document.getElementById('rankLine')).opacity); await new Promise((r) => setTimeout(r, 100)); } return out; });
   const dip = samples.findIndex((o) => o < 0.5);
   note('랭킹: 넘어갈 때만 잠깐 흐려지고 곧 다시 또렷해진다(0.1초마다 잰 값)', dip >= 0 && samples.slice(dip).some((o) => o === 1) && samples.filter((o) => o === 1).length >= 25, samples.map((o) => o.toFixed(1)).join(' '));
-  await vp.locator('#heroTrack').evaluate((e) => e.scrollTo({ left: e.scrollWidth }));
+  await vp.locator('#heroTrack').evaluate((e) => { e.dispatchEvent(new Event('touchstart')); e.scrollTo({ left: e.scrollWidth }); }); // 손을 댄 것처럼 해서 5초 자동 넘김이 겹치지 않게
   await vp.waitForTimeout(500);
   note('넘겨 보는 카드가 옆으로 넘어간다', await vp.evaluate(() => document.getElementById('heroTrack').scrollLeft > 100));
   if (shotDir) await vp.screenshot({ path: join(shotDir, 'home16.png') });
@@ -523,7 +525,7 @@ await p.evaluate(() => hideAiView());
   await vp.waitForTimeout(800);
   await vp.evaluate(() => document.querySelector('[data-hero=foryou]').click()); await vp.waitForTimeout(500);
   const fy = await vp.evaluate(() => ({ open: forYouDialog.open, rows: [...document.querySelectorAll('#dfList .df-card')].map((r) => r.querySelector('.df-head b').textContent), why: document.getElementById('dfWhy').textContent, reasons: [...document.querySelectorAll('#dfList .df-reason')].map((r) => r.textContent), see: document.querySelectorAll('#dfList [data-see-brand]').length }));
-  note('추천 브랜드 창: 내 취향 태그 + 브랜드 카드 3장(이유 글 없음, 상품 보기 버튼)', fy.open && fy.rows.length === 3 && fy.rows[2] === 'BAGSHOP' && /^내 취향코트니트/.test(fy.why) && fy.reasons.length === 0 && fy.see >= 3, JSON.stringify(fy));
+  note('추천 브랜드 창: 내 취향 태그 + 브랜드 카드 3장(이유 글 없음, 상품 보기 버튼)', fy.open && fy.rows.length === 3 && fy.rows[2] === 'BAGSHOP' && /^내 취향미니멀모던/.test(fy.why) && fy.reasons.length === 0 && fy.see >= 3, JSON.stringify(fy));
   n = v.calls.length;
   await vp.evaluate(() => document.querySelector('#dfList [data-add-brand]').click()); await vp.waitForTimeout(700);
   note('어울리는 브랜드: + 담기를 누르면 내 폴더에 담는 요청을 보낸다', !!v.calls.slice(n).find((c) => c.path.endsWith('/user_brands') && c.method === 'POST'));

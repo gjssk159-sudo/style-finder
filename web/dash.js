@@ -3,7 +3,6 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const T = () => window.StyleFinderTaxonomy;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   // ── 계절: 날짜로 자동으로 바뀐다 ──
@@ -63,78 +62,46 @@
     $('dnSub').textContent = count ? `최근 7일 동안 내 폴더 브랜드에서 새로 모은 상품 ${count.toLocaleString('ko-KR')}개` : '최근 7일 동안 내 폴더 브랜드에서 새로 모은 상품';
   }
 
-  // ── 나에게 어울리는 브랜드: 내 폴더(＋위시리스트) 브랜드들과 상품 종류·가격대가 비슷한데 아직 안 담은 브랜드 ──
-  const PROFILE_KEY = 'sf_brand_profile';
-  async function profiles() {
-    const day = new Date().toISOString().slice(0, 10);
-    try { const c = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); if (c && c.day === day && c.rows.length) return c.rows; } catch {}
-    const rows = [];
-    for (let from = 0; from < 20000; from += 1000) {
-      const { data, error } = await sb.from('brand_profile').select('brand_id,cat,n,med_price').range(from, from + 999);
-      if (error) return null; // 요약표가 아직 없음(SQL 적용 전)
-      rows.push(...data);
-      if (data.length < 1000) break;
-    }
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ day, rows })); } catch {}
-    return rows;
+  // ── 취향 저격 추천 브랜드: 스타일 태그로 분석(#20, 사용자 요청 2026-11-27) ──
+  // 브랜드마다 스타일 태그 1~3개(web/brand-styles.json, 강한 것부터 1·0.7·0.5 가중).
+  // 내 취향 = 내 폴더(＋위시리스트) 브랜드들의 스타일을 더한 것. 추천 = 스타일이 가장 많이 겹치는(코사인 유사도) 브랜드.
+  // 종류·가격대는 보지 않는다.
+  let styleMap = null;
+  async function styles() {
+    if (styleMap) return styleMap;
+    try { styleMap = await (await fetch('brand-styles.json')).json(); } catch { styleMap = {}; }
+    return styleMap;
   }
-  function band(p) {
-    if (!p) return '';
-    const m = Math.floor(p / 100000);
-    return m <= 0 ? '10만 원 아래' : `${m * 10}~${(m + 1) * 10}만 원대`;
-  }
-  // 브랜드 하나 = 종류별 비율 벡터 + 가격 중간값(종류별 중간값을 개수로 평균)
-  function vectors(rows) {
-    const by = new Map();
-    for (const r of rows) {
-      const b = by.get(r.brand_id) || { cats: new Map(), total: 0, priceSum: 0 };
-      b.cats.set(r.cat, (b.cats.get(r.cat) || 0) + r.n);
-      b.total += r.n;
-      b.priceSum += r.med_price * r.n;
-      by.set(r.brand_id, b);
-    }
-    for (const b of by.values()) { b.price = b.priceSum / (b.total || 1); for (const [k, v] of b.cats) b.cats.set(k, v / b.total); }
-    return by;
-  }
-  function recommend(rows, mine, extra) {
-    const vec = vectors(rows);
-    const me = { cats: new Map(), price: 0, w: 0 };
-    for (const id of [...mine, ...extra]) {
-      const v = vec.get(id); if (!v) continue;
-      for (const [k, x] of v.cats) me.cats.set(k, (me.cats.get(k) || 0) + x);
-      me.price += v.price; me.w++;
-    }
-    if (!me.w) return null;
-    me.price /= me.w;
-    const norm = (m) => Math.sqrt([...m.values()].reduce((s, x) => s + x * x, 0)) || 1;
-    const nMe = norm(me.cats);
-    const ready = new Map(allBrands.filter((b) => b.status === 'ready').map((b) => [b.id, b]));
+  const W = [1, 0.7, 0.5];
+  const vecOf = (tags) => { const m = new Map(); (tags || []).forEach((t, i) => m.set(t, (m.get(t) || 0) + (W[i] || 0.4))); return m; };
+  function recommend(map, mine, extra) {
+    const me = new Map();
+    for (const id of [...mine, ...extra]) for (const [k, x] of vecOf(map[id])) me.set(k, (me.get(k) || 0) + x);
+    if (!me.size) return null;
+    const norm = (m) => Math.sqrt([...m.values()].reduce((t, x) => t + x * x, 0)) || 1;
+    const nMe = norm(me);
+    const ready = new Map(allBrands.filter((x) => x.status === 'ready').map((x) => [x.id, x]));
     const scored = [];
-    for (const [id, v] of vec) {
-      if (!ready.has(id)) continue;
-      let dot = 0; for (const [k, x] of v.cats) dot += x * (me.cats.get(k) || 0);
-      const cos = dot / (norm(v.cats) * nMe);
-      const pricePenalty = Math.exp(-Math.abs(Math.log((v.price || 1) / (me.price || 1))));
-      // 나와 겹치는 종류(둘 다 많이 가진 것) 2개: 창의 상품 사진을 이 종류로 고른다
-      const shared = [...v.cats].map(([k, x]) => [k, Math.min(x, me.cats.get(k) || 0)]).filter(([, x]) => x > 0).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => k);
-      scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty), own: mine.includes(id), shared, price: v.price });
+    for (const [id, br] of ready) {
+      const v = vecOf(map[id]); if (!v.size) continue;
+      let dot = 0; for (const [k, x] of v) dot += x * (me.get(k) || 0);
+      scored.push({ id, name: br.name, score: dot / (norm(v) * nMe), own: mine.includes(id) });
     }
-    scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
-    const label = (k) => (T().labelOf(k) || k).split('/')[0].replace(/^기타\s*/, '');
-    const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => label(k));
-    // 아직 안 담은 브랜드 먼저. 거의 모든 브랜드를 담았으면 폴더 안에서 취향에 가장 가까운 브랜드로 채워 늘 3곳
+    scored.sort((x, y) => y.score - x.score || x.name.localeCompare(y.name));
+    // 아직 안 담은 브랜드 먼저. 거의 모든 브랜드를 담았으면 폴더 안에서 가장 가까운 브랜드로 채워 늘 3곳
     const picks = [...scored.filter((x) => !x.own), ...scored.filter((x) => x.own)].slice(0, 3);
-    return { picks, tags: [...topCats, band(me.price)] };
+    const tags = [...me].sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k]) => k);
+    return { picks, tags };
   }
 
   async function fillForYou() {
     const em = (currentUser && currentUser.email) || '';
     const who = em.split('@')[0] || '나';
     $('dfName').textContent = who;
-    const rows = await profiles();
+    const map = await styles();
     const wishBrands = (window.cartBrandNames ? window.cartBrandNames() : [])
       .map((n) => (allBrands.find((b) => b.name === n) || {}).id).filter(Boolean);
-    const r = rows && recommend(rows, myFolderIds, wishBrands);
+    const r = recommend(map, myFolderIds, wishBrands);
     if (!r || !r.picks.length) {
       $('dfSub').textContent = '브랜드를 더 담으시면 취향을 분석해 추천해 드립니다';
       $('dfChip').hidden = true;
@@ -147,8 +114,7 @@
     $('dfMatch').textContent = pct + '%';
     $('dfChip').hidden = pct < 50; // 점수가 낮으면 표시하지 않음
     $('dfWhy').innerHTML = '<small>내 취향</small>' + r.tags.map((t) => `<span>${esc(t)}</span>`).join('');
-    // 사진은 이유에 적은 종류(겹치는 종류)의 상품으로(이유와 사진이 맞게)
-    const shots = await Promise.all(r.picks.map((p) => (p.shared.length ? sb.from('product_group').select('image').overlaps('categories', p.shared) : sb.from('product_group').select('image')).eq('brand_id', p.id).gt('min_price', 0).eq('in_stock', true)
+    const shots = await Promise.all(r.picks.map((p) => sb.from('product_group').select('image').eq('brand_id', p.id).gt('min_price', 0).eq('in_stock', true)
       .not('image', 'is', null).neq('image', '').not('image', 'like', '%echosting.cafe24.com/thumb/%').order('first_seen_at', { ascending: false }).limit(4)));
     $('dfList').innerHTML = r.picks.map((p, i) => {
       const imgs = ((shots[i] && shots[i].data) || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || ''));
