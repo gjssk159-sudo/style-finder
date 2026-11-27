@@ -28,7 +28,7 @@
   const PICS = { dfPics: HERO_PICS.df, dnPics: HERO_PICS.dn, daPics: HERO_PICS.da }; // 목록은 index.html 머리의 HERO_PICS
   const picUrl = window.heroPicUrl;
   function setPics(id, ids) {
-    const box = $(id); if (!box || box.dataset.ids === ids.join()) return;
+    const box = $(id); if (!box || !Array.isArray(ids) || !ids.length || typeof picUrl !== 'function' || box.dataset.ids === ids.join()) return;
     box.dataset.ids = ids.join();
     box.innerHTML = ids.map((x, i) => `<img${i === 0 ? ' class="on"' : ''} src="${picUrl(x)}" alt="" decoding="async"${i ? ' loading="lazy"' : ''}>`).join('');
     clearInterval(box._t);
@@ -182,8 +182,9 @@
     const sig = myFolderIds.slice().sort().join(',');
     if (sig === lastSig && !force) return;
     lastSig = sig;
-    for (const k of Object.keys(PICS)) setPics(k, PICS[k]);
-    await Promise.all([fillSeason(), fillNew(), fillForYou()].map((p) => p.catch(() => {})));
+    const fills = Promise.all([fillSeason(), fillNew(), fillForYou()].map((p) => p.catch(() => {}))); // 글자 채우기를 먼저 시작
+    for (const k of Object.keys(PICS)) { try { setPics(k, PICS[k]); } catch {} } // 사진 단계에 문제가 생겨도 글자 채우기는 계속
+    await fills;
   }
   window.refreshDash = refresh;
   // 수집이 새로 되면 바뀌게: 화면을 켜 둔 동안 10분마다 다시 채운다

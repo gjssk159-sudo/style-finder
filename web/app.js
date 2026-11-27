@@ -1954,3 +1954,19 @@ async function initWelcome() {
   }
 }
 initWelcome();
+
+// #20 PC: 위쪽 영역(로고·검색·대시보드·필터)은 스크롤하면 올라가고, 카테고리 탭 줄부터만 화면 위에 붙어 있게.
+// 위쪽 영역 전체가 붙어 있으면 대시보드 때문에 화면 대부분을 차지해 아래 상품이 조금만 보였다.
+(() => {
+  const header = document.querySelector('header');
+  const chips = document.getElementById('chips');
+  if (!header || !chips) return;
+  const pin = () => {
+    if (innerWidth <= 700) { header.style.top = ''; return; }
+    const gap = chips.getBoundingClientRect().top - header.getBoundingClientRect().top; // 위쪽 영역 맨 위 ~ 탭 줄 사이
+    header.style.top = -Math.max(0, Math.round(gap)) + 'px';
+  };
+  pin();
+  addEventListener('resize', pin);
+  if (window.ResizeObserver) new ResizeObserver(pin).observe(header);
+})();
