@@ -218,6 +218,8 @@
     .hero-track { overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none; }
     .hero-track::-webkit-scrollbar { display: none; }
     .hero-slide { flex: 0 0 calc(50% - 8px) !important; }
+    .chips { flex-wrap: nowrap; gap: 0 clamp(12px, 1.6vw, 22px); overflow-x: auto; scrollbar-width: none; } /* 카테고리 탭 한 줄(꺾이지 않게, 넘치면 옆으로 밀기) */
+    .chips::-webkit-scrollbar { display: none; }
   }
   /* 대시보드 큰 제목: 카드가 좁아도 단어가 쪼개지지 않게(한 줄, 카드 폭에 맞춰 크기 조절) */
   @media (min-width: 701px) { .hero-txt b { white-space: nowrap; font-size: clamp(24px, 2.3vw, 30px) !important; } }
