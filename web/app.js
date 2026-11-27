@@ -1033,7 +1033,8 @@ function qs() {
   return p;
 }
 
-// '최신순'은 우리 사이트가 처음 발견한 시각(first_seen_at) 기준. (updated_at은 수집 때마다 전 상품에 새로 찍혀서 마지막으로 적재된 브랜드가 늘 맨 위였음)
+// '최신순'은 first_seen_at 기준 = 브랜드 홈페이지 등록 시각(결정 D-16: 정확한 일시 → 등록 달+번호 → 나중에 발견한 시각 → 모름이면 맨 아래).
+// (updated_at은 수집 때마다 전 상품에 새로 찍혀서 마지막으로 적재된 브랜드가 늘 맨 위였음)
 // DB에 컬럼이 아직 없으면(마이그레이션 전) 오류 메시지를 보고 예전 컬럼으로 한 번만 되돌린다.
 let RECENT_COL = 'first_seen_at';
 function buildQuery(offset, count = PAGE_SIZE) {
@@ -1062,7 +1063,7 @@ function buildQuery(offset, count = PAGE_SIZE) {
     .not('image', 'like', '%echosting.cafe24.com/thumb/%'); // 카페24 기본 "사진 없음" 그림
 
   // 가격 없는 상품이 낮은순/높은순에서 맨 위로 튀지 않게 null은 항상 뒤로.
-  if (sort === 'recent') query = query.order(RECENT_COL, { ascending: false });
+  if (sort === 'recent') query = query.order(RECENT_COL, { ascending: false }).order('id', { ascending: false }); // 홈페이지 등록 시각이 같으면 나중에 들어온 상품이 위(#20)
   else if (sort === 'price_asc') query = query.order('min_price', { ascending: true, nullsFirst: false });
   else if (sort === 'price_desc') query = query.order('max_price', { ascending: false, nullsFirst: false });
   else query = query.order('brand').order('title');

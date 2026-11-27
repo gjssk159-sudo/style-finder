@@ -1,5 +1,5 @@
 // 최신순 기준 시각 시험(#7). 실행: node scripts/test-first-seen.mjs  (npm run test:first-seen)
-import { assignFirstSeen, monotonicRepair } from '../src/lib/first-seen.js';
+import { assignFirstSeen, monotonicRepair, isUnknownAt } from '../src/lib/first-seen.js';
 
 const NOW = new Date('2026-11-08T00:00:00Z');
 const t = (d) => new Date(d).toISOString();
@@ -28,9 +28,10 @@ const first = assignFirstSeen([], [
   { key: 'b', offers: [{ source_id: 'erc', external_id: '30' }] },
   { key: 'c', offers: [{ source_id: 'erc', external_id: '20' }] },
 ], NOW);
-const days = (k) => (NOW - new Date(first.get(k))) / 86400000;
-ok(first.size === 3 && days('b') < days('c') && days('c') < days('a'), '브랜드 첫 수집: 번호가 클수록 최근 순서로 흩어 둔다');
-ok(days('b') >= 1 && days('a') <= 90, '브랜드 첫 수집: 모두 1~90일 전(오늘 맨 위로 몰리지 않음)');
+const at = (k) => Date.parse(first.get(k));
+ok(first.size === 3 && ['a', 'b', 'c'].every((k) => isUnknownAt(first.get(k))), '브랜드 첫 수집(등록일 흔적 없음): 모두 "등록일 모름" → 최신순 맨 아래(#20)');
+ok(at('b') > at('c') && at('c') > at('a'), '브랜드 첫 수집: 맨 아래 묶음 안에서는 번호가 클수록 위');
+ok(at('b') < Date.parse('2026-01-01'), '브랜드 첫 수집: 최근 날짜가 아님(옛 상품 — 예: 겨울에 반팔 — 이 최신순 위로 오지 않음)');
 
 const fixes = monotonicRepair([
   { id: 1, source_id: 'x', num: 300, first_seen_at: t('2026-11-01') },

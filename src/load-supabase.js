@@ -178,7 +178,7 @@ async function main() {
     );
     const back = [...assigned.keys()].length;
     for (const r of fresh) newRows.push({ ...r, first_seen_at: assigned.get(r.title_norm) || nowIso });
-    console.log(`  ${brandId}: 새 상품 ${fresh.length}개 중 ${before.length ? `옛 상품이 돌아온 것 ${back}개(옛 날짜 유지)` : `브랜드 첫 수집 → 1~90일 전에 나눠 둠`}`);
+    console.log(`  ${brandId}: 새 상품 ${fresh.length}개 중 ${before.length ? `옛 상품이 돌아온 것 ${back}개(옛 날짜 유지)` : `브랜드 첫 수집 → 등록일 흔적 없는 상품은 "등록일 모름"(최신순 맨 아래)`}`);
   }
 
   console.log(`\n홈페이지 등록일로 최신순을 정한 상품: ${listedCount}개`);
