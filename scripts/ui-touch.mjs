@@ -479,50 +479,48 @@ await p.evaluate(() => hideAiView());
   note('상품 목록은 가격·사진 있는 것만 묻는다(min_price > 0, image 있음)', main.length > 0 && main.every((c) => /min_price=gt.0/.test(c.query) && /image=not.is.null/.test(c.query) && /image=neq./.test(c.query)), main.map((c) => c.query.slice(0, 40)).join(' | '));
   await v.ctx.close();
 }
-// #20 대시보드 카드 4장(표지형): 상품 사진 대신 주제 그래픽 + 큰 주제 글자, 작은 유리 이름표, 계절 카드는 "골라 준 N선"
+// #20 대시보드 카드 4장(그래픽형, 사용자 선택 2026-11-27): 상품 사진 없이 주제 그래픽 + 상자 안 아래쪽 글씨
 {
   const v = await open(browser, { login: true });
   const vp = v.page;
-  await vp.waitForTimeout(800);
+  await vp.waitForFunction(() => document.getElementById('dnBig').textContent !== '0', null, { timeout: 15000 }).catch(() => {});
+  await vp.waitForTimeout(400);
   const d = await vp.evaluate(() => {
     const slides = [...document.querySelectorAll('#heroTrack .hero-slide')];
     const cs = (e) => getComputedStyle(e);
     return {
       shown: !document.getElementById('hero').hidden,
-      words: slides.map((s) => s.querySelector('.hero-word')?.textContent),
-      art: slides.map((s) => !!s.querySelector('.hero-art .b1')),
-      productImgs: document.querySelectorAll('#heroTrack img').length,
+      pics: slides.map((s) => [...s.querySelectorAll('.hero-pics img')].filter((i) => /images.unsplash.com/.test(i.src)).length),
+      grain: slides.map((s) => !!s.querySelector('.hero-grain')),
+      n: slides.map((s) => s.querySelector('.hero-n').textContent),
+      inside: slides.map((s) => { const r = s.getBoundingClientRect(); const t = s.querySelector('.hero-txt').getBoundingClientRect(); return t.left >= r.left && t.right <= r.right + 1 && t.bottom <= r.bottom + 1 && t.top > r.top + r.height / 3; }),
+      big: document.getElementById('dnBig').textContent,
+      ratio: slides.map((s) => { const r = s.getBoundingClientRect(); return +(r.width / r.height).toFixed(2); }),
       titles: slides.map((s) => s.querySelector('.hero-txt b').textContent),
       subs: slides.map((s) => s.querySelector('.hero-sub').textContent),
       eyebrows: slides.map((s) => s.querySelector('small').textContent),
+      titleColor: cs(slides[0].querySelector('.hero-txt b')).color,
       titleSize: parseFloat(cs(slides[0].querySelector('.hero-txt b')).fontSize),
-      subSize: parseFloat(cs(slides[0].querySelector('.hero-sub')).fontSize),
-      labelAnim: cs(slides[0].querySelector('.hero-txt')).animationName,
-      fit: slides.map((s) => { const r = s.getBoundingClientRect(); const t = s.querySelector('.hero-txt').getBoundingClientRect(); return Math.round(t.bottom - r.bottom); }),
       dots: document.querySelectorAll('#heroDots, .hero-dots').length,
       season: window.dashSeason(),
     };
   });
-  note('대시보드: 표지는 상품 사진이 아니라 그래픽 + 큰 주제 글자(취향·계절·NEW·AI)', d.shown && d.productImgs === 0 && d.art.every(Boolean) && JSON.stringify(d.words) === JSON.stringify(['취향', d.season.word, 'NEW', 'AI']), JSON.stringify([d.words, d.productImgs, d.art]));
-  note('대시보드: 이름표 글자는 작게(제목 20px 이하·설명 12px 안팎), 넘길 때 다시 튀어 오르지 않음, 카드 밖으로 안 넘침', d.titleSize <= 20 && d.subSize <= 13 && d.labelAnim === 'none' && d.fit.every((x) => x <= 0), JSON.stringify([d.titleSize, d.subSize, d.labelAnim, d.fit]));
-  note('대시보드: 제목은 직관적인 한글(내 취향 저격 브랜드 / 이번 주 신상 / 사진으로 옷 찾기)', d.titles[0] === '내 취향 저격 브랜드' && d.titles[2] === '이번 주 신상' && d.titles[3] === '사진으로 옷 찾기' && /tester님 맞춤 추천/.test(d.eyebrows[0]), JSON.stringify([d.titles, d.eyebrows[0]]));
-  note('어울리는 브랜드 카드: 추천 브랜드 이름이 설명 줄에 나온다(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP 추천$/.test(d.subs[0]), d.subs[0]);
-  note('신상 카드: 이번 주 개수', /12개 새로 들어왔어요/.test(d.subs[2]), d.subs[2]);
+  note('대시보드: 카드 4장 모두 화보 사진 3장씩(무료 사진) + 필름 질감 + 1/4 번호, 상자 5:4', d.shown && d.pics.every((x) => x === 3) && d.grain.every(Boolean) && d.n.join() === '1/4,2/4,3/4,4/4' && d.ratio.every((r) => r > 1.2 && r < 1.3), JSON.stringify([d.pics, d.grain, d.n, d.ratio]));
+  note('대시보드: 글씨는 상자 안 아래쪽, 큰 영문 제목(30px 이상), LIVE 칩에 개수', d.inside.every(Boolean) && d.titleSize >= 30 && d.big === '12', JSON.stringify([d.inside, d.titleSize, d.big]));
+  note('대시보드: 큰 제목(Taste Match·계절·New In·AI Finder)과 한글 머리말', JSON.stringify(d.titles) === JSON.stringify(['Taste Match', d.season.en.split(' ')[0], 'New In', 'AI Finder']) && d.eyebrows[0] === '취향 저격 추천 브랜드' && d.eyebrows[1] === d.season.title.replace('<br>', ' ') && d.eyebrows[2] === '내 폴더에 최근 들어온 상품', JSON.stringify([d.titles, d.eyebrows]));
+  note('어울리는 브랜드 카드: 설명 줄에 추천 브랜드(비슷한 것 먼저, 먼 것 마지막)', /^(SAFARISPOT · XLIM|XLIM · SAFARISPOT) · BAGSHOP$/.test(d.subs[0]), d.subs[0]);
+  note('최근 들어온 상품 카드: 신상품이 아니라 "내 폴더 브랜드에서 새로 모은" 개수', /최근 7일 동안 내 폴더 브랜드에서 새로 모은 상품 12개/.test(d.subs[2]), d.subs[2]);
   note('넘김 점은 없다(사용자 요청)', d.dots === 0, String(d.dots));
   const q = v.calls.filter((c) => c.path.endsWith('/product_group') && /first_seen_at=gte/.test(c.query));
-  note('신상 카드: 지난 7일(first_seen_at) 조건으로 묻는다', q.length >= 1, String(q.length));
+  note('최근 들어온 상품 카드: 지난 7일(first_seen_at) 조건으로 묻는다', q.length >= 1, String(q.length));
   if (shotDir) await vp.locator('#hero').screenshot({ path: join(shotDir, 'dash-m1.png') });
   await vp.waitForTimeout(5600);
-  note('5초 뒤 저절로 다음 카드로 넘어간다', await vp.evaluate(() => document.getElementById('heroTrack').scrollLeft > 100));
-  // 골라 준 상품만 보기(계절 "N선"): 그 번호들만 묻고, 조건 표에 이름이 나오고 ×로 풀린다
+  note('5초 뒤 저절로 다음 카드로 넘어간다', await vp.evaluate(() => document.getElementById('heroTrack').scrollLeft > 50));
   let n = v.calls.length;
-  await vp.evaluate(() => window.showCurated('방한템 2선', [1000, 1001])); await vp.waitForTimeout(1200);
+  await vp.evaluate(() => window.showCurated('테스트 2선', [1000, 1001])); await vp.waitForTimeout(1200);
   const cq = v.calls.slice(n).find((c) => c.path.endsWith('/product_group') && /offer/.test(c.query) && /id=in\.\(1000,1001\)/.test(c.query));
-  const ctag = await vp.evaluate(() => [...document.querySelectorAll('#meta .mtag')].map((t) => t.textContent));
-  note('골라 준 상품만 보기: 그 상품 번호만 묻고 조건 표에 "방한템 2선" 표시', !!cq && ctag.some((t) => /방한템 2선/.test(t)), JSON.stringify(ctag));
-  await vp.evaluate(() => document.querySelector('#meta .mtag[data-x=curated]').click()); await vp.waitForTimeout(1000);
-  note('골라 준 상품 보기는 ×로 풀린다', await vp.evaluate(() => !document.querySelector('#meta .mtag[data-x=curated]')));
-  // 어울리는 브랜드: 누르면 자세히 창 → + 담기
+  note('골라 준 상품만 보기: 그 상품 번호만 묻고 조건 표에 표시, ×로 풀림', !!cq && await vp.evaluate(() => { const t = document.querySelector('#meta .mtag[data-x=curated]'); if (!t) return false; t.click(); return true; }), cq ? 'ok' : '없음');
+  await vp.waitForTimeout(800);
   await vp.evaluate(() => document.querySelector('[data-hero=foryou]').click()); await vp.waitForTimeout(500);
   const fy = await vp.evaluate(() => ({ open: forYouDialog.open, rows: [...document.querySelectorAll('#dfList .df-row')].map((r) => r.querySelector('a,span').textContent), why: document.getElementById('dfWhy').textContent }));
   note('어울리는 브랜드 카드를 누르면 자세히 창: 브랜드 3개·이유', fy.open && fy.rows.length === 3 && fy.rows[2] === 'BAGSHOP' && /코트·니트 위주/.test(fy.why), JSON.stringify(fy));
@@ -530,20 +528,24 @@ await p.evaluate(() => hideAiView());
   await vp.evaluate(() => document.querySelector('#dfList [data-add-brand]').click()); await vp.waitForTimeout(700);
   note('어울리는 브랜드: + 담기를 누르면 내 폴더에 담는 요청을 보낸다', !!v.calls.slice(n).find((c) => c.path.endsWith('/user_brands') && c.method === 'POST'));
   await vp.evaluate(() => forYouDialog.close()); await vp.waitForTimeout(300);
+  n = v.calls.length;
+  await vp.evaluate(() => document.querySelector('[data-hero=season]').click()); await vp.waitForTimeout(1200);
+  const sq = v.calls.slice(n).find((c) => c.path.endsWith('/product_group') && /offer/.test(c.query) && /categories=ov/.test(c.query));
+  note('계절 카드를 누르면 그 종류(니트 제외 방한템)로 거른다', !!sq && /padding/.test(sq.query) && !/knit/.test(sq.query), sq ? sq.query.match(/categories=ov\.[^&]*/)[0].slice(0, 90) : '없음');
   await vp.evaluate(() => document.querySelector('[data-hero=recent]').click()); await vp.waitForTimeout(600);
-  note('신상 카드를 누르면 최신순', await vp.evaluate(() => document.getElementById('sort').value === 'recent'));
+  note('최근 들어온 상품 카드를 누르면 최신순', await vp.evaluate(() => document.getElementById('sort').value === 'recent'));
   await vp.evaluate(() => document.querySelector('[data-hero=ai]').click()); await vp.waitForTimeout(500);
   note('AI 카드를 누르면 AI 서비스 화면', await vp.evaluate(() => !document.getElementById('aiView').hidden));
   await vp.evaluate(() => window.hideAiView());
   note('대시보드 화면 오류 없음', v.errors.length === 0, v.errors.slice(0, 2).join(' | '));
   await v.ctx.close();
 }
-// PC: 낮은 띠(200px)라 아래 상품이 바로 보인다
+// PC: 4칸 한 줄, 높이가 낮아 첫 화면에 상품 목록이 보인다
 {
   const v = await open(browser, { login: true, width: 1280, height: 900 });
-  await v.page.waitForTimeout(800);
-  const pc = await v.page.evaluate(() => { const s = document.querySelector('#heroTrack .hero-slide'); const r = s.getBoundingClientRect(); const firstCard = document.querySelector('#grid .card'); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', w: Math.round(r.width), h: Math.round(r.height), cardTop: firstCard ? Math.round(firstCard.getBoundingClientRect().top) : null }; });
-  note('PC: 대시보드는 높이 200px 띠, 첫 화면에 상품이 보인다', pc.shown && pc.w > 900 && pc.h === 200 && pc.cardTop !== null && pc.cardTop < 900, JSON.stringify(pc));
+  await v.page.waitForTimeout(1000);
+  const pc = await v.page.evaluate(() => { const ss = [...document.querySelectorAll('#heroTrack .hero-slide')]; const tops = ss.map((s) => Math.round(s.getBoundingClientRect().top)); const h = Math.round(document.getElementById('hero').getBoundingClientRect().height); const firstCard = document.querySelector('#grid .card'); return { shown: getComputedStyle(document.getElementById('hero')).display !== 'none', oneRow: new Set(tops).size === 1 && ss.every((s) => s.getBoundingClientRect().right <= innerWidth), h, cardTop: firstCard ? Math.round(firstCard.getBoundingClientRect().top) : null }; });
+  note('PC: 4칸이 한 줄, 대시보드 높이 400px 이하, 첫 화면에 상품이 보인다', pc.shown && pc.oneRow && pc.h <= 400 && pc.cardTop !== null && pc.cardTop < 900, JSON.stringify(pc));
   if (shotDir) await v.page.locator('#hero').screenshot({ path: join(shotDir, 'dash-pc.png') });
   await v.ctx.close();
 }

@@ -9,131 +9,58 @@
   // ── 계절: 날짜로 자동으로 바뀐다 ──
   const SEASONS = [
     { months: [11, 12, 1, 2], en: 'Winter Pick', ko: '방한템', word: '겨울', title: '지금 필요한<br>방한템', chips: ['패딩', '퍼·무스탕', '플리스', '머플러', '비니', '장갑'],
-      cats: ['padding', 'long_padding', 'padding_vest', 'fur', 'fleece', 'muffler', 'beanie', 'glove'] }, // 니트처럼 넓은 종류는 빼고 방한에 딱 맞는 것만(#20 사용자 요청)
+      cats: ['padding', 'long_padding', 'padding_vest', 'fur', 'fleece', 'muffler', 'beanie', 'glove'], pics: ['1484081064812-86e90e107fa8', '1706765779494-2705542ebe74', '1770068780780-e000a31d10a3'] }, // 니트처럼 넓은 종류는 빼고 방한에 딱 맞는 것만(#20 사용자 요청)
     { months: [3, 4], en: 'Spring Layer', ko: '봄 아우터', word: '봄', title: '가볍게 걸치는<br>봄 아우터', chips: ['재킷', '트렌치', '카디건', '블루종', '바람막이'],
-      cats: ['jacket', 'trench', 'cardigan', 'blouson', 'windbreaker', 'trucker', 'field_jacket'] },
+      cats: ['jacket', 'trench', 'cardigan', 'blouson', 'windbreaker', 'trucker', 'field_jacket'], pics: ['1645996831587-a9d4a73586f9', '1693129499971-ae047f40ca70', '1645819134444-6275dadf2299'] },
     { months: [5, 6, 7, 8], en: 'Summer Edit', ko: '여름 필수템', word: '여름', title: '시원하게<br>여름 필수템', chips: ['반팔', '민소매', '반바지', '샌들', '버킷햇'],
-      cats: ['tshirt', 'sleeveless_top', 'shorts', 'sandals', 'swimwear', 'bucket_hat'] },
+      cats: ['tshirt', 'sleeveless_top', 'shorts', 'sandals', 'swimwear', 'bucket_hat'], pics: ['1538329972958-465d6d2144ed', '1557924760-b14a6d4a4ef3', '1728280050425-ba1695a9c9a6'] },
     { months: [9, 10], en: 'Autumn Layer', ko: '가을 레이어드', word: '가을', title: '겹쳐 입기 좋은<br>가을 레이어드', chips: ['셔츠', '니트', '카디건', '맨투맨', '코트'],
-      cats: ['shirt', 'knit', 'cardigan', 'sweatshirt', 'blazer', 'coat', 'trucker'] },
+      cats: ['shirt', 'knit', 'cardigan', 'sweatshirt', 'blazer', 'coat', 'trucker'], pics: ['1700150662401-9b96a5fedfbb', '1700150615736-e90e9037b8e6', '1645561305502-63a9ba09ab09'] },
   ];
   const seasonNow = (d = new Date()) => SEASONS.find((s) => s.months.includes(d.getMonth() + 1));
   window.dashSeason = seasonNow;
 
   const base = () => sb.from('product_group').select('id', { count: 'exact', head: true }).in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '');
 
-  // 카드 사진: 내 폴더 상품 사진을 꽉 채운다(모바일 2장·PC 4장 — 칸 수는 CSS가 정함). 없으면 원래 색 카드로.
-  // 상품 사진은 대부분 세로로 긴 제품 사진이라, 한 장을 가로로 키우면 옷이 잘려서 여러 장을 나란히 놓는다.
-  const heroUrl = (u) => {
-    try { const x = new URL(u); return `https://i${u.length % 3}.wp.com/${x.host}${x.pathname}${x.search}${x.search ? '&' : '?'}w=720&quality=82&strip=all`; } catch { return u; }
-  };
-  // 사진을 먼저 불러 보고 열리는 것만 쓴다(일부 쇼핑몰은 밖에서 사진을 못 불러오게 막아 빈 칸이 생겼음).
-  // 모델·연출 사진(배경이 흰색이 아닌 사진)을 먼저 쓰고, 모자라면 흰 배경 제품 사진으로 채운다.
-  // 사진 중계(wp.com)는 브라우저가 사진 색을 읽게 허락해서, 테두리 색으로 흰 배경 여부를 본다.
-  function isPackshot(img) {
-    try {
-      const c = document.createElement('canvas'); c.width = c.height = 24;
-      const g = c.getContext('2d'); g.drawImage(img, 0, 0, 24, 24);
-      const d = g.getImageData(0, 0, 24, 24).data; let white = 0, all = 0;
-      for (let y = 0; y < 24; y++) for (let x = 0; x < 24; x++) {
-        if (x > 3 && x < 20 && y > 3 && y < 20) continue;
-        const i = (y * 24 + x) * 4, r = d[i], gg = d[i + 1], b = d[i + 2];
-        all++; if (Math.min(r, gg, b) > 232 && Math.max(r, gg, b) - Math.min(r, gg, b) < 12) white++;
-      }
-      return white / all >= 0.6;
-    } catch { return true; } // 색을 못 읽으면 제품 사진으로 보고 뒤로
-  }
-  const loadOk = (u) => new Promise((ok) => {
-    const im = new Image(); let done = false;
-    const end = (v) => { if (!done) { done = true; ok(v); } };
-    im.crossOrigin = 'anonymous';
-    im.onload = () => end(im.naturalWidth >= 200 ? { src: im.src, pack: isPackshot(im), tall: im.naturalHeight >= im.naturalWidth } : null);
-    im.onerror = () => end(null);
-    im.src = heroUrl(u);
-    setTimeout(() => end(null), 8000);
-  });
-  let picSeq = 0;
-  async function setPics(id, urls) {
-    const box = $(id); if (!box) return;
-    const my = ++picSeq;
-    const got = (await Promise.all((urls || []).slice(0, 10).map(loadOk))).filter(Boolean);
-    const ok = [...got.filter((p) => !p.pack && p.tall), ...got.filter((p) => !p.pack && !p.tall), ...got.filter((p) => p.pack)].slice(0, 4).map((p) => p.src);
-    if (box.dataset.seq && +box.dataset.seq > my) return; // 더 늦게 시작한 채우기가 이미 끝났으면 덮어쓰지 않음
-    box.dataset.seq = my;
-    box.dataset.n = ok.length;
-    box.innerHTML = ok.map((src) => `<img src="${esc(src)}" alt="" decoding="async" crossorigin="anonymous">`).join('');
-    box.closest('.hero-slide').classList.toggle('has-bg', ok.length > 0);
-  }
-  const pick = (q) => q.not('image', 'is', null).neq('image', '').not('image', 'like', '%echosting.cafe24.com/thumb/%').gt('min_price', 0).eq('in_stock', true).order('first_seen_at', { ascending: false }); // 카페24 기본 "사진 없음" 그림 제외
-  const dayNo = () => Math.floor(Date.now() / 864e5);
-  // 같은 옷의 색만 다른 사진이 나란히 오지 않게 이름 앞부분이 다른 것만, 날마다 시작점을 바꿔 n장
-  function choose(rows, n, shift = 0) {
-    const seen = new Set();
-    const uniq = (rows || []).filter((g) => /^https?:/i.test(g.image || '')).filter((g) => {
-      const k = (g.brand || '') + '|' + String(g.title || '').toLowerCase().replace(/\(.*?\)|\[.*?\]/g, '').slice(0, 14);
-      if (seen.has(k)) return false; seen.add(k); return true;
-    });
-    if (uniq.length <= n) return uniq.map((g) => g.image);
-    const start = (dayNo() + shift) % uniq.length;
-    return Array.from({ length: n }, (_, i) => uniq[(start + i) % uniq.length].image);
-  }
-
-  // 계절 추천 "30선": 수천 개를 다 보여 주지 않고 골라 준다(#20).
-  //  - 내 폴더 브랜드의 이번 계절 종류 중 재고 있고 사진이 제대로 된 것만
-  //  - 점수 = 최근에 들어온 정도 + 내가 담은 상품들의 가격대(중간값)와 가까운 정도 + 날마다 조금 다른 흔들기
-  //  - 한 브랜드는 최대 2개, 종류(패딩·니트·머플러…)가 골고루 섞이게 차례로 뽑기
-  const PICK_N = 30;
+  // 카드는 사진 없이 그래픽(#20, 사용자 선택 2026-11-27). 여기서는 글자와 숫자만 채운다.
   let seasonPick = [];
-  function curate(rows, cats, n) {
-    if (!rows.length) return [];
-    const prices = rows.map((r) => r.min_price).filter((p) => p > 0).sort((a, b) => a - b);
-    const mid = prices[Math.floor(prices.length / 2)] || 1;
-    const seed = dayNo();
-    const jitter = (id) => (((id * 2654435761 + seed * 97) >>> 0) % 1000) / 1000;
-    rows.forEach((r, i) => { r._s = (1 - i / rows.length) * 0.5 + Math.exp(-Math.abs(Math.log((r.min_price || mid) / mid))) * 0.35 + jitter(r.id) * 0.15; });
-    const groups = cats.map((c) => rows.filter((r) => (r.categories || []).find((x) => cats.includes(x)) === c).sort((a, b) => b._s - a._s));
-    const out = [], perBrand = {};
-    for (let round = 0; out.length < n && round < 60; round++) {
-      let added = false;
-      for (const g of groups) {
-        while (g.length) {
-          const r = g.shift();
-          if ((perBrand[r.brand_id] || 0) >= 2) continue;
-          perBrand[r.brand_id] = (perBrand[r.brand_id] || 0) + 1;
-          out.push(r.id); added = true; break;
-        }
-        if (out.length >= n) break;
-      }
-      if (!added) break;
-    }
-    return out;
-  }
+  // 카드 사진: 무료 화보 사진(Unsplash, 상업 사용 가능). 칸마다 3장이 천천히 확대되며 바뀐다.
+  const PICS = {
+    dfPics: ['1760337741510-1a4661e036fa', '1645561305502-63a9ba09ab09', '1700150615736-e90e9037b8e6'],
+    dnPics: ['1540221652346-e5dd6b50f3e7', '1441984904996-e0b6ba687e04', '1551488831-00ddcb6c6bd3'],
+    daPics: ['1675518334039-960154e902c0', '1713810186776-da901a67b444', '1662532577856-e8ee8b138a8b'],
+  };
+  const picUrl = (id) => `https://images.unsplash.com/photo-${id}?w=900&q=70&auto=format&fit=crop`;
+  function setPics(id, ids) {
+    const box = $(id); if (!box || box.dataset.ids === ids.join()) return;
+    box.dataset.ids = ids.join();
+    box.innerHTML = ids.map((x, i) => `<img${i === 0 ? ' class="on"' : ''} src="${picUrl(x)}" alt="" decoding="async"${i ? ' loading="lazy"' : ''}>`).join('');
+    clearInterval(box._t);
+    if (reduceMotion.matches) return;
+    let k = 0;
+    box._t = setInterval(() => { const im = box.querySelectorAll('img'); if (im.length < 2) return; im[k].classList.remove('on'); k = (k + 1) % im.length; void im[k].offsetWidth; im[k].classList.add('on'); }, 4500);
+  } // (예전 "골라 준 N선" 자리) 비어 있으면 계절 카드는 계절 종류 전체로 거른다
 
   async function fillSeason() {
     const s = seasonNow();
-    $('dsEyebrow').textContent = `${new Date().getMonth() + 1}월 계절 추천`;
-    $('dsWord').textContent = s.word; // 표지 큰 글자(계절 따라 겨울·봄·여름·가을)
+    $('dsEyebrow').textContent = s.title.replace('<br>', ' '); // 예: 지금 필요한 방한템
+    setPics('dsPics', s.pics);
+    if ($('dsWord')) $('dsWord').textContent = s.word;
     // 계절 움직임: 겨울엔 눈
     $('dsFx').innerHTML = s.ko === '방한템' ? Array.from({ length: 26 }, (_, i) => { const z = (2 + (i % 3) * 1.6).toFixed(1); return `<i style="left:${(i * 37) % 100}%;width:${z}px;height:${z}px;--dx:${((i % 5) - 2) * 12}px;animation-duration:${6 + (i % 5)}s;animation-delay:-${(i * 0.41).toFixed(2)}s"></i>`; }).join('') : '';
     const { count } = await base().overlaps('categories', s.cats);
     seasonPick = [];
-    $('dsTitle').textContent = s.title.replace('<br>', ' '); // 예: 지금 필요한 방한템
-    $('dsSub').textContent = `${s.chips.join('·')} — 내 폴더에서 ${(count || 0).toLocaleString('ko-KR')}개`;
+    $('dsTitle').textContent = s.en.split(' ')[0]; // 예: Winter
+    $('dsSub').textContent = `${s.chips.slice(0, 3).join('·')} 등 내 폴더에서 ${(count || 0).toLocaleString('ko-KR')}개`;
   }
   window.dashSeasonPick = () => seasonPick;
 
 
   async function fillNew() {
     const since = new Date(Date.now() - 7 * 864e5).toISOString();
-    const [{ count }, { data }] = await Promise.all([
-      base().gte('first_seen_at', since),
-      sb.from('product_group').select('brand,title,image').in('brand_id', myFolderIds).gt('min_price', 0).not('image', 'is', null).neq('image', '').not('image', 'like', '%echosting.cafe24.com/thumb/%')
-        .gte('first_seen_at', since).order('first_seen_at', { ascending: false }).limit(12),
-    ]);
-    const seen = new Set();
-    const newest = (data || []).filter((g) => /^https?:/i.test(g.image || '') && !seen.has(g.title) && seen.add(g.title)).slice(0, 10).map((g) => g.image);
-    void newest; // 표지는 그래픽이라 사진은 쓰지 않음(#20, 사용자 요청) // 가장 최근에 들어온 순서 그대로(수집이 새로 되면 바로 바뀜)
-    $('dnSub').textContent = count ? `이번 주 내 폴더에 ${count.toLocaleString('ko-KR')}개 새로 들어왔어요` : '이번 주 새로 들어온 상품을 모아 봐요';
+    const { count } = await base().gte('first_seen_at', since);
+    $('dnBig').textContent = (count || 0).toLocaleString('ko-KR');
+    $('dnSub').textContent = count ? `최근 7일 동안 내 폴더 브랜드에서 새로 모은 상품 ${count.toLocaleString('ko-KR')}개` : '최근 7일 동안 내 폴더 브랜드에서 새로 모은 상품';
   }
 
   // ── 나에게 어울리는 브랜드: 내 폴더(＋위시리스트) 브랜드들과 상품 종류·가격대가 비슷한데 아직 안 담은 브랜드 ──
@@ -184,15 +111,17 @@
     const ready = new Map(allBrands.filter((b) => b.status === 'ready').map((b) => [b.id, b]));
     const scored = [];
     for (const [id, v] of vec) {
-      if (mine.includes(id) || !ready.has(id)) continue;
+      if (!ready.has(id)) continue;
       let dot = 0; for (const [k, x] of v.cats) dot += x * (me.cats.get(k) || 0);
       const cos = dot / (norm(v.cats) * nMe);
       const pricePenalty = Math.exp(-Math.abs(Math.log((v.price || 1) / (me.price || 1))));
-      scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty) });
+      scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty), own: mine.includes(id) });
     }
     scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
     const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => (T().labelOf(k) || k).split('/')[0].replace(/^기타\s*/, ''));
-    return { picks: scored.slice(0, 3), why: `${topCats.join('·')} 위주 · ${band(me.price)} 브랜드를 담으셨어요` };
+    // 아직 안 담은 브랜드 먼저. 거의 모든 브랜드를 담았으면 폴더 안에서 취향에 가장 가까운 브랜드로 채워 늘 3곳
+    const picks = [...scored.filter((x) => !x.own), ...scored.filter((x) => x.own)].slice(0, 3);
+    return { picks, why: `${topCats.join('·')} 위주 · ${band(me.price)} 브랜드를 담으셨습니다` };
   }
   const initials = (n) => (String(n).match(/[0-9A-Za-z가-힣ぁ-んァ-ン一-龥]/g) || ['?']).slice(0, 2).join('').toUpperCase();
 
@@ -200,35 +129,27 @@
     const em = (currentUser && currentUser.email) || '';
     const who = em.split('@')[0] || '나';
     $('dfName').textContent = who;
-    $('dfEyebrow').textContent = `${who}님 맞춤 추천`;
     const rows = await profiles();
     const wishBrands = (window.cartBrandNames ? window.cartBrandNames() : [])
       .map((n) => (allBrands.find((b) => b.name === n) || {}).id).filter(Boolean);
     const r = rows && recommend(rows, myFolderIds, wishBrands);
     if (!r || !r.picks.length) {
-      $('dfSub').textContent = '브랜드를 더 담으면 취향을 분석해 추천해 드려요';
+      $('dfSub').textContent = '브랜드를 더 담으시면 취향을 분석해 추천해 드립니다';
       $('dfChip').hidden = true;
       $('dfWhy').textContent = '';
       $('dfList').innerHTML = '';
       return;
     }
-    $('dfSub').textContent = r.picks.map((p) => p.name).join(' · ') + ' 추천';
+    $('dfSub').textContent = r.picks.map((p) => p.name).join(' · ');
     const pct = Math.round((r.picks[0].score || 0) * 100);
     $('dfMatch').textContent = pct + '%';
     $('dfChip').hidden = pct < 50; // 점수가 낮으면 표시하지 않음
     $('dfWhy').textContent = r.why;
-    // 추천 브랜드마다 최근 사진 한 장씩(4칸이면 1순위 브랜드 한 장 더)
-    const [{ data: info }, ...shots] = await Promise.all([
-      sb.from('brands').select('id,shop_url').in('id', r.picks.map((p) => p.id)),
-      ...r.picks.map((p) => pick(sb.from('product_group').select('image').eq('brand_id', p.id)).limit(2)),
-    ]);
-    const imgs = shots.map((x) => (x.data || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || '')));
-    const order = [0, 1, 2].map((i) => imgs[i] && imgs[i][0]).concat([0, 1, 2].map((i) => imgs[i] && imgs[i][1])).filter(Boolean); // 브랜드마다 한 장씩 먼저, 모자라면 두 번째 사진
-    void order;
+    const { data: info } = await sb.from('brands').select('id,shop_url').in('id', r.picks.map((p) => p.id));
     const url = new Map((info || []).map((b) => [b.id, b.shop_url]));
     $('dfList').innerHTML = r.picks.map((p) => `<div class="df-row"><i aria-hidden="true">${esc(initials(p.name))}</i>` +
       (url.get(p.id) ? `<a href="${esc(url.get(p.id))}" target="_blank" rel="noopener">${esc(p.name)}</a>` : `<span>${esc(p.name)}</span>`) +
-      `<button type="button" data-add-brand="${esc(p.id)}" aria-label="${esc(p.name)} 내 폴더에 담기">+ 담기</button></div>`).join('');
+      (p.own ? '<button type="button" disabled>담겨 있음</button></div>' : `<button type="button" data-add-brand="${esc(p.id)}" aria-label="${esc(p.name)} 내 폴더에 담기">+ 담기</button></div>`)).join('');
   }
 
   let lastSig = '';
@@ -241,14 +162,10 @@
     const sig = myFolderIds.slice().sort().join(',');
     if (sig === lastSig && !force) return;
     lastSig = sig;
-    await Promise.all([fillSeason(), fillNew(), fillForYou(), fillAi()].map((p) => p.catch(() => {})));
+    for (const k of Object.keys(PICS)) setPics(k, PICS[k]);
+    await Promise.all([fillSeason(), fillNew(), fillForYou()].map((p) => p.catch(() => {})));
   }
   window.refreshDash = refresh;
-  // AI 카드: 내 폴더의 아우터·상의 사진(날마다 바뀜)
-  async function fillAi() {
-    const { data } = await pick(sb.from('product_group').select('brand,title,image').in('brand_id', myFolderIds).overlaps('categories', ['coat', 'jacket', 'blouson', 'knit', 'hoodie', 'cardigan', 'padding'])).limit(40);
-
-  }
   // 수집이 새로 되면 바뀌게: 화면을 켜 둔 동안 10분마다 다시 채운다
   setInterval(() => { if (!document.hidden) refresh(true); }, 10 * 60e3);
 
@@ -258,7 +175,7 @@
       e.stopPropagation();
       add.disabled = true;
       await toggleFolder(add.dataset.addBrand, true);
-      add.textContent = '담았어요';
+      add.textContent = '담았습니다';
       if (typeof renderFolderTabs === 'function') renderFolderTabs();
       go();
       return;
