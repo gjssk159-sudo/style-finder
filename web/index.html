@@ -197,13 +197,22 @@
   .hero-chip { top: 62px; left: 20px; }
   @media (prefers-reduced-motion: reduce) { .hero-pics img, .hero-pics img.on, .hero-grain, .hero-snow i, .hero-chip.live::before { animation: none; transition: none; } .hero-snow { display: none; } }
   /* 어울리는 브랜드 자세히(아래에서 올라오는 창) */
-  .fy-why { margin: 0 4px 4px; font-size: 13px; color: var(--sub); }
-  .fy .df-list { display: flex; flex-direction: column; gap: 6px; }
-  .df-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 6px 0 12px; border-radius: 16px; background: var(--paper); }
-  .df-row i { flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--faint); color: var(--ink); display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 700; }
-  .df-row a, .df-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); text-decoration: none; font-size: 15px; }
-  .df-row button { flex: none; min-height: 40px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--accent-bg, var(--faint)); color: var(--accent-ink, var(--ink)); font-size: 13px; font-weight: 600; letter-spacing: 0; }
-  .df-row button:disabled { opacity: .7; }
+  /* 취향 저격 추천 브랜드 창: 위에 내 취향 태그, 브랜드마다 카드(이름·일치%·이유·최근 상품 4장·상품 보기/담기) */
+  .fy-me { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 2px 14px; }
+  .fy-me small { margin-right: 2px; font-size: 12.5px; color: var(--sub); }
+  .fy-me span { padding: 5px 10px; border-radius: 999px; background: var(--accent-bg, var(--faint)); color: var(--accent-ink, var(--ink)); font-size: 12.5px; font-weight: 600; }
+  .fy .df-list { display: flex; flex-direction: column; gap: 10px; }
+  .df-card { padding: 16px; border-radius: 18px; background: var(--paper); }
+  .df-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .df-head b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
+  .df-pct { flex: none; padding: 4px 9px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700; }
+  .df-reason { margin: 6px 0 12px; font-size: 13px; line-height: 1.5; color: var(--sub); word-break: keep-all; overflow-wrap: anywhere; }
+  .df-shots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0; border: 0; background: none; width: 100%; cursor: pointer; }
+  .df-shots img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 10px; background: var(--faint); display: block; }
+  .df-act { display: flex; gap: 8px; margin-top: 12px; }
+  .df-act button { flex: 1; min-height: 44px; border: 0; border-radius: 12px; font-size: 14px; font-weight: 600; background: var(--faint); color: var(--ink); }
+  .df-act button[data-add-brand], .df-act .own { background: var(--accent-bg, var(--faint)); color: var(--accent-ink, var(--ink)); }
+  .df-act button:disabled { opacity: .7; }
   /* PC: 4상자 한 줄. 필터 상자와 카테고리 탭은 화면 폭 전체에 고르게(한쪽에 몰리지 않게) */
   @media (min-width: 701px) {
     .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 24px 0 14px; }
@@ -1183,9 +1192,9 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 <dialog id="forYouDialog" class="soft-dlg fy" aria-label="나에게 어울리는 브랜드">
   <div class="sd-top">
     <button type="button" class="qa-round qa-close" aria-label="닫기" onclick="forYouDialog.close()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <span class="sd-title"><span id="dfName"></span>님에게 어울리는 브랜드</span>
+    <span class="sd-title"><span id="dfName"></span>님 취향과 맞는 브랜드</span>
   </div>
-  <div class="sd-body"><p class="fy-why" id="dfWhy"></p><div class="df-list" id="dfList"></div></div>
+  <div class="sd-body"><div class="fy-me" id="dfWhy"></div><div class="df-list" id="dfList"></div></div>
 </dialog>
 <dialog id="rankDialog" class="soft-dlg" aria-label="랭킹">
   <div class="sd-top">

@@ -115,15 +115,26 @@
       let dot = 0; for (const [k, x] of v.cats) dot += x * (me.cats.get(k) || 0);
       const cos = dot / (norm(v.cats) * nMe);
       const pricePenalty = Math.exp(-Math.abs(Math.log((v.price || 1) / (me.price || 1))));
-      scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty), own: mine.includes(id) });
+      // 이 브랜드만의 이유: 나와 겹치는 종류(둘 다 많이 가진 것) 2개 + 가격대 비교
+      const shared = [...v.cats].map(([k, x]) => [k, Math.min(x, me.cats.get(k) || 0)]).filter(([, x]) => x > 0).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => k);
+      scored.push({ id, name: ready.get(id).name, score: cos * Math.sqrt(pricePenalty), own: mine.includes(id), shared, price: v.price });
     }
     scored.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
-    const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => (T().labelOf(k) || k).split('/')[0].replace(/^기타\s*/, ''));
+    const label = (k) => (T().labelOf(k) || k).split('/')[0].replace(/^기타\s*/, '');
+    const topCats = [...me.cats].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => label(k));
     // 아직 안 담은 브랜드 먼저. 거의 모든 브랜드를 담았으면 폴더 안에서 취향에 가장 가까운 브랜드로 채워 늘 3곳
     const picks = [...scored.filter((x) => !x.own), ...scored.filter((x) => x.own)].slice(0, 3);
-    return { picks, why: `${topCats.join('·')} 위주 · ${band(me.price)} 브랜드를 담으셨습니다` };
+    for (const p of picks) {
+      const r = Math.log((p.price || 1) / (me.price || 1));
+      const won = `중간 ${Math.max(1, Math.round((p.price || 0) / 10000))}만 원`;
+      const priceTxt = Math.abs(r) < 0.25 ? `가격대가 비슷합니다(${won})` : r < 0 ? `조금 더 저렴합니다(${won})` : `조금 더 높은 가격대입니다(${won})`;
+      const names = p.shared.map(label).join('·');
+      const last = names.charCodeAt(names.length - 1);
+      const josa = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 ? '을' : '를'; // 받침 있으면 을
+      p.reason = p.shared.length ? `${names}${josa} 주로 팔고, ${priceTxt}` : priceTxt;
+    }
+    return { picks, tags: [...topCats, band(me.price)] };
   }
-  const initials = (n) => (String(n).match(/[0-9A-Za-z가-힣ぁ-んァ-ン一-龥]/g) || ['?']).slice(0, 2).join('').toUpperCase();
 
   async function fillForYou() {
     const em = (currentUser && currentUser.email) || '';
@@ -144,12 +155,19 @@
     const pct = Math.round((r.picks[0].score || 0) * 100);
     $('dfMatch').textContent = pct + '%';
     $('dfChip').hidden = pct < 50; // 점수가 낮으면 표시하지 않음
-    $('dfWhy').textContent = r.why;
-    const { data: info } = await sb.from('brands').select('id,shop_url').in('id', r.picks.map((p) => p.id));
-    const url = new Map((info || []).map((b) => [b.id, b.shop_url]));
-    $('dfList').innerHTML = r.picks.map((p) => `<div class="df-row"><i aria-hidden="true">${esc(initials(p.name))}</i>` +
-      (url.get(p.id) ? `<a href="${esc(url.get(p.id))}" target="_blank" rel="noopener">${esc(p.name)}</a>` : `<span>${esc(p.name)}</span>`) +
-      (p.own ? '<button type="button" disabled>담겨 있음</button></div>' : `<button type="button" data-add-brand="${esc(p.id)}" aria-label="${esc(p.name)} 내 폴더에 담기">+ 담기</button></div>`)).join('');
+    $('dfWhy').innerHTML = '<small>내 취향</small>' + r.tags.map((t) => `<span>${esc(t)}</span>`).join('');
+    // 사진은 이유에 적은 종류(겹치는 종류)의 상품으로(이유와 사진이 맞게)
+    const shots = await Promise.all(r.picks.map((p) => (p.shared.length ? sb.from('product_group').select('image').overlaps('categories', p.shared) : sb.from('product_group').select('image')).eq('brand_id', p.id).gt('min_price', 0).eq('in_stock', true)
+      .not('image', 'is', null).neq('image', '').not('image', 'like', '%echosting.cafe24.com/thumb/%').order('first_seen_at', { ascending: false }).limit(4)));
+    $('dfList').innerHTML = r.picks.map((p, i) => {
+      const imgs = ((shots[i] && shots[i].data) || []).map((g) => g.image).filter((u) => /^https?:/i.test(u || ''));
+      const src = (u) => (typeof thumbUrl === 'function' ? thumbUrl(u) : u);
+      return `<div class="df-card"><div class="df-head"><b>${esc(p.name)}</b>${p.score >= 0.5 ? `<span class="df-pct">취향 일치 ${Math.round(p.score * 100)}%</span>` : ''}</div>` +
+        `<p class="df-reason">${esc(p.reason)}</p>` +
+        (imgs.length ? `<button type="button" class="df-shots" data-see-brand="${esc(p.name)}" aria-label="${esc(p.name)} 상품 보기">${imgs.map((u) => `<img src="${esc(src(u))}" alt="" loading="lazy" decoding="async">`).join('')}</button>` : '') +
+        `<div class="df-act"><button type="button" data-see-brand="${esc(p.name)}">상품 보기</button>` +
+        (p.own ? '<button type="button" class="own" disabled>담겨 있음</button>' : `<button type="button" data-add-brand="${esc(p.id)}" aria-label="${esc(p.name)} 내 폴더에 담기">+ 담기</button>`) + '</div></div>';
+    }).join('');
   }
 
   let lastSig = '';
@@ -180,6 +198,8 @@
       go();
       return;
     }
+    const see = e.target.closest('[data-see-brand]');
+    if (see) { forYouDialog.close(); if (typeof pickBrand === 'function') pickBrand(see.dataset.seeBrand); $('chips').scrollIntoView({ block: 'start' }); return; }
     if (e.target.closest('[data-hero="foryou"]')) { if (!forYouDialog.open) forYouDialog.showModal(); return; }
     if (e.target.closest('[data-hero="season"]')) { if (seasonPick.length && window.showCurated) window.showCurated(`${seasonNow().ko} ${seasonPick.length}선`, seasonPick); else if (window.applyCategoryList) window.applyCategoryList(seasonNow().cats); $('chips').scrollIntoView({ block: 'start' }); }
   });
