@@ -5,16 +5,17 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  const HERO_PICS = window.HERO_PICS || { df: [], dn: [], da: [], winter: [], spring: [], summer: [], autumn: [] };
   // ── 계절: 날짜로 자동으로 바뀐다 ──
   const SEASONS = [
     { months: [11, 12, 1, 2], en: 'Winter Pick', ko: '방한템', word: '겨울', title: '지금 필요한<br>방한템', chips: ['패딩', '퍼·무스탕', '플리스', '머플러', '비니', '장갑'],
-      cats: ['padding', 'long_padding', 'padding_vest', 'fur', 'fleece', 'muffler', 'beanie', 'glove'], pics: ['1484081064812-86e90e107fa8', '1706765779494-2705542ebe74', '1770068780780-e000a31d10a3'] }, // 니트처럼 넓은 종류는 빼고 방한에 딱 맞는 것만(#20 사용자 요청)
+      cats: ['padding', 'long_padding', 'padding_vest', 'fur', 'fleece', 'muffler', 'beanie', 'glove'], pics: HERO_PICS.winter }, // 니트처럼 넓은 종류는 빼고 방한에 딱 맞는 것만(#20 사용자 요청)
     { months: [3, 4], en: 'Spring Layer', ko: '봄 아우터', word: '봄', title: '가볍게 걸치는<br>봄 아우터', chips: ['재킷', '트렌치', '카디건', '블루종', '바람막이'],
-      cats: ['jacket', 'trench', 'cardigan', 'blouson', 'windbreaker', 'trucker', 'field_jacket'], pics: ['1645996831587-a9d4a73586f9', '1693129499971-ae047f40ca70', '1645819134444-6275dadf2299'] },
+      cats: ['jacket', 'trench', 'cardigan', 'blouson', 'windbreaker', 'trucker', 'field_jacket'], pics: HERO_PICS.spring },
     { months: [5, 6, 7, 8], en: 'Summer Edit', ko: '여름 필수템', word: '여름', title: '시원하게<br>여름 필수템', chips: ['반팔', '민소매', '반바지', '샌들', '버킷햇'],
-      cats: ['tshirt', 'sleeveless_top', 'shorts', 'sandals', 'swimwear', 'bucket_hat'], pics: ['1538329972958-465d6d2144ed', '1557924760-b14a6d4a4ef3', '1728280050425-ba1695a9c9a6'] },
+      cats: ['tshirt', 'sleeveless_top', 'shorts', 'sandals', 'swimwear', 'bucket_hat'], pics: HERO_PICS.summer },
     { months: [9, 10], en: 'Autumn Layer', ko: '가을 레이어드', word: '가을', title: '겹쳐 입기 좋은<br>가을 레이어드', chips: ['셔츠', '니트', '카디건', '맨투맨', '코트'],
-      cats: ['shirt', 'knit', 'cardigan', 'sweatshirt', 'blazer', 'coat', 'trucker'], pics: ['1700150662401-9b96a5fedfbb', '1700150615736-e90e9037b8e6', '1645561305502-63a9ba09ab09'] },
+      cats: ['shirt', 'knit', 'cardigan', 'sweatshirt', 'blazer', 'coat', 'trucker'], pics: HERO_PICS.autumn },
   ];
   const seasonNow = (d = new Date()) => SEASONS.find((s) => s.months.includes(d.getMonth() + 1));
   window.dashSeason = seasonNow;
@@ -24,12 +25,8 @@
   // 카드는 사진 없이 그래픽(#20, 사용자 선택 2026-11-27). 여기서는 글자와 숫자만 채운다.
   let seasonPick = [];
   // 카드 사진: 무료 화보 사진(Unsplash, 상업 사용 가능). 칸마다 3장이 천천히 확대되며 바뀐다.
-  const PICS = {
-    dfPics: ['1760337741510-1a4661e036fa', '1645561305502-63a9ba09ab09', '1700150615736-e90e9037b8e6'],
-    dnPics: ['1540221652346-e5dd6b50f3e7', '1441984904996-e0b6ba687e04', '1551488831-00ddcb6c6bd3'],
-    daPics: ['1675518334039-960154e902c0', '1713810186776-da901a67b444', '1662532577856-e8ee8b138a8b'],
-  };
-  const picUrl = (id) => `https://images.unsplash.com/photo-${id}?w=900&q=70&auto=format&fit=crop`;
+  const PICS = { dfPics: HERO_PICS.df, dnPics: HERO_PICS.dn, daPics: HERO_PICS.da }; // 목록은 index.html 머리의 HERO_PICS
+  const picUrl = window.heroPicUrl;
   function setPics(id, ids) {
     const box = $(id); if (!box || box.dataset.ids === ids.join()) return;
     box.dataset.ids = ids.join();

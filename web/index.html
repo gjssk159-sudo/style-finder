@@ -845,13 +845,38 @@
     #addResult, #folderMsg, #authMsg { border-left: 0; border-radius: 12px; padding: 10px 14px; background: #f3f4f3; }
     @keyframes sheetUp { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
   }
-</style><style id="intro-css">
+</style>
+<script>
+// #20 대시보드 화보 사진(무료 Unsplash, 상업 사용 가능) — 목록은 여기 한 곳. 인트로가 도는 동안 카드별 첫 사진을 미리 받는다.
+(function () {
+  var P = window.HERO_PICS = {
+    df: ['1760337741510-1a4661e036fa', '1645561305502-63a9ba09ab09', '1700150615736-e90e9037b8e6'],
+    dn: ['1540221652346-e5dd6b50f3e7', '1441984904996-e0b6ba687e04', '1551488831-00ddcb6c6bd3'],
+    da: ['1675518334039-960154e902c0', '1713810186776-da901a67b444', '1662532577856-e8ee8b138a8b'],
+    winter: ['1484081064812-86e90e107fa8', '1706765779494-2705542ebe74', '1770068780780-e000a31d10a3'],
+    spring: ['1645996831587-a9d4a73586f9', '1693129499971-ae047f40ca70', '1645819134444-6275dadf2299'],
+    summer: ['1538329972958-465d6d2144ed', '1557924760-b14a6d4a4ef3', '1728280050425-ba1695a9c9a6'],
+    autumn: ['1700150662401-9b96a5fedfbb', '1700150615736-e90e9037b8e6', '1645561305502-63a9ba09ab09']
+  };
+  window.heroPicUrl = function (id) { return 'https://images.unsplash.com/photo-' + id + '?w=720&q=65&auto=format&fit=crop'; };
+  try {
+    var mo = new Date().getMonth() + 1;
+    var season = [11, 12, 1, 2].indexOf(mo) >= 0 ? P.winter : mo <= 4 ? P.spring : mo <= 8 ? P.summer : P.autumn;
+    [P.df[0], season[0], P.dn[0], P.da[0]].forEach(function (id, i) {
+      var l = document.createElement('link'); l.rel = 'preload'; l.as = 'image'; l.href = window.heroPicUrl(id);
+      if (i === 0) l.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(l);
+    });
+  } catch (e) {}
+})();
+</script>
+<style id="intro-css">
 /* ===== 시작 인트로: 에디토리얼 미니멀 — 라인 드로잉 + 타이포 리빌, 정확히 2.5초 ===== */
 html.no-intro #intro { display: none; }
 html.intro-on, html.intro-on body { overflow: hidden; }
 #intro { position: fixed; inset: 0; z-index: 9999; background: #f9f8f5; color: #111; overflow: hidden; font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Malgun Gothic', sans-serif; }
 #intro.out { opacity: 0; transform: scale(1.015); transition: opacity .35s cubic-bezier(.4,0,.2,1), transform .35s cubic-bezier(.4,0,.2,1); pointer-events: none; }
-#intro .in-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 8vw; transform: translateY(var(--oy, -7px)); }
+#intro .in-wrap { position: absolute; inset: 0 0 auto 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 8vw; transform: translateY(var(--oy, -7px)); }
 #intro .in-col { width: min(78vw, 340px); }
 #intro .in-art { display: block; width: 100%; height: auto; overflow: visible; }
 #intro .in-art path, #intro .in-art line { fill: none; stroke: #121212; stroke-width: 1.15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: inDraw 1s cubic-bezier(.65,0,.25,1) var(--d, 0s) forwards; }
@@ -979,7 +1004,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
       <button type="button" class="rank" id="rank" hidden aria-label="랭킹 1~30위 보기"><span class="rank-badge"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="7" width="2.6" height="4" rx=".6"/><rect x="4.7" y="4.5" width="2.6" height="6.5" rx=".6"/><rect x="8.4" y="1.5" width="2.6" height="9.5" rx=".6"/></svg>랭킹</span><span class="rank-win"><span class="rank-line" id="rankLine"></span></span></button>
       <div class="search-wrap">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해보십시오" autofocus>
+        <input type="text" id="q" enterkeyhint="search" placeholder="찾고 싶은 아이템을 검색해 보십시오" autofocus>
       </div>
       <div class="fcard" id="fCard" hidden><div class="fc-h"><div class="fc-tabs" id="fcTabs"></div><button type="button" id="fcManage">관리</button></div><div class="fc-row" id="fcRow"></div></div>
       <section class="hero" id="hero" aria-label="추천" aria-roledescription="carousel" hidden>
@@ -1058,7 +1083,7 @@ html.intro-on, html.intro-on body { overflow: hidden; }
   <button type="button" class="a2hs-x" aria-label="닫기" onclick="a2hsClose()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="a2hs-head">
     <img class="a2hs-icon" src="./apple-touch-icon.png" alt="" width="54" height="54">
-    <div><b>홈 화면에 MY SELECT SHOP 추가</b><span>앱처럼 빠르게 저장하고 열어보십시오.</span></div>
+    <div><b>홈 화면에 MY SELECT SHOP 추가</b><span>앱처럼 빠르게 저장하고 열어 보십시오.</span></div>
   </div>
   <ol class="a2hs-steps" id="a2hsSteps"></ol>
   <button type="button" class="qa-cta" id="a2hsInstall" hidden onclick="a2hsInstall()">홈 화면에 추가</button>

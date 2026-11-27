@@ -313,7 +313,7 @@ async function loadMyQuestions() {
   const list = document.getElementById('qnaList');
   const { data, error } = await sb.from('qna_posts').select('id,title,body,answer,answered_at,created_at').order('created_at', { ascending: false });
   if (error) { list.innerHTML = '<p class="qa-empty">질문 내역을 불러오지 못했습니다.</p>'; return; }
-  if (!data.length) { list.innerHTML = '<p class="qa-empty">아직 남긴 질문이 없습니다.<br>홈에서 질문하기를 눌러보십시오.</p>'; return; }
+  if (!data.length) { list.innerHTML = '<p class="qa-empty">아직 남긴 질문이 없습니다.<br>홈에서 질문하기를 눌러 보십시오.</p>'; return; }
   const fmt = (t) => new Date(t).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   list.innerHTML = data.map((q) => `
     <div class="qna-item">
@@ -1304,12 +1304,16 @@ let homeReadyResolve;
 const homeReady = new Promise((r) => { homeReadyResolve = r; });
 function markHomeReady() { homeReadyResolve(); if (window.hideIntro) window.hideIntro(); }
 // 화면에 보이는 상품 사진이 모두 로드될 때까지(최대 cap ms) 기다림
-function whenFirstScreenImagesReady(cap = 3000) {
+function whenFirstScreenImagesReady(cap = 4500) {
   return new Promise((resolve) => {
     const t0 = performance.now();
     const check = () => {
       const imgs = [...document.querySelectorAll('#grid img')].filter((i) => { const r = i.getBoundingClientRect(); return r.top < innerHeight * 1.05 && r.bottom > 0; });
-      if (imgs.every((i) => i.complete) || performance.now() - t0 > cap) return resolve();
+      // #20 대시보드가 나올 사용자면 대시보드 첫 사진(보이는 카드)도 뜰 때까지 기다린다 — 인트로가 걷혔을 때 검은 빈 카드가 보이지 않게
+      const wantHero = !sharedView && !new URLSearchParams(location.search).get('share') && (currentUser || storedUserId()) && (myFolderIds.length || document.querySelector('#grid .card')); // 캐시로 먼저 그릴 땐 아직 로그인 정보가 없어 저장된 사용자로 판단
+      const hero = document.getElementById('hero');
+      const heroOk = !wantHero || (hero && !hero.hidden && [...hero.querySelectorAll('.hero-pics img.on')].filter((i) => i.getBoundingClientRect().left < innerWidth).every((i) => i.complete && i.naturalWidth > 0) && hero.querySelector('.hero-pics img.on'));
+      if ((imgs.every((i) => i.complete) && heroOk) || performance.now() - t0 > cap) return resolve();
       setTimeout(check, 80);
     };
     check();
@@ -1353,7 +1357,7 @@ async function renderCurrentPage() {
 
   if (!currentUser && !sharedView) {
     meta.textContent = '';
-    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있습니다.<br>위에서 이메일로 로그인해보십시오.</div>';
+    grid.innerHTML = '<div class="empty">로그인하면 내 폴더에 등록한 브랜드에서 검색할 수 있습니다.<br>위에서 이메일로 로그인해 보십시오.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     renderedSig = '';
     return;
@@ -1362,7 +1366,7 @@ async function renderCurrentPage() {
     meta.textContent = '';
     grid.innerHTML = sharedView
       ? '<div class="empty">이 폴더는 비어있습니다.</div>'
-      : '<div class="empty">내 폴더가 비어있습니다.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해보십시오.</div>';
+      : '<div class="empty">내 폴더가 비어있습니다.<br>"내 폴더"에서 브랜드를 추가하거나 "+ 브랜드 등록"으로 새 브랜드를 등록해 보십시오.</div>';
     document.getElementById('moreWrap').style.display = 'none';
     renderedSig = '';
     return;
@@ -1394,7 +1398,7 @@ async function renderCurrentPage() {
   if (subCount) subCount.textContent = lastTotal.toLocaleString('ko-KR') + '개'; // 세부 카테고리 줄이 개수 줄을 덮으므로 거기에도 표시
   setTabCount();
 
-  if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없습니다.<br>필터를 줄이거나 다른 검색어로 찾아보십시오.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
+  if (!data.length) { grid.innerHTML = '<div class="empty">조건에 맞는 상품이 없습니다.<br>필터를 줄이거나 다른 검색어로 찾아 보십시오.</div>'; document.getElementById('moreWrap').style.display = 'none'; renderedSig = ''; return; }
   const sig = sigOf(data);
   if (sig !== renderedSig) { // 캐시로 먼저 그린 화면과 내용이 같으면 DOM을 그대로 둔다(사진 재요청·깜빡임·스크롤 튐 방지)
     grid.innerHTML = cardsHtml(data);
