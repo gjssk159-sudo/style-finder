@@ -209,6 +209,17 @@
   .df-act button { flex: 1; min-height: 44px; border: 0; border-radius: 12px; font-size: 14px; font-weight: 600; background: var(--faint); color: var(--ink); }
   .df-act button[data-add-brand], .df-act .own { background: var(--accent-bg, var(--faint)); color: var(--accent-ink, var(--ink)); }
   .df-act button:disabled { opacity: .7; }
+  /* 중간 폭 PC(701~1180px): 메뉴는 로고 아래 한 줄로(오른쪽 위에 두 줄로 뭉치지 않게), 대시보드는 2장씩 보이고 옆으로 넘김 */
+  @media (min-width: 701px) and (max-width: 1180px) {
+    .topbar { flex-wrap: wrap; row-gap: 10px; }
+    .nav-links { order: 3; flex: 1 1 100%; flex-wrap: nowrap; justify-content: flex-start; gap: 22px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .hero-track { overflow-x: auto !important; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .hero-track::-webkit-scrollbar { display: none; }
+    .hero-slide { flex: 0 0 calc(50% - 8px) !important; }
+  }
+  /* 대시보드 큰 제목: 카드가 좁아도 단어가 쪼개지지 않게(한 줄, 카드 폭에 맞춰 크기 조절) */
+  @media (min-width: 701px) { .hero-txt b { white-space: nowrap; font-size: clamp(24px, 2.3vw, 30px) !important; } }
   /* PC: 4상자 한 줄. 필터 상자와 카테고리 탭은 화면 폭 전체에 고르게(한쪽에 몰리지 않게) */
   @media (min-width: 701px) {
     .hero { display: block; flex: 1 1 100%; min-width: 0; margin: 24px 0 14px; }
