@@ -147,6 +147,7 @@
   .cart-cnt[hidden] { display: none; }
   /* #16 홈 위 넘겨 보는 큰 카드(모바일만) */
   .hero { display: none; }
+  .hero[hidden] { display: none !important; } /* PC 설정(display:block)이 숨김을 덮어 빈 검은 카드가 보이던 것 막기 */
   .hero-track { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding: 0 16px; padding: 0 16px; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .hero-track::-webkit-scrollbar { display: none; }
   .hero-slide { position: relative; flex: none; width: calc(100% - 44px); aspect-ratio: 5 / 4; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 0; padding: 22px; border: 0; border-radius: 22px; overflow: hidden; text-align: left; letter-spacing: 0; word-break: keep-all; overflow-wrap: anywhere; cursor: pointer; }

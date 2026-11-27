@@ -187,6 +187,9 @@
     await fills;
   }
   window.refreshDash = refresh;
+  // 시작할 때도 스스로 채운다. 예전엔 "상품 목록이 새로 그려질 때"만 채웠는데, 다시 방문하면 저장해 둔 목록을 먼저 그리고
+  // 서버 목록이 같으면 다시 그리지 않아 신호가 오지 않았다 → 대시보드가 검은 빈 카드로 남음(#20). 로그인·폴더 정보가 준비되는 즉시 채운다.
+  { let tries = 0; const boot = setInterval(() => { refresh(); if (lastSig || ++tries > 60) clearInterval(boot); }, 400); }
   // 수집이 새로 되면 바뀌게: 화면을 켜 둔 동안 10분마다 다시 채운다
   setInterval(() => { if (!document.hidden) refresh(true); }, 10 * 60e3);
 

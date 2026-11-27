@@ -556,6 +556,17 @@ await p.evaluate(() => hideAiView());
   note('로그인 전에는 대시보드 카드를 숨긴다', await v.page.evaluate(() => document.getElementById('hero').hidden));
   await v.ctx.close();
 }
+// #20 다시 방문(저장해 둔 목록을 먼저 그림)해도 대시보드가 채워진다 — 예전엔 목록이 다시 그려지지 않아 검은 빈 카드로 남았음
+{
+  const v = await open(browser, { login: true, width: 1100, height: 800 });
+  await v.page.waitForTimeout(2500);
+  await v.page.reload(); await v.page.waitForTimeout(3500);
+  const r = await v.page.evaluate(() => ({ hidden: document.getElementById('hero').hidden, imgs: document.querySelectorAll('#heroTrack .hero-pics img').length, eyebrow: document.getElementById('dsEyebrow').textContent, shown: getComputedStyle(document.getElementById('hero')).display }));
+  note('다시 방문해도 대시보드가 채워진다(사진·글자), 숨김이면 PC에서도 안 보인다', !r.hidden && r.imgs === 12 && r.eyebrow !== '이번 계절' && r.shown !== 'none', JSON.stringify(r));
+  await v.page.evaluate(() => { document.getElementById('hero').hidden = true; });
+  note('PC: 대시보드가 숨김 상태면 화면에 안 나온다(빈 검은 카드 방지)', await v.page.evaluate(() => getComputedStyle(document.getElementById('hero')).display === 'none'));
+  await v.ctx.close();
+}
 // #22 페이지 번호: 1~5 번호를 눌러 바로 이동, 지금 페이지가 가운데
 {
   const v = await open(browser, { login: true });
