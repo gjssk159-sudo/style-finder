@@ -1485,6 +1485,27 @@
       ],
       "weakKeywords": [
         "pack"
+      ],
+      "exclude": [
+        "2pack",
+        "3pack",
+        "4pack",
+        "5pack",
+        "6pack",
+        "2 pack",
+        "3 pack",
+        "4 pack",
+        "5 pack",
+        "6 pack",
+        "2-pack",
+        "3-pack",
+        "boxer",
+        "brief",
+        "briefs",
+        "trunks",
+        "sticker",
+        "hardware pack",
+        "variety pack"
       ]
     },
     {

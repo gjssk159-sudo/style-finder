@@ -52,6 +52,14 @@ const CASES = [
   ['Authentic Denim Wind Breaker (Indigo)', '홈 > PRODUCTS > Outer > Jacket', 'group:outer', '데님 윈드브레이커 = 아우터(소재 단어 denim 은 쇼핑몰 갈래를 따름)'],
   ['Over Shirt Denim Grey', 'HATCHINGROOM > Shirt', 'group:top', '오버셔츠 데님 = 셔츠(쇼핑몰 Shirt 를 따름)'],
   ['S CLEF WRAP SKIRT PANTS (BLACK)', '홈 > PRODUCTS > Bottom > SKIRT', 'group:dress_skirt', '쇼핑몰이 Bottom > SKIRT 로 정확히 말하면 스커트'],
+  // ── 묶음 상품("3Pack")은 백팩이 아니다 (2026-11-28, thisisneverthat 속옷 3팩이 백팩으로 분류됨) ──
+  ['Cotton Briefs 3Pack Grey', '', 'etc', '속옷 3팩은 백팩 아님'],
+  ['BOXER BRIEFS 3 PACK', '', 'etc', '복서 브리프 3팩은 백팩 아님'],
+  ['SP-Logo Socks 3Pack White', '', 'socks', '양말 3팩은 양말'],
+  ['26FW Sticker Pack', '', 'group:acc', '스티커 팩은 소품'],
+  ['LIGHT-WEIGHT HIKING PACK (BLACK)', '', 'backpack', '하이킹 팩은 백팩'],
+  ['MPa DAY PACK (BLACK)', '', 'backpack', '데이팩은 백팩'],
+  ['SP-Logo OD Backpack 30 Black', '', 'backpack', '백팩'],
 ];
 
 let fail = 0;

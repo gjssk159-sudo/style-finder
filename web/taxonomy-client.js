@@ -65,7 +65,9 @@ let GROUPS = [];
 function applyTaxonomy(data) {
   CATEGORIES = data.categories;
   KW_INDEX = null; // 분류표가 바뀌면 검색어 사전도 다시 만든다
-  GROUPS = (data.groups || []).map((g) => ({ ...g, subs: g.subs && g.subs.length ? g.subs : g.children.map((c) => ({ id: c, label: (data.categories.find((x) => x.id === c) || {}).label || c, children: [c] })) }));
+  // 세부 칩 id가 대분류 id와 같으면(cap·bag·shoes·acc·etc) "-only"를 붙여 구분한다.
+  // 예전엔 "볼캡"(cap)을 눌러도 대분류 CAP(cap) 전체 — 비니·버킷햇까지 — 로 펼쳐졌다(#20 사용자 지적).
+  GROUPS = (data.groups || []).map((g) => ({ ...g, subs: g.subs && g.subs.length ? g.subs : g.children.map((c) => ({ id: c === g.id ? `${c}-only` : c, label: (data.categories.find((x) => x.id === c) || {}).label || c, children: [c] })) }));
 }
 // 분류표는 거의 안 바뀌니 저장해둔 걸 바로 쓰고(첫 화면을 기다리게 하지 않음), 최신본은 뒤에서 받아 갱신한다.
 async function loadTaxonomy() {

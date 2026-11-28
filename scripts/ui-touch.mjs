@@ -567,6 +567,18 @@ await p.evaluate(() => hideAiView());
   note('PC: 대시보드가 숨김 상태면 화면에 안 나온다(빈 검은 카드 방지)', await v.page.evaluate(() => getComputedStyle(document.getElementById('hero')).display === 'none'));
   await v.ctx.close();
 }
+// #20 세부 칩 id가 대분류 id와 같아도(볼캡 cap ↔ CAP cap) 세부 칩을 누르면 그 세부 종류만 — 예전엔 비니까지 섞였음
+{
+  const v = await open(browser, { login: true, width: 1200, height: 900 });
+  await v.page.waitForTimeout(1500);
+  await v.page.evaluate(() => toggleGroup('cap')); await v.page.waitForTimeout(1200);
+  const n = v.calls.length;
+  await v.page.evaluate(() => [...document.querySelectorAll('#subChips [onclick]')].find((x) => /캡\/야구모자/.test(x.textContent)).click());
+  await v.page.waitForTimeout(1500);
+  const q = v.calls.slice(n).filter((c) => c.path.endsWith('/product_group') && /categories=ov/.test(c.query)).map((c) => { const m = String(c.query).match(/categories=ov\.([^&]*)/)[1]; let s = m; try { s = decodeURIComponent(m); } catch {} return 'categories=ov.' + s; });
+  note('볼캡(캡/야구모자) 칩을 누르면 cap만 찾는다(비니·버킷햇 제외)', q.length > 0 && q.every((x) => /\{?cap\}?$/.test(x) && !/beanie/.test(x)), JSON.stringify(q));
+  await v.ctx.close();
+}
 // #22 페이지 번호: 1~5 번호를 눌러 바로 이동, 지금 페이지가 가운데
 {
   const v = await open(browser, { login: true });
