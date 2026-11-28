@@ -6,3 +6,4 @@ data/*.db*
 
 # 운영 데이터 백업(#7 repair) — 저장소에 올리지 않음
 data/backup/
+data/tryon-count.json
